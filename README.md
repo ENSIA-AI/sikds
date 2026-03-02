@@ -1,8 +1,8 @@
-# Prix Président
+# SIKDS
 
 ## Overview
 
-**Prix Président** is a web application designed to manage the candidature and evaluation process for the "Prix Président" award. It facilitates the submission of projects, management of participants and teams, and the evaluation workflow by establishments.
+**SIKDS** is a web application designed to manage the sensitive document sharing.
 
 ## Technology Stack
 
