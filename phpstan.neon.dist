@@ -1,0 +1,29 @@
+includes:
+    - vendor/larastan/larastan/extension.neon
+    - vendor/nesbot/carbon/extension.neon
+
+parameters:
+
+    paths:
+        - app/
+
+    # Level 10 is the highest level
+    level: 5
+
+    ignoreErrors:
+        # Ignore missing Onou model classes (different database/application)
+        - '#Call to static method firstOrDefault\(\) on an unknown class App\\Models\\Onou\\vm_heb_processing_by_dou#'
+        - '#Call to static method firstOrDefault\(\) on an unknown class App\\Models\\Onou\\vm_heb_processing_by_ru#'
+        # Ignore write-only property warnings for strategy pattern
+        - '#Property .+::\$projectId is never read, only written#'
+        # Ignore "right side of && is always true" for type-checked conditions
+        - '#Right side of && is always true#'
+        # Ignore unresolvable type in Collection map callbacks (false positive with proper type hints)
+        - '#Parameter \#1 \$callback of method .+Collection.+::map\(\) contains unresolvable type#'
+        # Ignore database column access in model accessors (Larastan false positive)
+        - '#Access to an undefined property App\\Models\\Ppm\\RefIndividu::\$(nom_arabe|prenom_arabe|nom_latin|prenom_latin|nom_mere_arabe|nom_mere_latin|etablissement)#'
+        # Ignore undefined full_name in Nomenclature relationship chains
+        - '#Access to an undefined property Illuminate\\Database\\Eloquent\\Model::\$full_name#'
+#
+#    excludePaths:
+#        - ./*/*/FileToBeExcluded.php

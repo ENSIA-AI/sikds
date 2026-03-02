@@ -1,0 +1,47 @@
+import:
+  - recipe/laravel.php
+
+config:
+  application: 'recherche'
+  repository: 'https://github.com/drdnMESRS/prix.git'
+  branch: 'main'
+
+hosts:
+  production:
+    remote_user: root
+    hostname: '10.10.10.63'
+    deploy_path: '/var/www/recherche'
+    composer_options: '--verbose --prefer-dist --no-progress --no-interaction --optimize-autoloader'
+    shared_files:
+      - '.env'
+    shared_dirs:
+      - 'storage'
+    writable_dirs:
+      - 'storage'
+      - 'bootstrap/cache'
+
+tasks:
+  build-assets:
+    - run: echo "building assets...."
+    - run: ls
+    - cd: "{{release_path}}"
+    - run: "npm install"
+    - run: "npm run build"
+    - run: "systemctl restart php-fpm"
+
+  deploy:
+    - deploy:prepare
+    - deploy:vendors
+    - artisan:storage:link
+    - artisan:view:cache
+    - artisan:config:cache
+    - artisan:optimize:clear
+    - artisan:down
+    - deploy:publish
+    - artisan:up
+    - deploy:success
+
+
+after:
+  deploy:success: build-assets
+  deploy:failed: deploy:unlock
