@@ -77,7 +77,7 @@ return [
             'dateFormat' => 'Y-m-d', // Date format that will be received by the filter
             'earliestDate' => null, // The earliest acceptable date
             'latestDate' => null, // The latest acceptable date
-            'locale' => 'en', // The default locale
+            'locale' => 'fr', // The default locale
         ],
     ],
 

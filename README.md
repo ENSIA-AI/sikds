@@ -27,7 +27,7 @@ Ensure you have the following installed on your local machine:
 1.  **Clone the repository**:
     ```bash
     git clone <repository_url>
-    cd prix
+    cd sikds
     ```
 
 2.  **Install PHP dependencies**:
@@ -79,4 +79,4 @@ npm run dev
 For more detailed information, please refer to the documentation in the `docs/` directory:
 
 -   [Architecture Overview](docs/ARCHITECTURE.md)
--   [Contribution Guidelines](docs/GUIDELINES.md)
+-   [Contribution Guidelines](docs/CODE_OF_CONDUCT.md)

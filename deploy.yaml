@@ -3,7 +3,7 @@ import:
 
 config:
   application: 'recherche'
-  repository: 'https://github.com/drdnMESRS/prix.git'
+  repository: 'https://github.com/ENSIA-AI/sikds.git'
   branch: 'main'
 
 hosts:

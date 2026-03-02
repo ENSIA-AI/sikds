@@ -2,7 +2,7 @@
 
 ## System Context
 
-The **Prix Président** application serves as a platform for managing the lifecycle of award candidatures in the higher education and research sector. It handles data related to projects, participating establishments, research teams, and the evaluation process.
+The **SIKDS** application serves as a centralized platform for secure distribution of official ministry documents with integrated RAG-based search and question-answering capabilities.
 
 ## Technology Choices
 
