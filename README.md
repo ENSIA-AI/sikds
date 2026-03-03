@@ -1,32 +1,78 @@
-# SIKDS
+# SIKDS: Secure Institutional Knowledge & Distribution System
 
-## Overview
+**SRS Reference:** [docs/SIKDS_SRS.pdf](docs/SIKDS_SRS.pdf)
 
-**SIKDS** is a web application designed to manage the sensitive document sharing.
+A centralized platform for the secure distribution of official ministry documents to subordinate institutions (universities), with integrated **Retrieval-Augmented Generation (RAG)** for semantic search and question-answering.
+
+---
+
+## Purpose & Scope
+
+SIKDS addresses fragmented document distribution (email, physical delivery, ad-hoc uploads) by providing:
+
+| Goal | Solution |
+|------|----------|
+| **Centralized distribution** | Single source of truth for official directives |
+| **Accountability** | Watermarking and audit trails for every document access |
+| **Intelligence** | RAG-powered semantic search (no manual archive digging) |
+| **Security** | Permissions-based access control and comprehensive audit logging |
+
+**In scope:**
+
+- Secure document upload and storage and watermarking.
+- User authentication and permissions-based access control
+- Document vectorization and RAG (semantic search & Q&A)
+
+---
+
+## System Architecture (High-Level)
+
+```
++-------------------------------------------------------------+
+| SIKDS Platform                                              |
++-------------------------------------------------------------+
+| Presentation Layer                                          |
+|   Web Interface (Laravel Blade + Tailwind CSS) | Admin UI   |
++-------------------------------------------------------------+
+| Application Layer                                           |
+|   Auth & SSO | Document Mgmt | Watermarking | RAG | Notifs  |
++-------------------------------------------------------------+
+| AI/ML Layer (Laravel AI SDK, Queue Jobs)                    |
+|   Chunking, OCR | Embeddings | pgvector | LLM Query         |
++-------------------------------------------------------------+
+| Data Layer                                                  |
+|   PostgreSQL (pgvector) | Redis | MinIO (S3-compatible)     |
++-------------------------------------------------------------+
+```
 
 ## Technology Stack
 
-This project is built using the following core technologies:
+| Layer | Technology |
+|-------|------------|
+| **Core** | Laravel 12 (PHP 8.3), Blade, Tailwind CSS 3.4+, Alpine.js 3.15 |
+| **Auth** | Laravel Sanctum; Spatie Laravel Permission |
+| **AI/RAG** | Laravel AI SDK (Prism); pgvector; ministry-hosted LLM |
+| **Data** | PostgreSQL 17 + pgvector 0.7; Redis 8.6 (queue, cache, sessions); MinIO (S3-compatible storage) |
+| **Watermarking** | PHP PDF (XMP); FPDI (text overlay); Imagick (logo — extended release) |
 
--   **Framework**: [Laravel 12.x](https://laravel.com)
--   **Frontend**: [Livewire](https://livewire.laravel.com)
--   **Styling**: [Tailwind CSS v4](https://tailwindcss.com) & [Flowbite](https://flowbite.com)
--   **Interactivity**: [Alpine.js](https://alpinejs.dev)
--   **Theme**: Custom Tailwind theme with [Select2](https://select2.org) integration.
+---
 
-## Prerequisites
+## Getting Started
 
-Ensure you have the following installed on your local machine:
+### Prerequisites
 
--   **PHP**: 8.2 or higher
--   **Node.js**: LTS version recommended
--   **Composer**: Dependency manager for PHP
+- PHP 8.3+
+- Composer
+- Node.js & npm (for frontend assets)
+- PostgreSQL 17 with pgvector extension
+- Redis 8.6
+- MinIO
 
 ## Installation
 
 1.  **Clone the repository**:
     ```bash
-    git clone <repository_url>
+    git clone <https://github.com/ENSIA-AI/sikds>
     cd sikds
     ```
 
@@ -54,6 +100,12 @@ Ensure you have the following installed on your local machine:
     php artisan migrate
     ```
 
+6. **Queue worker** (for indexing and notifications)
+
+   ```bash
+   php artisan queue:work
+   ```
+
 ## Development
 
 To start the local development server, which runs both the Laravel server and Vite for asset bundling:
@@ -65,18 +117,29 @@ composer run dev
 ```bash
 php artisan serve
 npm run dev
-```
-
-## Key Features
-
--   **Project Management**: Detailed views for project submissions including Stages, TRL, and Innovation summaries.
--   **Team & Participants**: Management of establishiments and team members associated with a project.
--   **Evaluation**: Workflow for establishments to review, accept/reject, and provide observations on candidatures.
--   **Tabbed Interface**: Organized data presentation using a responsive tabbed layout.
+---
 
 ## Documentation
 
-For more detailed information, please refer to the documentation in the `docs/` directory:
+- **Software Requirements Specification (SRS):** [docs/SIKDS_SRS.pdf](docs/SIKDS_SRS.pdf)
+- **Contributing & conduct:** [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md)
 
--   [Architecture Overview](docs/ARCHITECTURE.md)
--   [Contribution Guidelines](docs/CODE_OF_CONDUCT.md)
+---
+
+## Contributing
+
+We use **feature branches** and merge to `main` only at the end of each sprint. See [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) for:
+
+- GitHub workflow (e.g. `feature/user`, `feature/document-upload` → `dev` → `main`)
+- Clean code principles and expectations
+- How to open issues and submit changes
+
+---
+
+## License
+
+See [LICENSE.md](LICENSE.md).
+
+---
+
+*SIKDS: Secure Institutional Knowledge & Distribution System. Ministry of Higher Education and Scientific Research, People's Democratic Republic of Algeria.*
