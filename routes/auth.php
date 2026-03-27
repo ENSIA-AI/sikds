@@ -1,26 +1,25 @@
 <?php
 
-use App\Http\Controllers\Sso\SsoController;
-use App\Livewire\Auth\Login;
-use App\Services\Sso_service;
-use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Session;
 
-Route::post('logout', App\Livewire\Actions\Logout::class)
-    ->name('logout');
+Route::post('logout', function () {
+    Auth::guard('web')->logout();
+    Session::invalidate();
+    Session::regenerateToken();
 
-/*
- * login with SSO server
- */
+    return redirect('/');
+})->name('logout');
 
-$service = (new Sso_service);
-
-Route::get('/login_sso', function (Request $request) {
-    return (new Sso_service)->login_sso($request);
+Route::get('/login_sso', function () {
+    abort(501, 'SSO not implemented yet.');
 })->name('login');
 
-Route::get('/callback', function (Request $request) {
-    return (new Sso_service)->callback($request);
+Route::get('/callback', function () {
+    abort(501, 'SSO callback not implemented yet.');
 });
 
-Route::get('/user', SsoController::class)->name('user');
+Route::get('/user', function () {
+    abort(501, 'SSO user endpoint not implemented yet.');
+})->name('user');
