@@ -14,9 +14,13 @@ Route::post('logout', function () {
     return redirect('/');
 })->name('logout');
 
+Route::get('/login', function () {
+    return view('auth.login-minimal');
+})->name('login');
+
 Route::get('/login_sso', function (SsoService $ssoService) {
     return $ssoService->redirectToProvider(request());
-})->name('login');
+})->name('sso.redirect');
 
 Route::get('/callback', function (SsoService $ssoService) {
     try {
@@ -26,11 +30,11 @@ Route::get('/callback', function (SsoService $ssoService) {
     } catch (SsoAuthenticationException $e) {
         report($e);
 
-        return redirect('/')->with('error', 'SSO login failed. Please try again or contact support.');
+        return redirect()->route('login')->with('error', 'SSO login failed. Please try again or contact support.');
     } catch (\Throwable $e) {
         report($e);
 
-        return redirect('/')->with('error', 'Unexpected authentication error. Please try again.');
+        return redirect()->route('login')->with('error', 'Unexpected authentication error. Please try again.');
     }
 });
 

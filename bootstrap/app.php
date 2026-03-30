@@ -22,7 +22,7 @@ return Application::configure(basePath: dirname(__DIR__))
         ]
         );
         $middleware->appendToGroup('web', [
-            setLocale::class,
+            SetLocale::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

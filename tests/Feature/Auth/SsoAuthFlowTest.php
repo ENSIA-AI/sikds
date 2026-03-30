@@ -17,7 +17,7 @@ test('callback returns safe message on known sso authentication exception', func
 
     $response = $this->get('/callback?code=abc&state=123');
 
-    $response->assertRedirect('/');
+    $response->assertRedirect(route('login'));
     $response->assertSessionHas('error', 'SSO login failed. Please try again or contact support.');
 });
 
@@ -30,7 +30,7 @@ test('callback returns generic safe message on unexpected exception', function (
 
     $response = $this->get('/callback?code=abc&state=123');
 
-    $response->assertRedirect('/');
+    $response->assertRedirect(route('login'));
     $response->assertSessionHas('error', 'Unexpected authentication error. Please try again.');
 });
 

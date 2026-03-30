@@ -4,7 +4,7 @@
     <x-auth-session-status class="text-center" :status="session('status')" />
 
     <div class="flex flex-col gap-4">
-        <flux:button variant="primary" :href="route('login')" class="w-full">
+        <flux:button variant="primary" :href="route('sso.redirect')" class="w-full">
             {{ __('Continue with MESRS SSO') }}
         </flux:button>
 
