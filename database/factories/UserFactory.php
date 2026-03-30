@@ -2,15 +2,18 @@
 
 namespace Database\Factories;
 
+use App\Domain\Users\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Str;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\User>
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<User>
  */
 class UserFactory extends Factory
 {
+    protected $model = User::class;
+
     /**
      * The current password being used by the factory.
      */
@@ -23,22 +26,26 @@ class UserFactory extends Factory
      */
     public function definition(): array
     {
-        return [
-            'name' => fake()->name(),
-            'email' => fake()->unique()->safeEmail(),
-            'email_verified_at' => now(),
-            'password' => static::$password ??= Hash::make('password'),
-            'remember_token' => Str::random(10),
-        ];
-    }
+        $email = fake()->unique()->safeEmail();
 
-    /**
-     * Indicate that the model's email address should be unverified.
-     */
-    public function unverified(): static
-    {
-        return $this->state(fn (array $attributes) => [
-            'email_verified_at' => null,
-        ]);
+        return [
+            'sso_user_id' => fake()->unique()->userName(),
+            'username' => fake()->unique()->userName(),
+            'email' => $email,
+            'full_name' => fake()->name(),
+            'institution_id' => fn() => DB::table('institutions')->first()?->id ?? DB::table('institutions')->insertGetId([
+                'code' => 'TEST',
+                'name' => 'Test Institution',
+                'type' => 'university',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]),
+            'auth_type' => 'sso',
+            'auth_domain' => substr(strrchr($email, '@') ?: '', 1) ?: null,
+            'password' => static::$password ??= Hash::make('password'),
+            'is_active' => true,
+            'last_login_at' => now(),
+            'created_by' => null,
+        ];
     }
 }

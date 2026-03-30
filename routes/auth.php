@@ -1,5 +1,6 @@
 <?php
 
+use App\Domain\Users\Exceptions\SsoAuthenticationException;
 use App\Domain\Users\Services\SsoService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -22,15 +23,19 @@ Route::get('/callback', function (SsoService $ssoService) {
         $ssoService->handleCallback(request());
 
         return redirect('/dashboard');
+    } catch (SsoAuthenticationException $e) {
+        report($e);
+
+        return redirect('/')->with('error', 'SSO login failed. Please try again or contact support.');
     } catch (\Throwable $e) {
         report($e);
 
-        return redirect('/')->with('error', $e->getMessage());
+        return redirect('/')->with('error', 'Unexpected authentication error. Please try again.');
     }
 });
 
 Route::get('/user', function () {
-    if (! Auth::check()) {
+    if (!Auth::check()) {
         return response()->json(['message' => 'Unauthenticated'], 401);
     }
 

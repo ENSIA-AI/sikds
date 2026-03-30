@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Users\Services;
 
+use App\Domain\Users\Exceptions\SsoAuthenticationException;
 use App\Domain\Users\Models\User;
 use Illuminate\Http\Client\Response;
 use Illuminate\Http\Request;
@@ -11,7 +12,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
-use RuntimeException;
+use Throwable;
 
 class SsoService
 {
@@ -20,15 +21,19 @@ class SsoService
         $state = Str::random(40);
         $request->session()->put('sso_state', $state);
 
-        $query = http_build_query([
+        $queryParams = [
             'client_id' => config('sso.client_id'),
             'response_type' => 'code',
             'redirect_uri' => config('sso.redirect_uri'),
-            'scope' => config('sso.scope', 'openid profile email'),
             'state' => $state,
-        ]);
+        ];
+        $scope = trim((string) config('sso.scope', ''));
+        if ($scope !== '') {
+            $queryParams['scope'] = $scope;
+        }
+        $query = http_build_query($queryParams);
 
-        return redirect($this->buildUrl(config('sso.authorize_path')).'?'.$query);
+        return redirect($this->buildUrl(config('sso.authorize_path')) . '?' . $query);
     }
 
     public function handleCallback(Request $request): User
@@ -37,22 +42,22 @@ class SsoService
         $incomingState = (string) $request->input('state', '');
         $code = (string) $request->input('code', '');
 
-        if ($state === '' || ! hash_equals($state, $incomingState) || $code === '') {
-            throw new RuntimeException('Invalid SSO callback state or authorization code.');
+        if ($state === '' || !hash_equals($state, $incomingState) || $code === '') {
+            throw new SsoAuthenticationException('Invalid SSO callback state or authorization code.');
         }
 
         $tokenResponse = $this->exchangeAuthorizationCode($code);
         $accessToken = (string) data_get($tokenResponse->json(), 'access_token', '');
 
         if ($accessToken === '') {
-            throw new RuntimeException('Missing access token from SSO token response.');
+            throw new SsoAuthenticationException('Missing access token from SSO token response.');
         }
 
         $request->session()->put('sso_access_token', $accessToken);
 
         $profileResponse = $this->fetchUserProfile($accessToken);
-        if (! $profileResponse->successful()) {
-            throw new RuntimeException('Failed to fetch SSO user profile.');
+        if (!$profileResponse->successful()) {
+            throw new SsoAuthenticationException('Failed to fetch SSO user profile.');
         }
 
         $normalized = $this->normalizeProfile($profileResponse->json());
@@ -66,10 +71,10 @@ class SsoService
                 })
                 ->first();
 
-            if (! $user) {
+            if (!$user) {
                 $institutionId = DB::table('institutions')->where('code', 'MESRS')->value('id');
-                if (! $institutionId) {
-                    throw new RuntimeException('No default institution found for auto-provisioning.');
+                if (!$institutionId) {
+                    throw new SsoAuthenticationException('No default institution found for auto-provisioning.');
                 }
 
                 $user = User::query()->create([
@@ -95,8 +100,8 @@ class SsoService
                 ])->save();
             }
 
-            if (! $user->is_active) {
-                throw new RuntimeException('Your account is deactivated. Contact an administrator.');
+            if (!$user->is_active) {
+                throw new SsoAuthenticationException('Your account is deactivated. Contact an administrator.');
             }
 
             Auth::guard('web')->login($user);
@@ -109,7 +114,7 @@ class SsoService
     {
         $accessToken = (string) $request->session()->get('sso_access_token', '');
         if ($accessToken === '') {
-            throw new RuntimeException('No SSO access token found in session.');
+            throw new SsoAuthenticationException('No SSO access token found in session.');
         }
 
         return $this->fetchUserProfile($accessToken);
@@ -117,16 +122,22 @@ class SsoService
 
     private function exchangeAuthorizationCode(string $code): Response
     {
-        $response = Http::asForm()->post($this->buildUrl(config('sso.token_path')), [
-            'grant_type' => 'authorization_code',
-            'client_id' => config('sso.client_id'),
-            'client_secret' => config('sso.client_secret'),
-            'redirect_uri' => config('sso.redirect_uri'),
-            'code' => $code,
-        ]);
+        try {
+            $response = Http::asForm()
+                ->timeout(10)
+                ->post($this->buildUrl(config('sso.token_path')), [
+                    'grant_type' => 'authorization_code',
+                    'client_id' => config('sso.client_id'),
+                    'client_secret' => config('sso.client_secret'),
+                    'redirect_uri' => config('sso.redirect_uri'),
+                    'code' => $code,
+                ]);
+        } catch (Throwable $e) {
+            throw new SsoAuthenticationException('SSO token exchange failed.', previous: $e);
+        }
 
-        if (! $response->successful()) {
-            throw new RuntimeException('SSO token exchange failed.');
+        if (!$response->successful()) {
+            throw new SsoAuthenticationException('SSO token exchange failed.');
         }
 
         return $response;
@@ -134,14 +145,20 @@ class SsoService
 
     private function fetchUserProfile(string $accessToken): Response
     {
-        return Http::withToken($accessToken)
-            ->acceptJson()
-            ->get($this->buildUrl(config('sso.userinfo_path')));
+        try {
+            return Http::withToken($accessToken)
+                ->acceptJson()
+                ->timeout(10)
+                ->get($this->buildUrl(config('sso.userinfo_path')));
+        } catch (Throwable $e) {
+            throw new SsoAuthenticationException('Failed to fetch SSO user profile.', previous: $e);
+        }
     }
 
     private function normalizeProfile(array $profile): array
     {
-        $ssoUserId = data_get($profile, 'sub')
+        $ssoUserId = data_get($profile, 'nom_utilisateur')
+            ?? data_get($profile, 'sub')
             ?? data_get($profile, 'id')
             ?? data_get($profile, 'user_id')
             ?? data_get($profile, 'unique_id');
@@ -160,24 +177,38 @@ class SsoService
             ?? $username);
 
         if ($username === '' || $email === '') {
-            throw new RuntimeException('SSO profile is missing mandatory username or email.');
+            throw new SsoAuthenticationException('SSO profile is missing mandatory username or email.');
         }
+
+        $this->assertDomainIsAllowed($email);
 
         return [
             'sso_user_id' => $ssoUserId !== null ? (string) $ssoUserId : null,
             'username' => $username,
             'email' => Str::lower($email),
             'full_name' => $fullName,
-            'auth_domain' => Str::after($email, '@') ?: null,
+            'auth_domain' => ($domain = Str::lower(Str::after($email, '@'))) !== '' ? $domain : null,
         ];
     }
 
     private function buildUrl(?string $path): string
     {
         $server = rtrim((string) config('sso.server'), '/');
-        $path = '/'.ltrim((string) $path, '/');
+        $path = '/' . ltrim((string) $path, '/');
 
-        return $server.$path;
+        return $server . $path;
+    }
+
+    private function assertDomainIsAllowed(string $email): void
+    {
+        $allowedDomains = config('sso.allowed_domains', []);
+        if (!is_array($allowedDomains) || $allowedDomains === []) {
+            return;
+        }
+
+        $emailDomain = strtolower((string) Str::after($email, '@'));
+        if ($emailDomain === '' || !in_array($emailDomain, $allowedDomains, true)) {
+            throw new SsoAuthenticationException('Your email domain is not authorized for SSO access.');
+        }
     }
 }
-

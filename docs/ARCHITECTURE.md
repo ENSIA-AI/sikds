@@ -2,43 +2,54 @@
 
 ## System Context
 
-The **SIKDS** application serves as a centralized platform for secure distribution of official ministry documents with integrated RAG-based search and question-answering capabilities.
+The **SIKDS** (Système d'Information de Kit de Distribution Sécurisée) application serves as a centralized platform for secure distribution of official ministry documents with integrated RAG-based search and question-answering capabilities.
 
-## Technology Choices
+## Technology Stack
 
-### Server-Side: Laravel & Livewire
-We utilize **Laravel 12** as the core framework for its robustness, security, and extensive ecosystem.
-**Livewire** is chosen to built dynamic, SPA-like interfaces without the complexity of a separate frontend SPA (like React or Vue). This allows us to keep the logic within PHP and Blade templates while offering a responsive user experience.
+### Core Framework
+- **Framework**: Laravel 12.46.0 (PHP 8.3+)
+- **Frontend**: Blade + Tailwind CSS 4.0 + Alpine.js 3.15
+- **Database**: PostgreSQL 17 + pgvector 0.7
+- **Cache/Queue**: Redis 8.6+
+- **Storage**: MinIO (S3-compatible)
 
-### Client-Side: Tailwind CSS & Alpine.js
--   **Tailwind CSS (v4)**: Provides a utility-first approach for rapid and consistent UI development.
--   **Alpine.js**: Used for lightweight client-side interactivity (e.g., toggling tabs, modals) that doesn't require a full server round-trip.
+## Engineering Patterns
 
-## Directory Structure
+We follow **Domain-Driven Design (DDD)** principles to ensure maintainability and separation of concerns:
 
-The project follows the standard Laravel structure with some specific organizations:
+-   **Bounded Contexts**: Located in `app/Domain/{Context}/`
+-   **Action Pattern**: Encapsulates single business use cases (e.g., `CreateDocumentAction`).
+-   **Repository Pattern**: Abstracts data access logic.
+-   **Service Layer**: Handles complex business logic and external integrations.
 
--   **`app/Livewire`**: Contains the logic for the interactive components.
--   **`resources/views/livewire`**: Contains the Blade templates for the Livewire components.
--   **`resources/views/livewire/feature`**: Specific views for the  feature set.
--   **`routes/`**:
-    -   `web.php`: Entry point, loads other route files.
-    -   `auth.php`: Authentication routes.
-    -   `common.php`: Shared routes.
-    -   `fonctionalities.php`: Feature-specific routes.
+### Directory Structure
 
-## Core Concepts
+```
+app/
+├── Domain/           # DDD Bounded Contexts (Users, Documents, Audit, etc.)
+├── Http/             # Controllers, Middleware, Requests
+├── Infrastructure/   # External service implementations
+├── Providers/        # Service providers
+├── Support/          # Cross-cutting utilities
+```
 
-### Role-Based Access
+## Security & Data Integrity
 
+### 1. Authentication (SSO First)
+- Primary authentication via **Ministry OAuth 2.0 SSO**.
+- Automatic user provisioning on first login.
+- Support for multiple auth domains (e.g., `mesrs.dz`, `ensia.edu.dz`).
 
-### Resource Organization
-Feature-specific code is organized to keep related logic together.
--   **Components**: Reusable components like `tab-navigation` are placed in `resources/views/components/common/`.
+### 2. Permissions (RBAC)
+- Fine-grained Role-Based Access Control using **Spatie Laravel Permission**.
+- Predefined system roles (Super Admin) and granular capabilities (e.g., `document.view.assigned`).
 
-### Data Flow
-1.  **Request**: User interacts with the UI.
-2.  **Livewire**: Intercepts the interaction and sends an AJAX request to the server.
-3.  **Component Logic**: The PHP component processes the request, updates properties, or performs database actions.
-4.  **Render**: The component re-renders the blade view with new data.
-5.  **DOM Update**: Livewire intelligently interprets the HTML diff and updates the DOM.
+### 3. Database Security
+- **Audit Traceability**: Every security event is logged to an **immutable** `audit_logs` table (PostgreSQL triggers prevent UPDATE/DELETE).
+- **Download Traceability**: Every document download is logged with a unique watermark UUID and IP address.
+- **Data Integrity**: Enforced via foreign key constraints, unique indexes, and SHA-256 file hashing.
+
+### 4. RAG Pipeline
+- Document content is chunked and vectorized using `pgvector`.
+- Semantic search allows users to query documents using natural language.
+- Permission-aware retrieval ensures users only "see" chunks they are authorized to access.

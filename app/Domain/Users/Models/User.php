@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace App\Domain\Users\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
 class User extends Authenticatable
 {
-    use Notifiable;
+    use HasFactory, Notifiable;
 
     protected $table = 'users';
 
@@ -38,5 +40,9 @@ class User extends Authenticatable
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];
-}
 
+    protected static function newFactory(): Factory
+    {
+        return \Database\Factories\UserFactory::new();
+    }
+}

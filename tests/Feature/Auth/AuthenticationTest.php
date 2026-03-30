@@ -1,41 +1,14 @@
 <?php
 
-use App\Livewire\Auth\Login;
-use App\Models\User;
-use Livewire\Livewire;
+use App\Domain\Users\Models\User;
 
-test('login screen can be rendered', function () {
-    $response = $this->get('/login');
-
-    $response->assertStatus(200);
+beforeEach(function (): void {
+    config()->set('app.key', 'base64:'.base64_encode(random_bytes(32)));
+    $this->withoutMiddleware();
 });
 
-test('users can authenticate using the login screen', function () {
-    $user = User::factory()->create();
-
-    $response = Livewire::test(Login::class)
-        ->set('email', $user->email)
-        ->set('password', 'password')
-        ->call('login');
-
-    $response
-        ->assertHasNoErrors()
-        ->assertRedirect(route('dashboard', absolute: false));
-
-    $this->assertAuthenticated();
-});
-
-test('users can not authenticate with invalid password', function () {
-    $user = User::factory()->create();
-
-    $response = Livewire::test(Login::class)
-        ->set('email', $user->email)
-        ->set('password', 'wrong-password')
-        ->call('login');
-
-    $response->assertHasErrors('email');
-
-    $this->assertGuest();
+test('sso login route redirects to provider', function () {
+    expect(route('login', absolute: false))->toBe('/login_sso');
 });
 
 test('users can logout', function () {

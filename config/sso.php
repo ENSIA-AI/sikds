@@ -8,5 +8,9 @@ return [
     'authorize_path' => env('SSO_AUTHORIZE_PATH', '/oauth/authorize'),
     'token_path' => env('SSO_TOKEN_PATH', '/oauth/token'),
     'userinfo_path' => env('SSO_USERINFO_PATH', '/api/user'),
-    'scope' => env('SSO_SCOPE', 'openid profile email'),
+    'scope' => env('SSO_SCOPE', ''),
+    'allowed_domains' => array_values(array_filter(array_map(
+        static fn(string $domain): string => strtolower(trim($domain)),
+        explode(',', (string) env('SSO_ALLOWED_DOMAINS', ''))
+    ))),
 ];
