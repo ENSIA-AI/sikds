@@ -19,7 +19,6 @@ This guide covers everything a developer needs to set up the project locally fro
 > ```bash
 > php --version
 > ```
-> If your system PHP is older, download PHP 8.3 and use its full path for all `php artisan` commands throughout this guide.
 
 ---
 
@@ -55,7 +54,12 @@ Open `.env` and review the following:
 
 ### 5. Start Docker services
 
-The project requires three services running in Docker: PostgreSQL, Redis, and MinIO.
+Docker Compose starts **PostgreSQL**, **Redis**, and **Mailpit** (see `compose.yaml`). The Laravel app itself runs on your machine (`php artisan serve`); containers only provide dependencies.
+
+**Mailpit** catches outgoing mail in development: point Laravel’s mailer at SMTP **127.0.0.1:1025** and open **http://localhost:8025** to read captured emails (no real messages are sent).
+
+**MinIO** (S3-compatible object storage for documents) is **not set up in Docker yet**. It will be added when document upload/storage is wired to the app. Until then, local dev does not run a MinIO container.
+
 ```bash
 docker compose up -d
 ```
@@ -64,7 +68,7 @@ docker compose up -d
 |---------|-------------|------|
 | PostgreSQL 17 + pgvector | Primary database | 5433 |
 | Redis | Queue and cache | 6379 |
-| MinIO | Object storage for documents | 9000 (console: 8900) |
+| Mailpit | Dev mail inbox (SMTP + web UI) | 1025 (SMTP), **8025** (dashboard) |
 
 To verify all containers are running:
 ```bash
@@ -119,19 +123,7 @@ The system uses SSO authentication in production. For local development, a local
 
 > ⚠️ This account and the local login form exist for development only. In production all authentication goes through the ministry SSO.
 
----
-
-## Database Browser (pgAdmin)
-
-To inspect the database visually, connect pgAdmin with:
-
-| Field | Value |
-|-------|-------|
-| Host | 127.0.0.1 |
-| Port | 5433 |
-| Database | sikds |
-| Username | sikds_user |
-| Password | 8!XpLq2@RmZ7VtK |
+Will share the .ENV file with all creds once development starts 
 
 ---
 

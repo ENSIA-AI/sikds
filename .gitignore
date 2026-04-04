@@ -39,5 +39,6 @@ Thumbs.db
 
 .env.local
 .env.testing
-/database/seeders/*
-/database/migrations/*
+# /database/seeders/*
+# /database/migrations/*
+#Needed for db initial setup 

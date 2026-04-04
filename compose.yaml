@@ -24,14 +24,12 @@ services:
         depends_on:
             - pgsql
             - redis
-            - mailpit
-            - memcached
     pgsql:
         image: 'pgvector/pgvector:pg17-trixie'
         ports:
-            - '${FORWARD_DB_PORT:-5432}:5432'
+            - '${FORWARD_DB_PORT:-5433}:5432'
         environment:
-            PGPASSWORD: '${DB_PASSWORD:-secret}'
+            PGPASSWORD: '${DB_PASSWORD}'
             POSTGRES_DB: '${DB_DATABASE}'
             POSTGRES_USER: '${DB_USERNAME}'
             POSTGRES_PASSWORD: '${DB_PASSWORD:-secret}'
@@ -73,17 +71,11 @@ services:
             - '${FORWARD_MAILPIT_DASHBOARD_PORT:-8025}:8025'
         networks:
             - sail
-    memcached:
-        image: 'memcached:alpine'
-        ports:
-            - '${FORWARD_MEMCACHED_PORT:-11211}:11211'
-        networks:
-            - sail
 networks:
     sail:
         driver: bridge
 volumes:
     sikds_postgres_data:
-        external: true
+        driver: local
     sail-redis:
         driver: local
