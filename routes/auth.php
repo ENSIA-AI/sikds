@@ -2,6 +2,7 @@
 
 use App\Domain\Users\Exceptions\SsoAuthenticationException;
 use App\Domain\Users\Services\SsoService;
+use App\Http\Controllers\Auth\LocalLoginController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Session;
@@ -50,3 +51,9 @@ Route::get('/user', function () {
         'full_name' => Auth::user()->full_name,
     ]);
 })->name('user');
+
+// Local development login — not available in production
+if (app()->environment('local')) {
+    Route::get('/login/local', [LocalLoginController::class, 'showLoginForm'])->name('login.local');
+    Route::post('/login/local', [LocalLoginController::class, 'login'])->name('login.local.post');
+}
