@@ -1,10 +1,10 @@
 <?php
 
 use App\Domain\Users\Models\User;
+use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 
 beforeEach(function (): void {
     config()->set('app.key', 'base64:'.base64_encode(random_bytes(32)));
-    $this->withoutMiddleware();
     $this->withoutVite();
 });
 
@@ -13,7 +13,7 @@ test('login page route is registered', function () {
 });
 
 test('sso redirect route points to oauth entry', function () {
-    expect(route('sso.redirect', absolute: false))->toBe('/login_sso');
+    expect(route('sso.redirect', absolute: false))->toBe('/auth/redirect');
 });
 
 test('login page renders for guests', function () {
@@ -24,6 +24,8 @@ test('login page renders for guests', function () {
 });
 
 test('users can logout', function () {
+    $this->withoutMiddleware(PreventRequestForgery::class);
+
     $user = User::factory()->create();
 
     $response = $this->actingAs($user)->post('/logout');

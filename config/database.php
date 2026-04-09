@@ -16,7 +16,7 @@ return [
     |
     */
 
-    'default' => env('DB_CONNECTION', 'sqlite'),
+    'default' => env('DB_CONNECTION', 'pgsql'),
 
     /*
     |--------------------------------------------------------------------------
@@ -85,17 +85,8 @@ return [
         'pgsql' => [
             'driver' => 'pgsql',
             'url' => env('DB_URL'),
-            'read' => [
-                'host' => env('DB_READ_HOST', '127.0.0.1'), // Often the same host as write for same-server setup
-                'port' => env('DB_READ_PORT', '5433'), // The port for your read replica instance
-            ],
-
-            'write' => [
-                'host' => env('DB_WRITE_HOST', '127.0.0.1'), // The host for your primary (write) instance
-                'port' => env('DB_WRITE_PORT', '5432'), // The port for your primary (write) instance
-            ],
-            // 'host' => env('DB_HOST', '127.0.0.1'),
-            // 'port' => env('DB_PORT', '5432'),
+            'host' => env('DB_HOST', '127.0.0.1'),
+            'port' => env('DB_PORT', '5432'),
             'database' => env('DB_DATABASE', 'laravel'),
             'username' => env('DB_USERNAME', 'root'),
             'password' => env('DB_PASSWORD', ''),
@@ -119,19 +110,6 @@ return [
             'prefix_indexes' => true,
             // 'encrypt' => env('DB_ENCRYPT', 'yes'),
             // 'trust_server_certificate' => env('DB_TRUST_SERVER_CERTIFICATE', 'false'),
-        ],
-        'pgsql_adms_external' => [
-            'driver' => 'pgsql',
-            'host' => env('ADMS_DB_HOST', '127.0.0.1'),
-            'port' => env('ADMS_DB_PORT', '5432'),
-            'database' => env('ADMS_DB_DATABASE', 'forge'),
-            'username' => env('ADMS_DB_USERNAME', 'forge'),
-            'password' => env('ADMS_DB_PASSWORD', ''),
-            'charset' => 'utf8',
-            'prefix' => '',
-            'prefix_indexes' => true,
-            'schema' => 'public',
-            'sslmode' => 'prefer',
         ],
 
     ],
@@ -165,7 +143,7 @@ return [
 
     'redis' => [
 
-        'client' => env('REDIS_CLIENT', 'phpredis'),
+        'client' => env('REDIS_CLIENT', 'predis'),
 
         'options' => [
             'cluster' => env('REDIS_CLUSTER', 'redis'),

@@ -19,11 +19,11 @@ Route::get('/login', function () {
     return view('auth.login-minimal');
 })->name('login');
 
-Route::get('/login_sso', function (SsoService $ssoService) {
+Route::get('/auth/redirect', function (SsoService $ssoService) {
     return $ssoService->redirectToProvider(request());
 })->name('sso.redirect');
 
-Route::get('/callback', function (SsoService $ssoService) {
+Route::get('/auth/callback', function (SsoService $ssoService) {
     try {
         $ssoService->handleCallback(request());
 
@@ -37,7 +37,7 @@ Route::get('/callback', function (SsoService $ssoService) {
 
         return redirect()->route('login')->with('error', 'Unexpected authentication error. Please try again.');
     }
-});
+})->name('sso.callback');
 
 Route::get('/user', function () {
     if (!Auth::check()) {

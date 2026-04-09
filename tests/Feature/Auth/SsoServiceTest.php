@@ -13,10 +13,10 @@ test('redirect to provider excludes scope when scope is empty', function () {
     config()->set('sso.server', 'https://accounts.mesrs.dz');
     config()->set('sso.authorize_path', '/oauth/authorize');
     config()->set('sso.client_id', 'test-client-id');
-    config()->set('sso.redirect_uri', 'http://sikds.test/callback');
+    config()->set('sso.redirect_uri', 'http://sikds.test/auth/callback');
     config()->set('sso.scope', '');
 
-    $request = Request::create('/login_sso', 'GET');
+    $request = Request::create('/auth/redirect', 'GET');
     $request->setLaravelSession(app('session')->driver());
 
     $response = (new SsoService())->redirectToProvider($request);
@@ -24,13 +24,15 @@ test('redirect to provider excludes scope when scope is empty', function () {
 
     expect($location)->toStartWith('https://accounts.mesrs.dz/oauth/authorize?');
     expect($location)->toContain('client_id=test-client-id');
-    expect($location)->toContain('redirect_uri=http%3A%2F%2Fsikds.test%2Fcallback');
+    expect($location)->toContain('redirect_uri=http%3A%2F%2Fsikds.test%2Fauth%2Fcallback');
     expect($location)->toContain('response_type=code');
     expect($location)->toContain('state=');
     expect($location)->not->toContain('scope=');
 });
 
 test('normalize profile uses nom_utilisateur as unique user id', function () {
+    config()->set('sso.allowed_domains', ['mesrs.dz']);
+
     $service = new SsoService();
     $method = new ReflectionMethod(SsoService::class, 'normalizeProfile');
     $method->setAccessible(true);

@@ -122,18 +122,37 @@ class SsoService
 
     private function exchangeAuthorizationCode(string $code): Response
     {
+        $tokenUrl = $this->buildUrl(config('sso.token_path'));
+        $payload = [
+            'grant_type' => 'authorization_code',
+            'client_id' => config('sso.client_id'),
+            'client_secret' => config('sso.client_secret'),
+            'redirect_uri' => config('sso.redirect_uri'),
+            'code' => $code,
+        ];
+
         try {
             $response = Http::asForm()
                 ->timeout(10)
-                ->post($this->buildUrl(config('sso.token_path')), [
-                    'grant_type' => 'authorization_code',
-                    'client_id' => config('sso.client_id'),
-                    'client_secret' => config('sso.client_secret'),
-                    'redirect_uri' => config('sso.redirect_uri'),
-                    'code' => $code,
-                ]);
+                ->post($tokenUrl, $payload);
         } catch (Throwable $e) {
             throw new SsoAuthenticationException('SSO token exchange failed.', previous: $e);
+        }
+
+        // Some OAuth servers require client auth via HTTP Basic instead of body params.
+        if (! $response->successful() && data_get($response->json(), 'error') === 'invalid_client') {
+            try {
+                $response = Http::asForm()
+                    ->withBasicAuth((string) config('sso.client_id'), (string) config('sso.client_secret'))
+                    ->timeout(10)
+                    ->post($tokenUrl, [
+                        'grant_type' => 'authorization_code',
+                        'redirect_uri' => config('sso.redirect_uri'),
+                        'code' => $code,
+                    ]);
+            } catch (Throwable $e) {
+                throw new SsoAuthenticationException('SSO token exchange failed.', previous: $e);
+            }
         }
 
         if (!$response->successful()) {

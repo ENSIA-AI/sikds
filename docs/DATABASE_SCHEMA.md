@@ -77,6 +77,8 @@ CREATE INDEX idx_users_email_active ON users (email, is_active);
 
 ## 2. Permissions-Based Access Control (RBAC)
 
+**Implementation (Spatie Laravel Permission):** The database uses Spatie’s table names: `role_has_permissions` (logical equivalent of `role_permissions` below) and `model_has_roles` (logical equivalent of `user_roles`, with polymorphic `model_type` / `model_id` pointing at `users`). Spatie’s `permissions.name` is populated with the same value as `code` for compatibility with `HasRoles` / `syncPermissions()`. The `guard_name` column (typically `web`) is required by Spatie and is not shown in the SRS-oriented snippets below.
+
 ### 2.1 Permissions Table
 
 ```sql
@@ -158,7 +160,7 @@ CREATE TABLE documents (
     description TEXT,
 
     -- File info
-    file_path VARCHAR(500) NOT NULL, -- MinIO object path
+    file_path VARCHAR(500) NOT NULL, -- SeaweedFS S3 object path
     file_hash VARCHAR(64) NOT NULL, -- SHA-256
     file_size BIGINT NOT NULL, -- bytes
 

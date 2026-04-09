@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
@@ -9,12 +11,10 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $this->call([
-            InstitutionsTableSeeder::class,
-            PermissionsTableSeeder::class,
-            RolesTableSeeder::class,
-            PredefinedTagsSeeder::class,
-            SuperAdminUserSeeder::class,
-            RolePermissionAndUserRoleSeeder::class,
+            InstitutionsSeeder::class,
+            PermissionsSeeder::class,
+            RolesSeeder::class,
+            TagsSeeder::class,
         ]);
     }
 }

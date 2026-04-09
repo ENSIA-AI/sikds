@@ -1,0 +1,135 @@
+# SIKDS standard team stack: run APP + SERVICES in Docker.
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+    container_name: sikds-app
+    restart: unless-stopped
+    working_dir: /var/www/html
+    volumes:
+      - .:/var/www/html
+    ports:
+      - "${APP_PORT:-80}:8000"
+    environment:
+      APP_ENV: ${APP_ENV:-local}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: >
+      sh -c "test -d vendor || composer install --no-interaction --prefer-dist
+      && php artisan serve --host=0.0.0.0 --port=8000"
+    networks:
+      - sikds
+
+  postgres:
+    image: pgvector/pgvector:pg18
+    container_name: sikds-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_DATABASE:-sikds}
+      POSTGRES_USER: ${DB_USERNAME:-sikds}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-secret}
+    volumes:
+      - sikds_postgres:/var/lib/postgresql
+      - ./docker/postgres/init:/docker-entrypoint-initdb.d:ro
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-sikds} -d ${DB_DATABASE:-sikds}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - sikds
+
+  redis:
+    image: redis:8.6-alpine
+    container_name: sikds-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    volumes:
+      - sikds_redis:/data
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    networks:
+      - sikds
+
+  seaweed-master:
+    image: chrislusf/seaweedfs:4.02
+    container_name: sikds-seaweed-master
+    restart: unless-stopped
+    command: "master -ip=seaweed-master -mdir=/data -defaultReplication=000"
+    volumes:
+      - sikds_seaweed_master:/data
+    ports:
+      - "${SEAWEED_MASTER_PORT:-9333}:9333"
+    networks:
+      - sikds
+
+  seaweed-volume:
+    image: chrislusf/seaweedfs:4.02
+    container_name: sikds-seaweed-volume
+    restart: unless-stopped
+    command: "volume -mserver=seaweed-master:9333 -port=8080 -dir=/data"
+    volumes:
+      - sikds_seaweed_volume:/data
+    depends_on:
+      - seaweed-master
+    ports:
+      - "${SEAWEED_VOLUME_PORT:-18080}:8080"
+    networks:
+      - sikds
+
+  seaweed-filer:
+    image: chrislusf/seaweedfs:4.02
+    container_name: sikds-seaweed-filer
+    restart: unless-stopped
+    command: "filer -master=seaweed-master:9333 -port=8888"
+    depends_on:
+      - seaweed-master
+      - seaweed-volume
+    ports:
+      - "${SEAWEED_FILER_PORT:-18888}:8888"
+    networks:
+      - sikds
+
+  seaweed-s3:
+    image: chrislusf/seaweedfs:4.02
+    container_name: sikds-seaweed-s3
+    restart: unless-stopped
+    command: "s3 -filer=seaweed-filer:8888 -port=8333"
+    depends_on:
+      - seaweed-filer
+    ports:
+      - "${SEAWEED_S3_PORT:-8333}:8333"
+    networks:
+      - sikds
+
+  mailpit:
+    image: axllent/mailpit:v1.27.8
+    container_name: sikds-mailpit
+    restart: unless-stopped
+    ports:
+      - "${MAILPIT_UI_PORT:-8025}:8025"
+      - "${MAILPIT_SMTP_PORT:-1025}:1025"
+    networks:
+      - sikds
+
+volumes:
+  sikds_postgres:
+  sikds_redis:
+  sikds_seaweed_master:
+  sikds_seaweed_volume:
+
+networks:
+  sikds:
+    driver: bridge

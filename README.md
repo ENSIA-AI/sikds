@@ -1,145 +1,109 @@
-# SIKDS: Secure Institutional Knowledge & Distribution System
+# Project Overview
 
-**SRS Reference:** [docs/SIKDS_SRS.pdf](docs/SIKDS_SRS.pdf)
+SIKDS (Secure Institutional Knowledge & Distribution System) is the ministry platform used to distribute official documents to institutions, enforce role-based access control, and provide secure search/RAG-ready indexing over institutional content with complete traceability.
 
-A centralized platform for the secure distribution of official ministry documents to subordinate institutions (universities), with integrated **Retrieval-Augmented Generation (RAG)** for semantic search and question-answering.
+# Tech Stack
 
----
+| Layer | Technology | Version |
+|---|---|---|
+| Framework | Laravel | 13 |
+| Language | PHP | 8.3 |
+| Database | PostgreSQL + pgvector | 18 + 0.8.2 |
+| Cache & Queue | Redis | 8.6 |
+| Object Storage | SeaweedFS | 4.02 |
+| Frontend | Tailwind CSS + Alpine.js | 4.2 + 3.15 |
+| Queue Monitor | Laravel Horizon | latest |
+| AI / RAG | Laravel AI SDK (Prism) | latest |
 
-## Purpose & Scope
+# Prerequisites
 
-SIKDS addresses fragmented document distribution (email, physical delivery, ad-hoc uploads) by providing:
+- Docker Desktop
+- Git
 
-| Goal | Solution |
-|------|----------|
-| **Centralized distribution** | Single source of truth for official directives |
-| **Accountability** | Watermarking and audit trails for every document access |
-| **Intelligence** | RAG-powered semantic search (no manual archive digging) |
-| **Security** | Permissions-based access control and comprehensive audit logging |
+# Setup — Step by Step
 
-**In scope:**
-
-- Secure document upload and storage and watermarking.
-- User authentication and permissions-based access control
-- Document vectorization and RAG (semantic search & Q&A)
-
----
-
-## System Architecture (High-Level)
-
-```
-+-------------------------------------------------------------+
-| SIKDS Platform                                              |
-+-------------------------------------------------------------+
-| Presentation Layer                                          |
-|   Web Interface (Laravel Blade + Tailwind CSS) | Admin UI   |
-+-------------------------------------------------------------+
-| Application Layer                                           |
-|   Auth & SSO | Document Mgmt | Watermarking | RAG | Notifs  |
-+-------------------------------------------------------------+
-| AI/ML Layer (Laravel AI SDK, Queue Jobs)                    |
-|   Chunking, OCR | Embeddings | pgvector | LLM Query         |
-+-------------------------------------------------------------+
-| Data Layer                                                  |
-|   PostgreSQL (pgvector) | Redis | MinIO (S3-compatible)     |
-+-------------------------------------------------------------+
-```
-
-## Technology Stack
-
-| Layer | Technology |
-|-------|------------|
-| **Core** | Laravel 12 (PHP 8.3), Blade, Tailwind CSS 3.4+, Alpine.js 3.15 |
-| **Auth** | Laravel Sanctum; Spatie Laravel Permission |
-| **AI/RAG** | Laravel AI SDK (Prism); pgvector; ministry-hosted LLM |
-| **Data** | PostgreSQL 17 + pgvector 0.7; Redis 8.6 (queue, cache, sessions); MinIO (S3-compatible storage) |
-| **Watermarking** | PHP PDF (XMP); FPDI (text overlay); Imagick (logo — extended release) |
-
----
-
-## Getting Started
-
-### Prerequisites
-
-- PHP 8.3+
-- Composer
-- Node.js & npm (for frontend assets)
-- PostgreSQL 17 with pgvector extension
-- Redis 8.6
-- MinIO
-
-## Installation
-
-1.  **Clone the repository**:
-    ```bash
-    git clone <https://github.com/ENSIA-AI/sikds>
-    cd sikds
-    ```
-
-2.  **Install PHP dependencies**:
-    ```bash
-    composer install
-    ```
-
-3.  **Install Node.js dependencies**:
-    ```bash
-    npm install
-    ```
-
-4.  **Environment Configuration**:
-    Copy the example environment file and configure your database settings:
-    ```bash
-    cp .env.example .env
-    php artisan key:generate
-    ```
-    *Update the `.env` file with your database credentials (DB_HOST, DB_DATABASE, DB_USERNAME, DB_PASSWORD).*
-
-5.  **Database Migration**:
-    Run the migrations to set up the database schema:
-    ```bash
-    php artisan migrate
-    ```
-
-6. **Queue worker** (for indexing and notifications)
-
+1. Clone the repository.
    ```bash
-   php artisan queue:work
+   git clone <repository-url>
+   cd sikds
    ```
 
-## Development
+2. Create local environment file.
+   ```bash
+   cp .env.example .env
+   ```
 
-To start the local development server, which runs both the Laravel server and Vite for asset bundling:
+3. Fill in required `.env` values.
+   - Mandatory for local dev:
+     - `DB_PASSWORD`
+     - `AWS_ACCESS_KEY_ID`
+     - `AWS_SECRET_ACCESS_KEY`
+    - `CLIENT_ID`
+    - `CLIENT_SECRET`
+   - Can stay default for local dev:
+     - `APP_*`, `DB_*` (except password), `REDIS_*`, `QUEUE_CONNECTION`, `CACHE_STORE`, `SESSION_DRIVER`
+     - `AWS_BUCKET`, `AWS_ENDPOINT`, `AWS_USE_PATH_STYLE_ENDPOINT`
+     - `MAIL_*`, `HORIZON_*`, `SEAWEED_*_PORT`
+
+4. Start all services.
+   ```bash
+   docker compose up -d
+   ```
+
+5. Generate app key.
+   ```bash
+   docker compose exec app php artisan key:generate
+   ```
+
+6. Run migrations.
+   ```bash
+   docker compose exec app php artisan migrate
+   ```
+
+7. Run production-safe seeders.
+   ```bash
+   docker compose exec app php artisan db:seed
+   ```
+
+8. Create local dev admin account.
+   ```bash
+   docker compose exec app php artisan db:seed --class=DevSeeder
+   ```
+
+9. Create storage symlink.
+   ```bash
+   docker compose exec app php artisan storage:link
+   ```
+
+10. Build frontend assets (Vite runs inside Docker).
+   ```bash
+   docker compose exec app npm install
+   docker compose exec app npm run dev
+   ```
+
+11. Open the app.
+   - http://localhost
+
+# Authentication
+
+## SSO Login
+
+SSO users authenticate through the ministry identity provider and are auto-provisioned on first successful login using their ministry email profile.
+
+## Dev Login
+
+Use `http://localhost/login/local` with `admin@mesrs.dz / password`. This route is enabled only when `APP_ENV=local`.
+
+# Queue & Horizon
 
 ```bash
-composer run dev
+docker compose exec app php artisan horizon
 ```
-*Alternatively, you can run them separately:*
+
+Visit `http://localhost/horizon` to monitor jobs. Access is restricted to Super Admin or users with `audit.view`.
+
+# Running Tests
+
 ```bash
-php artisan serve
-npm run dev
----
-
-## Documentation
-
-- **Software Requirements Specification (SRS):** [docs/SIKDS_SRS.pdf](docs/SIKDS_SRS.pdf)
-- **Contributing & conduct:** [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md)
-
----
-
-## Contributing
-
-We use **feature branches** and merge to `main` only at the end of each sprint. See [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) for:
-
-- GitHub workflow (e.g. `feature/user`, `feature/document-upload` → `dev` → `main`)
-- Clean code principles and expectations
-- How to open issues and submit changes
-
----
-
-## License
-
-See [LICENSE.md](LICENSE.md).
-
----
-
-*SIKDS: Secure Institutional Knowledge & Distribution System. Ministry of Higher Education and Scientific Research, People's Democratic Republic of Algeria.*
+docker compose exec app php artisan test
+```
