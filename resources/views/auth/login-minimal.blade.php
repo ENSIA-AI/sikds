@@ -10,12 +10,10 @@
 
 <div class="min-h-screen bg-gradient-to-br from-blue-900 via-blue-800 to-blue-900 flex items-center justify-center relative overflow-hidden">
 
-    {{-- Decorative background blobs --}}
     <div class="absolute top-0 left-0 w-96 h-96 bg-white rounded-full opacity-5 -translate-x-1/2 -translate-y-1/2"></div>
     <div class="absolute bottom-0 right-0 w-[32rem] h-[32rem] bg-white rounded-full opacity-5 translate-x-1/3 translate-y-1/3"></div>
     <div class="absolute top-1/2 left-1/4 w-64 h-64 bg-white rounded-full opacity-5"></div>
 
-    {{-- Language switcher --}}
     <div class="absolute top-4 right-6 flex items-center space-x-3">
         <a href="{{ route('changeLanguage', ['lang' => 'fr']) }}" class="text-white text-xs opacity-70 hover:opacity-100 transition-opacity">FR</a>
         <span class="text-white opacity-30 text-xs">|</span>
@@ -24,10 +22,8 @@
         <a href="{{ route('changeLanguage', ['lang' => 'en']) }}" class="text-white text-xs opacity-70 hover:opacity-100 transition-opacity">EN</a>
     </div>
 
-    {{-- Login card --}}
     <div class="relative z-10 bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 p-8">
 
-        {{-- Logo area --}}
         <div class="flex flex-col items-center mb-6">
             <div class="w-16 h-16 rounded-full bg-blue-900 flex items-center justify-center mb-4">
                 <span class="text-white font-bold text-sm tracking-wide">MESRS</span>
@@ -40,7 +36,12 @@
 
         <div class="border-t border-gray-100 mb-6"></div>
 
-        {{-- SSO button --}}
+        @if(session('error'))
+        <div class="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            {{ session('error') }}
+        </div>
+        @endif
+
         <div>
             <p class="text-xs text-gray-400 uppercase tracking-wider text-center mb-3">
                 Authentification institutionnelle
@@ -57,7 +58,6 @@
             </a>
         </div>
 
-        {{-- Local dev login — only visible in local environment --}}
         @if(app()->environment('local'))
         <div class="mt-6">
             <div class="relative">
@@ -75,9 +75,7 @@
                 @csrf
 
                 <div>
-                    <label for="email" class="block text-sm font-medium text-gray-600 mb-1">
-                        Email
-                    </label>
+                    <label for="email" class="block text-sm font-medium text-gray-600 mb-1">Email</label>
                     <input
                         id="email"
                         name="email"
@@ -92,9 +90,7 @@
                 </div>
 
                 <div>
-                    <label for="password" class="block text-sm font-medium text-gray-600 mb-1">
-                        Mot de passe
-                    </label>
+                    <label for="password" class="block text-sm font-medium text-gray-600 mb-1">Mot de passe</label>
                     <input
                         id="password"
                         name="password"
@@ -116,7 +112,6 @@
 
     </div>
 
-    {{-- Footer --}}
     <p class="absolute bottom-4 text-white text-xs opacity-40">
         © 2026 MESRS — Usage strictement institutionnel
     </p>
