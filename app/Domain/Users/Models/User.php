@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace App\Domain\Users\Models;
 
+use App\Domain\Institutions\Models\Institution;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Spatie\Permission\Traits\HasRoles;
@@ -61,6 +63,14 @@ class User extends Authenticatable
         }
 
         return mb_strtoupper(mb_substr($source, 0, min(2, mb_strlen($source))));
+    }
+
+    /**
+     * The institution this user belongs to.
+     */
+    public function institution(): BelongsTo
+    {
+        return $this->belongsTo(Institution::class, 'institution_id');
     }
 
     protected function fullName(): Attribute
