@@ -10,5 +10,5 @@ require __DIR__.'/auth.php';
 require __DIR__.'/functionalities.php';
 
 Route::get('/', function () {
-    return redirect()->route('login');
+    return view('welcome');
 })->name('home');

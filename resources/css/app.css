@@ -3,10 +3,11 @@
 @import 'tailwindcss';
 @import 'flowbite/src/themes/default';
 @import './custom.css';
+@import './sikds-dashboard.css';
 
 @plugin 'flowbite/plugin';
 
-@source '../views';
+@source '../views/**/*.blade.php';
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../node_modules/flowbite';
 

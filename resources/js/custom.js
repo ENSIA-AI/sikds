@@ -1,10 +1,9 @@
-window.addEventListener('success', function(e) {
-    console.log('Event received!', e.detail);
-});
-
+import $ from 'jquery';
 
 $(document).ready(function() {
-    $('#filiere').select2({
-        theme: 'tailwindcss-4',
-    });
+    if (document.getElementById('filiere')) {
+        $('#filiere').select2({
+            theme: 'tailwindcss-4',
+        });
+    }
 });
