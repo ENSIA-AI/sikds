@@ -200,6 +200,29 @@
         background-color: var(--sikds-primary);
     }
 
+    .sikds-header-notif {
+        display: grid;
+        place-items: center;
+        border-radius: 9999px;
+        height: 44px;
+        width: 44px;
+        flex-shrink: 0;
+        background-color: var(--sikds-primary);
+        color: #fff;
+        box-shadow: 0 2px 8px rgba(28, 57, 142, 0.28);
+    }
+
+    .sikds-header-notif-dot {
+        position: absolute;
+        right: -2px;
+        top: -2px;
+        height: 8px;
+        width: 8px;
+        border-radius: 9999px;
+        background-color: var(--sikds-fab-dot-color);
+        box-shadow: 0 0 0 2px var(--sikds-primary);
+    }
+
     @media (max-width: 1023.98px) {
         .sikds-menu-button { display: flex; }
         .sikds-profile      { display: none; }
@@ -296,9 +319,24 @@
         }
     }
 
+    .sikds-sidebar-logo-wrap {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding-top: 24px;
+        padding-bottom: 8px;
+    }
+
     .sikds-sidebar-logo {
         height: 54px;
         width:  54px;
+    }
+
+    .sikds-sidebar-logo--progres {
+        width: auto;
+        height: 42px;
+        max-width: 140px;
+        object-fit: contain;
     }
 
     .sikds-nav-link {

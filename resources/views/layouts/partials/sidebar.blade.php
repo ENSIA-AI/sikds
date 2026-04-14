@@ -28,8 +28,8 @@ $items = [
 
     <div class="flex h-full flex-col">
 
-        <div class="px-6 pt-8">
-            <img src="/shield.svg" alt="SIKDS" class="sikds-sidebar-logo">
+        <div class="sikds-sidebar-logo-wrap">
+            <img src="/favicon.svg" alt="Progres" class="sikds-sidebar-logo sikds-sidebar-logo--progres">
         </div>
 
         <nav class="mt-6 flex-1 space-y-1 overflow-y-auto px-4 pb-6" aria-label="Navigation principale">

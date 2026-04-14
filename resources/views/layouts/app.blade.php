@@ -48,6 +48,12 @@
                         <p class="sikds-user-role">Super Administrateur</p>
                         <p class="sikds-user-name">Nadia Benyahia</p>
                     </div>
+                    <a href="#" class="sikds-header-notif" aria-label="Notifications">
+                        <span class="relative inline-flex">
+                            <img src="/bell.svg" alt="" class="h-5 w-5">
+                            <span class="sikds-header-notif-dot" aria-hidden="true"></span>
+                        </span>
+                    </a>
                     <div class="sikds-avatar">
                         <img src="/person.svg" alt="Profil" class="h-5 w-5">
                     </div>

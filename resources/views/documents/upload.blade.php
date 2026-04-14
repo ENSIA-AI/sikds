@@ -250,13 +250,6 @@
 
 </div>
 
-<a href="#" class="sikds-fab" aria-label="Notifications">
-    <span class="relative inline-flex">
-        <img src="/bell.svg" alt="" class="h-5 w-5">
-        <span class="sikds-fab-dot" aria-hidden="true"></span>
-    </span>
-</a>
-
 <script>
 function uploadPage() {
     return {
