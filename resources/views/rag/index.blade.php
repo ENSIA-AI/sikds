@@ -10,7 +10,7 @@
             <textarea
                 id="rag-question"
                 rows="4"
-                placeholder="Posez votre question..."
+                placeholder="Posez une question précise sur le document (ex: « Quelles sont les exigences non fonctionnelles ? », « Quels acteurs existent ? », « Quel est le périmètre du système ? »)…"
                 class="w-full px-4 py-3 text-sm border border-black/10 rounded-[12px] focus:outline-none focus:ring-2 focus:ring-[color:var(--sikds-primary)]/30"
             ></textarea>
 
@@ -36,7 +36,7 @@
         </div>
         <div class="px-5 py-5">
             <div id="rag-refused" class="hidden text-sm px-4 py-3 rounded-[12px] border" style="border-color:rgba(0,0,0,.1);color:var(--sikds-muted);background:#fbfbfd;">
-                Désolé, je n’ai pas assez de contexte dans les documents autorisés pour répondre à cette question.
+                Désolé, je n’ai pas assez de contexte dans les documents indexés pour répondre à cette question. Essayez une question plus spécifique (avec un terme exact, une section, ou un acteur).
             </div>
             <div id="rag-answer" class="whitespace-pre-wrap text-sm leading-relaxed" style="color:var(--sikds-ink)"></div>
 
@@ -142,8 +142,11 @@
                         refusedEl.classList.remove('hidden');
                     }
 
-                    answerEl.textContent = String(answer);
+                    // Hide the sentinel token from the UI.
+                    answerEl.textContent = (String(answer).trim() === 'INSUFFICIENT_CONTEXT') ? '' : String(answer);
                     renderCitations(citations);
+                    sourcesEl.classList.toggle('hidden', citations.length === 0);
+                    sourcesOpen = citations.length > 0;
                 } catch (e) {
                     answerEl.textContent = 'Erreur lors de la requête. Veuillez réessayer.';
                 } finally {

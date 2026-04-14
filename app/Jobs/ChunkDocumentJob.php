@@ -27,11 +27,11 @@ class ChunkDocumentJob implements ShouldQueue
 
     public array $backoff = [30, 120, 300];
 
-    public string $queue = 'indexing';
-
     public function __construct(
         protected int $documentId,
-    ) {}
+    ) {
+        $this->onQueue('indexing');
+    }
 
     public function handle(DocumentChunker $chunker): void
     {
@@ -59,7 +59,7 @@ class ChunkDocumentJob implements ShouldQueue
                     'chunk_index' => (int) ($c['metadata']['chunk_index'] ?? 0),
                     'content' => (string) ($c['content'] ?? ''),
                     'token_count' => (int) ($c['token_count'] ?? 0),
-                    'metadata' => $c['metadata'] ?? [],
+                    'metadata' => json_encode($c['metadata'] ?? [], JSON_UNESCAPED_UNICODE),
                     'created_at' => now(),
                 ];
 

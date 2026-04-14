@@ -6,9 +6,10 @@ namespace App\Services\Rag;
 
 use App\Domain\Documents\Models\Document;
 use App\Domain\Users\Models\User;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
+use Prism\Prism\Facades\Prism;
+use Prism\Prism\Enums\Provider;
 
 /**
  * Orchestrates RAG: authorize docs → embed → vector search → rerank → LLM answer with citations.
@@ -109,6 +110,10 @@ class RagQueryService
             ->where('indexing_status', 'indexed')
             ->whereNull('deleted_at');
 
+        if (! (bool) config('rag.authorization.enforce', true)) {
+            return $q->pluck('id')->map(fn ($v) => (int) $v)->all();
+        }
+
         if ($user->can('document.view.all')) {
             return $q->pluck('id')->map(fn ($v) => (int) $v)->all();
         }
@@ -198,22 +203,16 @@ class RagQueryService
             . "If the context does not contain enough information to answer confidently,\n"
             . "respond with exactly: INSUFFICIENT_CONTEXT";
 
-        // Prism is installed in this repo (Laravel AI SDK via Prism).
-        if (class_exists(\Prism\Prism\Facades\PrismServer::class)) {
-            /** @var class-string $facade */
-            $facade = \Prism\Prism\Facades\PrismServer::class;
+        $provider = (string) env('PRISM_LLM_PROVIDER', 'groq');
+        $model = (string) env('PRISM_LLM_MODEL', 'llama-3.3-70b-versatile');
 
-            $result = $facade::chat()
-                ->system($system)
-                ->user("Question:\n{$question}\n\nContext:\n{$context}")
-                ->run();
+        $response = Prism::text()
+            ->using(Provider::from($provider), $model)
+            ->withSystemPrompt($system)
+            ->withPrompt("Question:\n{$question}\n\nContext:\n{$context}")
+            ->asText();
 
-            $text = method_exists($result, 'text') ? (string) $result->text() : (string) ($result->content ?? '');
-
-            return trim($text);
-        }
-
-        throw new RuntimeException('AI provider is not configured (PrismServer facade not available).');
+        return trim((string) $response->text);
     }
 
     /**

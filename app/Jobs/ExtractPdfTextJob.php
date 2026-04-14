@@ -26,11 +26,11 @@ class ExtractPdfTextJob implements ShouldQueue
 
     public array $backoff = [30, 120, 300];
 
-    public string $queue = 'indexing';
-
     public function __construct(
         protected int $documentId,
-    ) {}
+    ) {
+        $this->onQueue('indexing');
+    }
 
     public function handle(PdfTextExtractor $extractor): void
     {
@@ -44,11 +44,17 @@ class ExtractPdfTextJob implements ShouldQueue
 
         try {
             $pdfBytes = Storage::disk('s3')->get($document->file_path);
+            if (! is_string($pdfBytes) || $pdfBytes === '') {
+                throw new \RuntimeException('Failed to download PDF bytes from S3 for key: ' . $document->file_path);
+            }
 
             $tempFile = rtrim(sys_get_temp_dir(), DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR
                 . 'sikds_doc_' . $document->id . '_' . uniqid('', true) . '.pdf';
 
             file_put_contents($tempFile, $pdfBytes);
+            if (filesize($tempFile) === 0) {
+                throw new \RuntimeException('Downloaded PDF was empty after writing temp file for key: ' . $document->file_path);
+            }
 
             $pages = $extractor->extract($tempFile);
 

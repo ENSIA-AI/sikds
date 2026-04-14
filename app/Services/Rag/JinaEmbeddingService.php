@@ -43,18 +43,29 @@ class JinaEmbeddingService
         $apiKey = (string) config('rag.jina.api_key');
         $timeout = (int) config('rag.jina.timeout', 30);
 
+        $payload = [
+            'model' => (string) config('rag.embedding.model'),
+            'task' => $task,
+            'input' => array_values($texts),
+        ];
+
+        // Some Jina models reject an explicit "dimensions" field with HTTP 422.
+        // Let the API decide the default dimensions for the chosen model.
         $resp = Http::timeout($timeout)
             ->withToken($apiKey)
             ->acceptJson()
             ->post($baseUrl . '/embeddings', [
-                'model' => (string) config('rag.embedding.model'),
-                'dimensions' => (int) config('rag.embedding.dimensions'),
-                'task' => $task,
-                'input' => array_values($texts),
+                ...$payload,
             ]);
 
         if (! $resp->successful()) {
-            throw new RuntimeException('Jina embeddings request failed (HTTP ' . $resp->status() . ').');
+            $body = $resp->body();
+            $msg = 'Jina embeddings request failed (HTTP ' . $resp->status() . ').';
+            if (is_string($body) && trim($body) !== '') {
+                $msg .= ' Response: ' . mb_substr(trim($body), 0, 1500);
+            }
+
+            throw new RuntimeException($msg);
         }
 
         $json = $resp->json();

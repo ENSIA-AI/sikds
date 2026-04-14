@@ -26,11 +26,11 @@ class GenerateChunkEmbeddingsJob implements ShouldQueue
 
     public array $backoff = [30, 120, 300];
 
-    public string $queue = 'indexing';
-
     public function __construct(
         protected int $documentId,
-    ) {}
+    ) {
+        $this->onQueue('indexing');
+    }
 
     public function handle(JinaEmbeddingService $embeddings): void
     {
