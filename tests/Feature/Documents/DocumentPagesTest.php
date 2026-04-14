@@ -24,6 +24,31 @@ test('authenticated users can access the documents list page', function () {
     $response->assertSee('Téléverser un Document', false);
 });
 
+test('documents list filters by search query', function () {
+    $this->actingAs(User::factory()->create());
+
+    $response = $this->get(route('documents.index', ['q' => 'Budget Universitaire']));
+
+    $response->assertOk();
+    $response->assertSee('Décision Ministérielle sur le Budget Universitaire', false);
+    $response->assertDontSee('Rapport Annuel d\'Activité 2023', false);
+});
+
+test('documents list filters by date and status', function () {
+    $this->actingAs(User::factory()->create());
+
+    $response = $this->get(route('documents.index', [
+        'status' => ['active'],
+        'date_from' => '2024-03-11',
+        'date_to' => '2024-03-31',
+    ]));
+
+    $response->assertOk();
+    $response->assertSee('Directive MESRS – Réforme Pédagogique 2024', false);
+    $response->assertDontSee('Décision Ministérielle sur le Budget Universitaire', false);
+    $response->assertDontSee('Document Test Supprimé', false);
+});
+
 test('documents list includes show and edit links', function () {
     $this->actingAs(User::factory()->create());
 

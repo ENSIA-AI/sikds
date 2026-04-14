@@ -588,7 +588,7 @@
     }
 
     .sikds-docs-date-input {
-        width:      88px;
+        width:      120px;
         border:     0;
         background: transparent;
         font-size:  13px;
@@ -704,12 +704,16 @@
 
     .sikds-docs-filter-clear,
     .sikds-docs-filter-apply {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
         height: 32px;
         border-radius: 8px;
         font-size: 13px;
         font-weight: 500;
         padding: 0 12px;
         cursor: pointer;
+        text-decoration: none;
     }
 
     .sikds-docs-filter-clear {
