@@ -17,6 +17,12 @@ Route::middleware(['auth'])
         Route::get('/documents/upload', [DocumentsController::class, 'create'])
             ->name('documents.create');
 
+        Route::get('/documents/{document}/edit', [DocumentsController::class, 'edit'])
+            ->name('documents.edit');
+
+        Route::get('/documents/{document}', [DocumentsController::class, 'show'])
+            ->name('documents.show');
+
         // Document Download
         Route::get('/documents/{id}/download', [DownloadController::class, 'download'])
             ->name('documents.download');
