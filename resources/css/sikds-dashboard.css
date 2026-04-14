@@ -1094,21 +1094,15 @@
     }
 
     .sikds-upload-tag-chip {
-        border-radius: 9999px;
-        border: 1px solid rgba(0, 0, 0, 0.1);
-        background: rgba(236, 236, 240, 0.3);
-        color: #0a0a0a;
-        padding: 4px 11px;
-        font-size: 12px;
-        line-height: 16px;
-        font-weight: 500;
+        border: 1px solid transparent;
         cursor: pointer;
+        transition: box-shadow 0.15s, transform 0.15s, border-color 0.15s;
     }
 
     .sikds-upload-tag-chip--selected {
-        background: #1c398e;
-        border-color: #1c398e;
-        color: #fff;
+        border-color: rgba(30, 58, 138, 0.45);
+        box-shadow: 0 0 0 2px rgba(30, 58, 138, 0.2);
+        transform: translateY(-1px);
     }
 
     .sikds-upload-tags-custom {
@@ -1253,6 +1247,12 @@
         gap: 4px;
     }
 
+    .sikds-upload-stepper {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+    }
+
     .sikds-upload-dot {
         width: 6px;
         height: 6px;
@@ -1262,6 +1262,72 @@
 
     .sikds-upload-dot--active {
         background: #1d4ed8;
+    }
+
+    .sikds-upload-dot--disabled {
+        opacity: 0.35;
+        cursor: default;
+    }
+
+    .sikds-upload-next-btn {
+        height: 24px;
+        border: 1px solid rgba(0, 0, 0, 0.12);
+        border-radius: 8px;
+        background: #fff;
+        color: #4b5563;
+        font-size: 11px;
+        font-weight: 600;
+        line-height: 1;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 0 8px;
+        cursor: pointer;
+    }
+
+    .sikds-upload-next-btn:disabled {
+        opacity: 0.45;
+        cursor: default;
+    }
+
+    .sikds-upload-current-file {
+        margin-bottom: 12px;
+    }
+
+    .sikds-upload-current-file-inner {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 8px;
+        min-height: 30px;
+    }
+
+    .sikds-upload-current-file-step {
+        display: inline-flex;
+        align-items: center;
+        height: 24px;
+        padding: 0 10px;
+        border-radius: 999px;
+        background: rgba(30, 58, 138, 0.1);
+        color: #1e3a8a;
+        font-size: 12px;
+        font-weight: 600;
+        line-height: 16px;
+        white-space: nowrap;
+    }
+
+    .sikds-upload-current-file-name {
+        color: #0a0a0a;
+        font-size: 13px;
+        font-weight: 500;
+        line-height: 20px;
+        word-break: break-word;
+    }
+
+    .sikds-upload-current-file-empty {
+        color: #717182;
+        font-size: 12px;
+        line-height: 16px;
     }
 
     .sikds-upload-footer {

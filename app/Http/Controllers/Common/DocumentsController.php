@@ -13,13 +13,13 @@ class DocumentsController
         return view('documents.upload', [
             'activeNav' => 'documents',
             'availableTags' => [
-                'Directive',
-                'Urgente',
-                'Décision',
-                'Règlement',
-                'Rapport',
-                'Budget',
-                'Pédagogie',
+                ['label' => 'Directive', 'class' => 'sikds-tag--directive'],
+                ['label' => 'Urgente', 'class' => 'sikds-tag--urgent'],
+                ['label' => 'Décision', 'class' => 'sikds-tag--decision'],
+                ['label' => 'Règlement', 'class' => 'sikds-tag--reg'],
+                ['label' => 'Rapport', 'class' => 'sikds-tag--rapport'],
+                ['label' => 'Budget', 'class' => 'sikds-tag--decision'],
+                ['label' => 'Pédagogie', 'class' => 'sikds-tag--directive'],
             ],
         ]);
     }
