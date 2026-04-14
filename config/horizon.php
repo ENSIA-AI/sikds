@@ -210,6 +210,18 @@ return [
             'timeout' => 60,
             'nice' => 0,
         ],
+        'supervisor-indexing' => [
+            'connection' => 'redis',
+            'queue' => ['indexing'],
+            'balance' => 'simple',
+            'maxProcesses' => 2,
+            'maxTime' => 0,
+            'maxJobs' => 0,
+            'memory' => 256,
+            'tries' => 1,
+            'timeout' => 300,
+            'nice' => 0,
+        ],
     ],
 
     /*
@@ -223,17 +235,29 @@ return [
                 'balanceMaxShift' => 1,
                 'balanceCooldown' => 3,
             ],
+            'supervisor-indexing' => [
+                'maxProcesses' => 2,
+                'balance' => 'simple',
+            ],
         ],
 
         'local' => [
             'supervisor-1' => [
                 'maxProcesses' => 3,
             ],
+            'supervisor-indexing' => [
+                'maxProcesses' => 2,
+                'balance' => 'simple',
+            ],
         ],
 
         'testing' => [
             'supervisor-1' => [
                 'maxProcesses' => 1,
+            ],
+            'supervisor-indexing' => [
+                'maxProcesses' => 2,
+                'balance' => 'simple',
             ],
         ],
     ],
