@@ -3,6 +3,8 @@
 @section('page_subtitle', 'Gérer le cycle de vie des documents institutionnels')
 @section('content')
 
+    <div x-data="{ filtersOpen: false }" @keydown.escape.window="filtersOpen = false" class="relative">
+
     <div class="flex justify-end mb-5">
         <a href="{{ route('documents.create') }}" class="sikds-btn-upload">
             <i class="fa-solid fa-plus"></i>
@@ -24,10 +26,80 @@
                 <input type="text" value="2026/01/23" class="sikds-docs-date-input" readonly>
             </div>
 
-            <button type="button" class="sikds-docs-filter-btn">
-                <i class="fa-solid fa-filter"></i>
-                <span>Filtres</span>
-            </button>
+            <div class="sikds-docs-filter-wrap">
+                <button
+                    type="button"
+                    class="sikds-docs-filter-btn"
+                    @click="filtersOpen = !filtersOpen"
+                    :aria-expanded="filtersOpen.toString()"
+                    aria-haspopup="true"
+                >
+                    <i class="fa-solid fa-filter"></i>
+                    <span>Filtres</span>
+                    <i class="fa-solid fa-angle-down" :class="{ 'rotate-180': filtersOpen }"></i>
+                </button>
+
+                <div x-show="filtersOpen" x-transition.origin.top.right @click.outside="filtersOpen = false" class="sikds-docs-filter-panel" x-cloak>
+                    <div class="sikds-docs-filter-section">
+                        <p class="sikds-docs-filter-title">Statut</p>
+                        <div class="sikds-docs-filter-options">
+                            <label class="sikds-docs-filter-check">
+                                <input type="checkbox">
+                                <span class="sikds-status sikds-status--active">
+                                    <i class="fa-regular fa-circle-check sikds-status-icon"></i>
+                                    Actif
+                                </span>
+                            </label>
+                            <label class="sikds-docs-filter-check">
+                                <input type="checkbox">
+                                <span class="sikds-status sikds-status--draft">
+                                    <i class="fa-solid fa-gear sikds-status-icon"></i>
+                                    Brouillon
+                                </span>
+                            </label>
+                            <label class="sikds-docs-filter-check">
+                                <input type="checkbox">
+                                <span class="sikds-status sikds-status--archived">
+                                    <i class="fa-solid fa-box-archive sikds-status-icon"></i>
+                                    Archivé
+                                </span>
+                            </label>
+                            <label class="sikds-docs-filter-check">
+                                <input type="checkbox">
+                                <span class="sikds-status sikds-status--deleted">
+                                    <i class="fa-regular fa-circle-xmark sikds-status-icon"></i>
+                                    Supprimé
+                                </span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="sikds-docs-filter-section">
+                        <p class="sikds-docs-filter-title">Tags</p>
+                        <div class="sikds-docs-filter-tags">
+                            <label class="sikds-docs-filter-check"><input type="checkbox"><span class="sikds-tag sikds-tag--table sikds-tag--directive">Directive</span></label>
+                            <label class="sikds-docs-filter-check"><input type="checkbox"><span class="sikds-tag sikds-tag--table sikds-tag--urgent">Urgent</span></label>
+                            <label class="sikds-docs-filter-check"><input type="checkbox"><span class="sikds-tag sikds-tag--table sikds-tag--decision">Décision</span></label>
+                            <label class="sikds-docs-filter-check"><input type="checkbox"><span class="sikds-tag sikds-tag--table sikds-tag--reg">Règlement</span></label>
+                            <label class="sikds-docs-filter-check"><input type="checkbox"><span class="sikds-tag sikds-tag--table sikds-tag--rapport">Rapport</span></label>
+                        </div>
+                    </div>
+
+                    <div class="sikds-docs-filter-section">
+                        <p class="sikds-docs-filter-title">Public Cible</p>
+                        <div class="sikds-docs-filter-options sikds-docs-filter-options--plain">
+                            <label class="sikds-docs-filter-check"><input type="checkbox"><span>Toutes les institutions</span></label>
+                            <label class="sikds-docs-filter-check"><input type="checkbox"><span>Universités</span></label>
+                            <label class="sikds-docs-filter-check"><input type="checkbox"><span>Cabinet du Ministre</span></label>
+                        </div>
+                    </div>
+
+                    <div class="sikds-docs-filter-actions">
+                        <button type="button" class="sikds-docs-filter-clear">Réinitialiser</button>
+                        <button type="button" class="sikds-docs-filter-apply" @click="filtersOpen = false">Appliquer</button>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -144,5 +216,7 @@
             <span class="sikds-fab-dot" aria-hidden="true"></span>
         </span>
     </a>
+
+    </div>
 
 @endsection

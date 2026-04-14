@@ -623,11 +623,105 @@
     .sikds-docs-filter-btn i {
         font-size: 12px;
         color:     var(--sikds-muted);
+        transition: transform 0.15s;
     }
 
     .sikds-docs-filter-btn:hover {
         background:   var(--sikds-bg);
         border-color: rgba(0, 0, 0, 0.2);
+    }
+
+    .sikds-docs-filter-wrap {
+        position: relative;
+    }
+
+    .sikds-docs-filter-panel {
+        position: absolute;
+        top: calc(100% + 8px);
+        right: 0;
+        z-index: 25;
+        width: 360px;
+        max-width: min(92vw, 360px);
+        border: 1px solid var(--sikds-border-solid);
+        border-radius: var(--sikds-radius-md);
+        background: var(--sikds-surface);
+        box-shadow: var(--sikds-shadow-panel);
+        padding: 14px;
+    }
+
+    .sikds-docs-filter-section + .sikds-docs-filter-section {
+        margin-top: 12px;
+    }
+
+    .sikds-docs-filter-title {
+        margin: 0 0 8px;
+        font-size: 13px;
+        font-weight: 600;
+        line-height: 1.3;
+        color: var(--sikds-ink);
+    }
+
+    .sikds-docs-filter-options {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+    }
+
+    .sikds-docs-filter-options--plain {
+        grid-template-columns: 1fr;
+    }
+
+    .sikds-docs-filter-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .sikds-docs-filter-check {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 13px;
+        color: var(--sikds-ink);
+        cursor: pointer;
+    }
+
+    .sikds-docs-filter-check input[type='checkbox'] {
+        margin: 0;
+        width: 14px;
+        height: 14px;
+        accent-color: var(--sikds-primary);
+    }
+
+    .sikds-docs-filter-actions {
+        margin-top: 14px;
+        padding-top: 10px;
+        border-top: 1px solid var(--sikds-border-solid);
+        display: flex;
+        justify-content: flex-end;
+        gap: 8px;
+    }
+
+    .sikds-docs-filter-clear,
+    .sikds-docs-filter-apply {
+        height: 32px;
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 500;
+        padding: 0 12px;
+        cursor: pointer;
+    }
+
+    .sikds-docs-filter-clear {
+        border: 1px solid var(--sikds-border-solid);
+        background: var(--sikds-surface);
+        color: var(--sikds-muted);
+    }
+
+    .sikds-docs-filter-apply {
+        border: 0;
+        background: var(--sikds-primary);
+        color: #fff;
     }
 
     .sikds-docs-table-wrap {
