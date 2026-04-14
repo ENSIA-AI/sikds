@@ -37,6 +37,7 @@ Thumbs.db
 /public/hot
 /public/build
 
+secrets.txt
 .env.local
 .env.testing
 # /database/seeders/*

@@ -15,7 +15,7 @@ test('callback returns safe message on known sso authentication exception', func
             ->andThrow(new SsoAuthenticationException('internal detail'));
     });
 
-    $response = $this->get('/auth/callback?code=abc&state=123');
+    $response = $this->get('/callback?code=abc&state=123');
 
     $response->assertRedirect(route('login'));
     $response->assertSessionHas('error', 'SSO login failed. Please try again or contact support.');
@@ -28,7 +28,7 @@ test('callback returns generic safe message on unexpected exception', function (
             ->andThrow(new RuntimeException('sensitive database error'));
     });
 
-    $response = $this->get('/auth/callback?code=abc&state=123');
+    $response = $this->get('/callback?code=abc&state=123');
 
     $response->assertRedirect(route('login'));
     $response->assertSessionHas('error', 'Unexpected authentication error. Please try again.');

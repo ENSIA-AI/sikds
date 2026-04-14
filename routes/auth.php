@@ -23,7 +23,7 @@ Route::get('/auth/redirect', function (SsoService $ssoService) {
     return $ssoService->redirectToProvider(request());
 })->name('sso.redirect');
 
-Route::get('/auth/callback', function (SsoService $ssoService) {
+Route::get('/callback', function (SsoService $ssoService) {
     try {
         $ssoService->handleCallback(request());
 

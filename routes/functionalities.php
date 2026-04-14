@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Common\DashboardController;
+use App\Http\Controllers\Common\DocumentsController;
 use App\Http\Controllers\Web\DownloadController;
 use App\Http\Controllers\Web\WatermarkTraceabilityController;
 use Illuminate\Support\Facades\Route;
@@ -9,6 +10,9 @@ Route::middleware(['auth'])
     ->group(function () {
         Route::get('/dashboard', [DashboardController::class, 'index'])
             ->name('dashboard');
+
+        Route::get('/documents', [DocumentsController::class, 'index'])
+            ->name('documents.index');
 
         // Document Download
         Route::get('/documents/{id}/download', [DownloadController::class, 'download'])

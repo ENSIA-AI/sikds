@@ -1,7 +1,7 @@
 @php
 $items = [
     ['id' => 'dashboard',    'label' => 'Tableau de Bord',    'icon' => '/dashboard-blue.svg',   'icon_active' => '/dashboard-blue.svg',    'href' => route('dashboard')],
-    ['id' => 'documents',    'label' => 'Documents',           'icon' => '/document.svg',          'icon_active' => '/document-blue.svg',     'href' => '#'],
+    ['id' => 'documents',    'label' => 'Documents',           'icon' => '/document.svg',          'icon_active' => '/document-blue.svg',     'href' => route('documents.index')],
     ['id' => 'tags',         'label' => 'Tags',                'icon' => '/tags.svg',              'icon_active' => '/tags-blue.svg',         'href' => '#'],
     ['id' => 'distribution', 'label' => 'Distribution',        'icon' => '/distribution.svg',      'icon_active' => '/distribution-blue.svg', 'href' => '#'],
     ['id' => 'users',        'label' => 'Utilisateurs',        'icon' => '/people.svg',            'icon_active' => '/users-blue.svg',        'href' => '#'],
