@@ -1,0 +1,6 @@
+@layer components {
+
+    .sikds-ink        { color: var(--sikds-ink);   }
+    .sikds-muted-text { color: var(--sikds-muted); }
+
+}

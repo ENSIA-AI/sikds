@@ -1,0 +1,58 @@
+:root {
+    --sikds-primary:        #1c398e;
+    --sikds-sidebar-width:  249px;
+    --sikds-header-height:  102px;
+    --sikds-bg:             #f6f6f6;
+    --sikds-surface:        #ffffff;
+    --sikds-ink:            #0a0a0a;
+    --sikds-muted:          #717182;
+    --sikds-border:         rgba(0, 0, 0, 0.1);
+    --sikds-border-solid:   rgba(0, 0, 0, 0.1);
+
+    --sikds-shadow-card:    0 4px 19px rgba(0, 0, 0, 0.15);
+    --sikds-shadow-panel:   0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.1);
+    --sikds-shadow-nav:     0 4px 6px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.1);
+    --sikds-shadow-fab:     0 4px 14px rgba(28, 57, 142, 0.45);
+    --sikds-shadow-header:  0 4px 18px rgba(0, 0, 0, 0.05);
+
+    --sikds-radius-sm:      10px;
+    --sikds-radius-md:      14px;
+
+    --sikds-space-nav-item: 16px;
+    --sikds-space-card:     20px;
+    --sikds-space-panel-h:  16px;
+    --sikds-icon-size:      20px;
+
+    --sikds-danger-bg:      #fef2f2;
+    --sikds-danger-border:  #ffc9c9;
+    --sikds-warn-bg:        #fffbeb;
+    --sikds-warn-border:    #fee685;
+    --sikds-info-bg:        #eff6ff;
+    --sikds-info-border:    #bedbff;
+
+    --sikds-tag-directive-bg:   #dbeafe;
+    --sikds-tag-directive-text: #1447e6;
+    --sikds-tag-urgent-bg:      #fec7c9;
+    --sikds-tag-urgent-text:    #e7000b;
+    --sikds-tag-reg-bg:         #f3e8ff;
+    --sikds-tag-reg-text:       #8200db;
+    --sikds-tag-rapport-bg:     #fce7f3;
+    --sikds-tag-rapport-text:   #c6005c;
+    --sikds-tag-decision-bg:    #ffedd4;
+    --sikds-tag-decision-text:  #ca3500;
+
+    --sikds-trend-color:    #00a63e;
+    --sikds-fab-dot-color:  #e7000b;
+    --sikds-icon-bg:        #ececf0;
+    --sikds-footer-text:    #030213;
+
+    --sikds-hero-dark:        #00144e;
+    --sikds-primary-dark:     #15307a;
+    --sikds-primary-hover-bg: rgba(28, 57, 142, 0.05);
+    --sikds-sidebar-bg:       var(--sikds-primary);
+
+    --welcome-vec1-top:    #6f93ff;
+    --welcome-vec2-bottom: #04174e;
+    --welcome-ellipse:     #155dfc;
+}
+

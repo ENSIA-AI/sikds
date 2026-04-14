@@ -1,0 +1,171 @@
+@layer components {
+
+    .sikds-stat-card {
+        height:     161px;
+        @apply rounded-[10px] bg-white;
+        padding:    var(--sikds-space-card);
+        box-shadow: var(--sikds-shadow-card);
+    }
+
+    .sikds-stat-value {
+        font-size:   30px;
+        font-weight: 700;
+        line-height: 2.25rem;
+        color:       var(--sikds-ink);
+    }
+
+    .sikds-stat-label {
+        @apply text-sm;
+        color: var(--sikds-muted);
+    }
+
+    .sikds-trend {
+        @apply flex items-center gap-1 text-sm font-medium;
+        color: var(--sikds-trend-color);
+    }
+
+    .sikds-panel {
+        height:       429px;
+        background:   var(--sikds-surface);
+        @apply overflow-hidden rounded-[14px] border;
+        border-color: var(--sikds-border-solid);
+        box-shadow:   var(--sikds-shadow-panel);
+    }
+
+    .sikds-panel-title {
+        font-family: "Instrument Sans", ui-sans-serif, sans-serif;
+        font-size:   20px;
+        font-weight: 600;
+        line-height: 30px;
+        color:       var(--sikds-ink);
+    }
+
+    .sikds-panel-muted {
+        @apply mt-1 text-xs;
+        color: var(--sikds-muted);
+    }
+
+    .sikds-activity-icon-wrap {
+        @apply grid h-10 w-10 place-items-center rounded-[10px];
+        background-color: var(--sikds-icon-bg);
+    }
+
+    .sikds-link-footer {
+        @apply border-t px-4 py-4 text-sm font-medium;
+        border-color: var(--sikds-border-solid);
+        color:        var(--sikds-footer-text);
+    }
+
+    .sikds-alert {
+        border-radius: var(--sikds-radius-sm);
+        padding:       10px 12px;
+    }
+
+    .sikds-alert--danger {
+        background-color: var(--sikds-danger-bg);
+        border:           1px solid var(--sikds-danger-border);
+    }
+
+    .sikds-alert--warn {
+        background-color: var(--sikds-warn-bg);
+        border:           1px solid var(--sikds-warn-border);
+    }
+
+    .sikds-alert--info {
+        background-color: var(--sikds-info-bg);
+        border:           1px solid var(--sikds-info-border);
+    }
+
+    .sikds-alert-message {
+        display:     flex;
+        align-items: flex-start;
+        gap:         0.5rem;
+        font-size:   13px;
+        font-weight: 500;
+        line-height: 1.4;
+        color:       var(--sikds-ink);
+    }
+
+    .sikds-alert-time {
+        margin-top:  0.25rem;
+        padding-left: 1.5rem;
+        font-size:   11px;
+        color:       var(--sikds-muted);
+    }
+
+    .sikds-bottom-card {
+        height:       188px;
+        background:   var(--sikds-surface);
+        @apply rounded-[14px] border;
+        border-color: var(--sikds-border-solid);
+        padding:      24px;
+        box-shadow:   var(--sikds-shadow-panel);
+    }
+
+    .sikds-bottom-card h3 {
+        font-size:   18px;
+        font-weight: 600;
+        color:       var(--sikds-ink);
+    }
+
+    .sikds-tag {
+        @apply rounded-full px-3 py-1 text-xs font-medium;
+    }
+
+    .sikds-tag--directive {
+        background-color: var(--sikds-tag-directive-bg);
+        color:            var(--sikds-tag-directive-text);
+    }
+
+    .sikds-tag--urgent {
+        background-color: var(--sikds-tag-urgent-bg);
+        color:            var(--sikds-tag-urgent-text);
+    }
+
+    .sikds-tag--reg {
+        background-color: var(--sikds-tag-reg-bg);
+        color:            var(--sikds-tag-reg-text);
+    }
+
+    .sikds-tag--rapport {
+        background-color: var(--sikds-tag-rapport-bg);
+        color:            var(--sikds-tag-rapport-text);
+    }
+
+    .sikds-tag--decision {
+        background-color: var(--sikds-tag-decision-bg);
+        color:            var(--sikds-tag-decision-text);
+    }
+
+    .sikds-fab {
+        @apply fixed bottom-6 right-6 z-30 grid place-items-center rounded-full text-white;
+        height:           47px;
+        width:            47px;
+        background-color: var(--sikds-primary);
+        box-shadow:       var(--sikds-shadow-fab);
+    }
+
+    .sikds-fab-dot {
+        position:         absolute;
+        right:            -2px;
+        top:              -2px;
+        height:           8px;
+        width:            8px;
+        border-radius:    9999px;
+        background-color: var(--sikds-fab-dot-color);
+        box-shadow:       0 0 0 2px var(--sikds-primary);
+    }
+
+    .sikds-grid-panels {
+        margin-top: 26px;
+        display:    grid;
+        gap:        1.5rem;
+    }
+
+    @media (min-width: 1024px) {
+        .sikds-grid-panels {
+            grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+        }
+    }
+
+}
