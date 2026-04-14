@@ -94,9 +94,9 @@
                                             </a>
                                             @break
                                         @case('edit')
-                                            <button type="button" class="sikds-docs-action-btn" title="Modifier" aria-label="Modifier">
+                                            <a href="{{ route('documents.edit', $doc['reference']) }}" class="sikds-docs-action-btn" title="Modifier" aria-label="Modifier">
                                                 <i class="fa-regular fa-pen-to-square"></i>
-                                            </button>
+                                            </a>
                                             @break
                                         @case('download')
                                             <button type="button" class="sikds-docs-action-btn" title="Télécharger" aria-label="Télécharger">

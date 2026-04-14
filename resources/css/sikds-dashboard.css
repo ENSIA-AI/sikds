@@ -2097,4 +2097,288 @@
         color: #fff;
     }
 
+    /* Document edit page */
+    .sikds-doc-edit {
+        width: 100%;
+        max-width: 1096px;
+    }
+
+    .sikds-doc-edit-topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+    }
+
+    .sikds-doc-edit-top-actions {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .sikds-doc-edit-btn {
+        height: 37px;
+        border-radius: 8px;
+        border: 1px solid var(--sikds-border-solid);
+        padding: 0 12px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 14px;
+        line-height: 20px;
+        cursor: pointer;
+    }
+
+    .sikds-doc-edit-btn i {
+        font-size: 12px;
+    }
+
+    .sikds-doc-edit-btn--cancel {
+        background: var(--sikds-surface);
+        color: var(--sikds-ink);
+    }
+
+    .sikds-doc-edit-btn--save {
+        background: #030213;
+        border-color: #030213;
+        color: #fff;
+    }
+
+    .sikds-doc-edit-heading {
+        margin-top: 8px;
+        margin-bottom: 16px;
+    }
+
+    .sikds-doc-edit-title {
+        margin: 0;
+        font-size: 30px;
+        font-weight: 600;
+        line-height: 36px;
+        color: var(--sikds-ink);
+    }
+
+    .sikds-doc-edit-sub {
+        margin-top: 8px;
+        color: var(--sikds-muted);
+        font-size: 14px;
+        line-height: 20px;
+    }
+
+    .sikds-doc-edit-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+        gap: 16px;
+    }
+
+    @media (min-width: 1024px) {
+        .sikds-doc-edit-grid {
+            grid-template-columns: minmax(0, 691px) minmax(0, 333px);
+        }
+    }
+
+    .sikds-doc-edit-left,
+    .sikds-doc-edit-right {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .sikds-doc-edit-card {
+        background: var(--sikds-surface);
+        border: 1px solid var(--sikds-border-solid);
+        border-radius: var(--sikds-radius-md);
+        box-shadow: var(--sikds-shadow-panel);
+        padding: 16px;
+    }
+
+    .sikds-doc-edit-card-title {
+        margin: 0 0 12px;
+        font-size: 20px;
+        font-weight: 600;
+        line-height: 30px;
+        color: var(--sikds-ink);
+    }
+
+    .sikds-doc-edit-label {
+        display: block;
+        margin-bottom: 10px;
+    }
+
+    .sikds-doc-edit-label:last-child {
+        margin-bottom: 0;
+    }
+
+    .sikds-doc-edit-label > span {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 14px;
+        font-weight: 500;
+        line-height: 20px;
+        color: var(--sikds-ink);
+        margin-bottom: 8px;
+    }
+
+    .sikds-doc-edit-label > span i {
+        font-size: 12px;
+        color: var(--sikds-muted);
+    }
+
+    .sikds-doc-edit-input,
+    .sikds-doc-edit-textarea,
+    .sikds-doc-edit-select {
+        width: 100%;
+        border: 1px solid var(--sikds-border-solid);
+        border-radius: 8px;
+        background: var(--sikds-surface);
+        color: var(--sikds-ink);
+        font-size: 14px;
+        line-height: 20px;
+        padding: 10px 12px;
+        outline: none;
+    }
+
+    .sikds-doc-edit-textarea {
+        min-height: 84px;
+        resize: vertical;
+    }
+
+    .sikds-doc-edit-select-wrap {
+        position: relative;
+    }
+
+    .sikds-doc-edit-select-wrap i {
+        position: absolute;
+        right: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--sikds-muted);
+        pointer-events: none;
+        font-size: 12px;
+    }
+
+    .sikds-doc-edit-select {
+        appearance: none;
+        padding-right: 30px;
+    }
+
+    .sikds-doc-edit-dates-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 10px 12px;
+    }
+
+    @media (min-width: 640px) {
+        .sikds-doc-edit-dates-grid {
+            grid-template-columns: 1fr 1fr;
+        }
+    }
+
+    .sikds-doc-edit-tag-add {
+        margin-top: 12px;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 8px;
+        align-items: center;
+    }
+
+    .sikds-doc-edit-add-btn {
+        height: 32px;
+        border: 0;
+        border-radius: 8px;
+        background: #030213;
+        color: #fff;
+        padding: 0 14px;
+        font-size: 14px;
+        line-height: 20px;
+        cursor: pointer;
+    }
+
+    .sikds-doc-edit-meta-block {
+        margin-bottom: 10px;
+    }
+
+    .sikds-doc-edit-meta-block:last-child {
+        margin-bottom: 0;
+    }
+
+    .sikds-doc-edit-upload-zone {
+        width: 100%;
+        min-height: 98px;
+        border: 1px dashed var(--sikds-border-solid);
+        border-radius: 10px;
+        background: #f9fafb;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 2px;
+        color: var(--sikds-ink);
+        cursor: pointer;
+    }
+
+    .sikds-doc-edit-upload-zone i {
+        font-size: 24px;
+        color: var(--sikds-muted);
+        margin-bottom: 2px;
+    }
+
+    .sikds-doc-edit-upload-zone span {
+        font-size: 14px;
+        font-weight: 500;
+        line-height: 20px;
+    }
+
+    .sikds-doc-edit-upload-zone small {
+        font-size: 12px;
+        line-height: 16px;
+        color: var(--sikds-muted);
+    }
+
+    .sikds-doc-edit-info-alert {
+        margin-top: 8px;
+        border: 1px solid var(--sikds-info-border);
+        background: var(--sikds-info-bg);
+        border-radius: 8px;
+        padding: 8px 10px;
+        display: flex;
+        align-items: flex-start;
+        gap: 8px;
+        color: #1447e6;
+        font-size: 12px;
+        line-height: 14px;
+    }
+
+    .sikds-doc-edit-info-alert i {
+        font-size: 12px;
+        margin-top: 1px;
+    }
+
+    .sikds-doc-modal-actions a.sikds-doc-modal-btn {
+        text-decoration: none;
+    }
+
+    .sikds-doc-modal-actions--cancel-edit .sikds-doc-modal-btn {
+        height: 48px;
+        font-size: 14px;
+        line-height: 15px;
+        text-align: center;
+        padding: 0 14px;
+    }
+
+    .sikds-doc-modal-btn--keep-edit {
+        font-weight: 500;
+    }
+
+    .sikds-doc-modal-btn--discard {
+        font-weight: 500;
+    }
+
+    @media (max-width: 767.98px) {
+        .sikds-doc-edit-topbar {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+    }
+
 }

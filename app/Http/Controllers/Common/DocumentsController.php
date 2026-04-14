@@ -8,6 +8,16 @@ use Illuminate\View\View;
 
 class DocumentsController
 {
+    public function edit(string $document): View
+    {
+        $doc = $this->buildDocumentPayload();
+
+        return view('documents.edit', [
+            'activeNav' => 'documents',
+            'document'  => $doc,
+        ]);
+    }
+
     public function create(): View
     {
         return view('documents.upload', [
@@ -26,7 +36,18 @@ class DocumentsController
 
     public function show(string $document): View
     {
-        $doc = [
+        $doc = $this->buildDocumentPayload();
+
+        return view('documents.show', [
+            'activeNav' => 'documents',
+            'document'  => $doc,
+        ]);
+    }
+
+    private function buildDocumentPayload(): array
+    {
+        return [
+            'id'          => 'DOC-2024-001',
             'title'       => 'Circulaire MESRS - Réforme Pédagogique 2024',
             'reference'   => 'MESRS/DG/2024/045',
             'status'      => 'active',
@@ -37,58 +58,62 @@ class DocumentsController
                 ['label' => 'Pédagogie',  'class' => 'sikds-tag--directive'],
                 ['label' => 'Réforme',    'class' => 'sikds-tag--directive'],
             ],
-            'institution'    => 'MESRS',
-            'issue_date'     => '15 mars 2024',
-            'effective_date' => '1 avril 2024',
-            'expiry_date'    => '31 mars 2025',
-            'audience'       => 'Toutes les institutions',
-            'views'          => 234,
-            'downloads'      => 89,
-            'version'        => 'v2.1',
-            'file_name'      => 'circulaire-mesrs-2024-045.pdf',
-            'file_type'      => 'PDF',
-            'file_size'      => '2.4 MB',
-            'versions'       => [
+            'institution'      => 'MESRS',
+            'issue_date'       => '15 mars 2024',
+            'effective_date'   => '1 avril 2024',
+            'expiry_date'      => '31 mars 2025',
+            'audience'         => 'Toutes les institutions',
+            'views'            => 234,
+            'downloads'        => 89,
+            'version'          => 'v2.1',
+            'file_name'        => 'circulaire-mesrs-2024-045.pdf',
+            'file_type'        => 'PDF',
+            'file_size'        => '2.4 MB',
+            'edit_issue_date'  => '2026/01/23',
+            'edit_effect_date' => '2026/01/23',
+            'edit_expiry_date' => '2026/01/23',
+            'edit_status'      => 'Actif',
+            'versions'         => [
                 [
-                    'title'       => 'Version 2.1',
-                    'status'      => 'Actuelle',
+                    'title'        => 'Version 2.1',
+                    'status'       => 'Actuelle',
                     'status_class' => 'sikds-doc-pill--current',
-                    'meta'        => '28/03/2024 • 2.4 MB',
-                    'description' => "Corrections mineures sur les dates d'échéance",
+                    'meta'         => '28/03/2024 • 2.4 MB',
+                    'description'  => "Corrections mineures sur les dates d'échéance",
                 ],
                 [
-                    'title'       => 'Version 2.0',
-                    'status'      => null,
+                    'title'        => 'Version 2.0',
+                    'status'       => null,
                     'status_class' => null,
-                    'meta'        => '25/03/2024 • 2.3 MB',
-                    'description' => "Ajout de la section sur les modalités d'évaluation",
+                    'meta'         => '25/03/2024 • 2.3 MB',
+                    'description'  => "Ajout de la section sur les modalités d'évaluation",
                 ],
                 [
-                    'title'       => 'Version 1.0',
-                    'status'      => null,
+                    'title'        => 'Version 1.0',
+                    'status'       => null,
                     'status_class' => null,
-                    'meta'        => '20/03/2024 • 2.1 MB',
-                    'description' => 'Version initiale publiée',
+                    'meta'         => '20/03/2024 • 2.1 MB',
+                    'description'  => 'Version initiale publiée',
                 ],
             ],
             'download_history' => [
                 [
-                    'title'    => 'Téléchargement #1',
-                    'meta'     => 'Prof. Bennani Sara • s.bennani@uh2c.ac.dz • 28/03/2024',
-                    'uuid'     => 'WM-2024-7F8A9B3C',
+                    'title' => 'Téléchargement #1',
+                    'meta'  => 'Prof. Bennani Sara • s.bennani@uh2c.ac.dz • 28/03/2024',
+                    'uuid'  => 'WM-2024-7F8A9B3C',
                 ],
                 [
-                    'title'    => 'Téléchargement #2',
-                    'meta'     => 'Dr. Mansouri Laila • l.mansouri@enp.ac.dz • 28/03/2024',
-                    'uuid'     => 'WM-2024-5D3E2F1A',
+                    'title' => 'Téléchargement #2',
+                    'meta'  => 'Dr. Mansouri Laila • l.mansouri@enp.ac.dz • 28/03/2024',
+                    'uuid'  => 'WM-2024-5D3E2F1A',
                 ],
                 [
-                    'title'    => 'Téléchargement #3',
-                    'meta'     => 'Pr M. Chakri Mohamed • m.chakri@um5.ac.dz • 27/03/2024',
-                    'uuid'     => 'WM-2024-9B4C6E8D',
+                    'title' => 'Téléchargement #3',
+                    'meta'  => 'Pr M. Chakri Mohamed • m.chakri@um5.ac.dz • 27/03/2024',
+                    'uuid'  => 'WM-2024-9B4C6E8D',
                 ],
             ],
-            'activities'     => [
+            'activities'       => [
                 [
                     'title'      => 'Document téléchargé',
                     'meta'       => 'Prof. Bennani Sara • s.bennani@uh2c.ac.dz',
@@ -112,11 +137,6 @@ class DocumentsController
                 ],
             ],
         ];
-
-        return view('documents.show', [
-            'activeNav' => 'documents',
-            'document'  => $doc,
-        ]);
     }
 
     public function index(): View

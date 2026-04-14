@@ -17,10 +17,10 @@
                 <i class="fa-solid fa-download"></i>
                 <span>Télécharger</span>
             </button>
-            <button type="button" class="sikds-doc-action-btn sikds-doc-action-btn--default">
+            <a href="{{ route('documents.edit', $document['reference']) }}" class="sikds-doc-action-btn sikds-doc-action-btn--default">
                 <i class="fa-solid fa-pen"></i>
                 <span>Modifier</span>
-            </button>
+            </a>
             <button type="button" class="sikds-doc-action-btn sikds-doc-action-btn--warn" @click="modal = 'archive'">
                 <i class="fa-solid fa-box-archive"></i>
                 <span>Archiver</span>
