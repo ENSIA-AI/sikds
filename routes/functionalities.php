@@ -14,6 +14,9 @@ Route::middleware(['auth'])
         Route::get('/documents', [DocumentsController::class, 'index'])
             ->name('documents.index');
 
+        Route::get('/documents/upload', [DocumentsController::class, 'create'])
+            ->name('documents.create');
+
         // Document Download
         Route::get('/documents/{id}/download', [DownloadController::class, 'download'])
             ->name('documents.download');

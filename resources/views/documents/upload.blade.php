@@ -170,7 +170,7 @@
         </h3>
         <div class="sikds-upload-audience-options">
             <label class="sikds-upload-radio">
-                <input type="radio" name="audience" value="all" checked x-model="audience">
+                <input type="radio" name="audience" value="all" x-model="audience">
                 <span class="sikds-upload-radio-mark"></span>
                 <span class="sikds-upload-radio-content">
                     <span class="sikds-upload-radio-title">Toutes les institutions</span>
@@ -224,7 +224,7 @@ function uploadPage() {
         dragging: false,
         selectedTags: [],
         customTag: '',
-        audience: 'all',
+        audience: '',
         currentFileIdx: 0,
 
         toggleTag(tag) {

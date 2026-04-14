@@ -8,6 +8,22 @@ use Illuminate\View\View;
 
 class DocumentsController
 {
+    public function create(): View
+    {
+        return view('documents.upload', [
+            'activeNav' => 'documents',
+            'availableTags' => [
+                'Directive',
+                'Urgente',
+                'Décision',
+                'Règlement',
+                'Rapport',
+                'Budget',
+                'Pédagogie',
+            ],
+        ]);
+    }
+
     public function index(): View
     {
         return view('documents.index', [

@@ -4,10 +4,10 @@
 @section('content')
 
     <div class="flex justify-end mb-5">
-        <button type="button" class="sikds-btn-upload">
+        <a href="{{ route('documents.create') }}" class="sikds-btn-upload">
             <i class="fa-solid fa-plus"></i>
             <span>Téléverser un Document</span>
-        </button>
+        </a>
     </div>
 
     <div class="sikds-docs-toolbar">

@@ -860,4 +860,459 @@
         cursor:  default;
     }
 
+    /* Upload page */
+    .sikds-upload {
+        width: 100%;
+        max-width: 1048px;
+    }
+
+    .sikds-upload-back {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        color: #717182;
+        font-size: 14px;
+        font-weight: 500;
+        line-height: 20px;
+    }
+
+    .sikds-upload-heading {
+        margin-top: 8px;
+        color: #0a0a0a;
+        font-size: 30px;
+        font-weight: 700;
+        line-height: 36px;
+        font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+    }
+
+    .sikds-upload-sub {
+        margin-top: 4px;
+        color: #717182;
+        font-size: 14px;
+        line-height: 20px;
+    }
+
+    .sikds-upload-tabs {
+        margin-top: 24px;
+        margin-bottom: 24px;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        align-items: center;
+        gap: 8px;
+        height: 49px;
+        padding: 4px;
+        border-radius: 10px;
+        border: 1px solid rgba(0, 0, 0, 0.1);
+        background: #fff;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.1);
+    }
+
+    .sikds-upload-tab {
+        height: 40px;
+        border: 0;
+        border-radius: 8px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        font-size: 14px;
+        font-weight: 500;
+        line-height: 20px;
+        cursor: pointer;
+        white-space: nowrap;
+    }
+
+    .sikds-upload-tab--active {
+        background: #030213;
+        color: #fff;
+    }
+
+    .sikds-upload-tab--idle {
+        background: #fff;
+        color: #717182;
+    }
+
+    .sikds-upload-top-row {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+        gap: 24px;
+        margin-bottom: 24px;
+    }
+
+    @media (min-width: 1024px) {
+        .sikds-upload-top-row {
+            grid-template-columns: minmax(0, 691px) minmax(0, 333px);
+        }
+    }
+
+    .sikds-upload-card {
+        background: #fff;
+        border: 1px solid rgba(0, 0, 0, 0.1);
+        border-radius: 14px;
+        padding: 24px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.1);
+        margin-bottom: 24px;
+    }
+
+    .sikds-upload-card--file {
+        min-height: 311px;
+    }
+
+    .sikds-upload-card--tags {
+        min-height: 289px;
+    }
+
+    .sikds-upload-card-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 16px;
+    }
+
+    .sikds-upload-card-title {
+        margin: 0;
+        color: #0a0a0a;
+        font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+        font-size: 20px;
+        font-weight: 600;
+        line-height: 30px;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .sikds-upload-card-title i {
+        font-size: 16px;
+        color: #0a0a0a;
+    }
+
+    .sikds-upload-file-count {
+        font-size: 12px;
+        line-height: 16px;
+        color: #717182;
+    }
+
+    .sikds-upload-dropzone {
+        min-height: 216px;
+        border-radius: 10px;
+        border: 2px dashed rgba(0, 0, 0, 0.1);
+        background: rgba(236, 236, 240, 0.3);
+        display: grid;
+        place-items: center;
+        padding: 24px;
+        cursor: pointer;
+    }
+
+    .sikds-upload-dropzone--hover {
+        border-color: #1c398e;
+        background: rgba(219, 234, 254, 0.45);
+    }
+
+    .sikds-upload-dropzone-inner {
+        text-align: center;
+    }
+
+    .sikds-upload-dropzone-icon {
+        font-size: 44px;
+        color: #717182;
+        margin-bottom: 10px;
+    }
+
+    .sikds-upload-dropzone-label {
+        color: #0a0a0a;
+        font-size: 16px;
+        font-weight: 500;
+        line-height: 24px;
+    }
+
+    .sikds-upload-dropzone-hint {
+        margin-top: 6px;
+        color: #717182;
+        font-size: 14px;
+        line-height: 20px;
+    }
+
+    .sikds-upload-dropzone-format {
+        margin-top: 12px;
+        color: #717182;
+        font-size: 12px;
+        line-height: 16px;
+    }
+
+    .sikds-upload-filelist {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .sikds-upload-fileitem {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        border-radius: 8px;
+        background: #f6f6f6;
+        padding: 8px 10px;
+    }
+
+    .sikds-upload-fileitem-icon {
+        color: #dc2626;
+    }
+
+    .sikds-upload-fileitem-name {
+        flex: 1;
+        font-size: 13px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .sikds-upload-fileitem-size {
+        color: #717182;
+        font-size: 12px;
+    }
+
+    .sikds-upload-fileitem-remove {
+        border: 0;
+        background: transparent;
+        color: #717182;
+        cursor: pointer;
+    }
+
+    .sikds-upload-tags-label {
+        margin-bottom: 8px;
+        color: #717182;
+        font-size: 12px;
+        font-weight: 500;
+        line-height: 16px;
+    }
+
+    .sikds-upload-tags-available {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .sikds-upload-tag-chip {
+        border-radius: 9999px;
+        border: 1px solid rgba(0, 0, 0, 0.1);
+        background: rgba(236, 236, 240, 0.3);
+        color: #0a0a0a;
+        padding: 4px 11px;
+        font-size: 12px;
+        line-height: 16px;
+        font-weight: 500;
+        cursor: pointer;
+    }
+
+    .sikds-upload-tag-chip--selected {
+        background: #1c398e;
+        border-color: #1c398e;
+        color: #fff;
+    }
+
+    .sikds-upload-tags-custom {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 42px;
+        gap: 8px;
+    }
+
+    .sikds-upload-tags-input,
+    .sikds-upload-input {
+        width: 100%;
+        height: 37px;
+        border-radius: 10px;
+        border: 1px solid rgba(0, 0, 0, 0.1);
+        background: #fff;
+        padding: 8px 12px;
+        color: #0a0a0a;
+        font-size: 14px;
+        outline: none;
+    }
+
+    .sikds-upload-tags-input::placeholder,
+    .sikds-upload-input::placeholder {
+        color: rgba(10, 10, 10, 0.5);
+    }
+
+    .sikds-upload-textarea {
+        width: 100%;
+        min-height: 97px;
+        border-radius: 10px;
+        border: 1px solid rgba(0, 0, 0, 0.1);
+        background: #fff;
+        padding: 8px 12px;
+        color: #0a0a0a;
+        font-size: 14px;
+        line-height: 20px;
+        outline: none;
+        resize: vertical;
+    }
+
+    .sikds-upload-textarea::placeholder {
+        color: rgba(10, 10, 10, 0.5);
+    }
+
+    .sikds-upload-tags-add {
+        width: 42px;
+        height: 37px;
+        border-radius: 10px;
+        border: 0;
+        background: #1E3A8A;
+        color: #fff;
+        cursor: pointer;
+    }
+
+    .sikds-upload-label {
+        display: block;
+        margin-bottom: 8px;
+        color: #0a0a0a;
+        font-size: 14px;
+        font-weight: 500;
+        line-height: 20px;
+    }
+
+    .sikds-upload-required {
+        color: #fb2c36;
+    }
+
+    .sikds-upload-dates-row {
+        margin-top: 8px;
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+
+    @media (min-width: 768px) {
+        .sikds-upload-dates-row {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 16px;
+        }
+    }
+
+    .sikds-upload-audience-options {
+        margin-top: 8px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .sikds-upload-radio {
+        border-radius: 10px;
+        border: 1px solid rgba(0, 0, 0, 0.1);
+        height: 65px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 0 12px;
+        cursor: pointer;
+    }
+
+    .sikds-upload-radio input[type="radio"] {
+        position: absolute;
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+
+    .sikds-upload-radio-mark {
+        width: 16px;
+        height: 16px;
+        border-radius: 999px;
+        background: #e6e6e9;
+        flex-shrink: 0;
+    }
+
+    .sikds-upload-radio input[type="radio"]:checked ~ .sikds-upload-radio-mark {
+        box-shadow: inset 0 0 0 4px #1e3a8a;
+    }
+
+    .sikds-upload-radio-content {
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+    }
+
+    .sikds-upload-radio-title {
+        color: #0a0a0a;
+        font-size: 16px;
+        font-weight: 500;
+        line-height: 24px;
+    }
+
+    .sikds-upload-radio-desc {
+        color: #717182;
+        font-size: 12px;
+        font-weight: 500;
+        line-height: 16px;
+    }
+
+    .sikds-upload-dots {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .sikds-upload-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 999px;
+        background: #bfdbfe;
+    }
+
+    .sikds-upload-dot--active {
+        background: #1d4ed8;
+    }
+
+    .sikds-upload-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        min-height: 79px;
+        margin-bottom: 24px;
+        border-radius: 14px;
+        border: 1px solid rgba(0, 0, 0, 0.1);
+        background: #fff;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.1);
+        padding: 0 16px;
+    }
+
+    .sikds-upload-btn-cancel {
+        height: 45px;
+        min-width: 107px;
+        border-radius: 10px;
+        border: 1px solid rgba(0, 0, 0, 0.1);
+        background: #fff;
+        color: #0a0a0a;
+        font-size: 16px;
+        font-weight: 500;
+        line-height: 24px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0 22px;
+        text-decoration: none;
+    }
+
+    .sikds-upload-btn-submit {
+        height: 44px;
+        min-width: 241px;
+        border-radius: 10px;
+        border: 0;
+        background: #1e3a8a;
+        color: #fff;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 0 20px;
+        font-size: 16px;
+        font-weight: 600;
+        line-height: 24px;
+    }
+
+    .sikds-upload-btn-submit:disabled {
+        background: #a8b5db;
+    }
+
 }
