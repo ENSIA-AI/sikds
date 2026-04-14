@@ -24,6 +24,101 @@ class DocumentsController
         ]);
     }
 
+    public function show(string $document): View
+    {
+        $doc = [
+            'title'       => 'Circulaire MESRS - Réforme Pédagogique 2024',
+            'reference'   => 'MESRS/DG/2024/045',
+            'status'      => 'active',
+            'description' => "Cette circulaire présente les nouvelles directives concernant la réforme pédagogique dans l'enseignement supérieur. Elle définit les modalités de mise en œuvre, les échéances et les responsabilités de chaque institution dans ce processus de transformation.",
+            'tags'        => [
+                ['label' => 'Directive',  'class' => 'sikds-tag--directive'],
+                ['label' => 'Urgent',     'class' => 'sikds-tag--urgent'],
+                ['label' => 'Pédagogie',  'class' => 'sikds-tag--directive'],
+                ['label' => 'Réforme',    'class' => 'sikds-tag--directive'],
+            ],
+            'institution'    => 'MESRS',
+            'issue_date'     => '15 mars 2024',
+            'effective_date' => '1 avril 2024',
+            'expiry_date'    => '31 mars 2025',
+            'audience'       => 'Toutes les institutions',
+            'views'          => 234,
+            'downloads'      => 89,
+            'version'        => 'v2.1',
+            'file_name'      => 'circulaire-mesrs-2024-045.pdf',
+            'file_type'      => 'PDF',
+            'file_size'      => '2.4 MB',
+            'versions'       => [
+                [
+                    'title'       => 'Version 2.1',
+                    'status'      => 'Actuelle',
+                    'status_class' => 'sikds-doc-pill--current',
+                    'meta'        => '28/03/2024 • 2.4 MB',
+                    'description' => "Corrections mineures sur les dates d'échéance",
+                ],
+                [
+                    'title'       => 'Version 2.0',
+                    'status'      => null,
+                    'status_class' => null,
+                    'meta'        => '25/03/2024 • 2.3 MB',
+                    'description' => "Ajout de la section sur les modalités d'évaluation",
+                ],
+                [
+                    'title'       => 'Version 1.0',
+                    'status'      => null,
+                    'status_class' => null,
+                    'meta'        => '20/03/2024 • 2.1 MB',
+                    'description' => 'Version initiale publiée',
+                ],
+            ],
+            'download_history' => [
+                [
+                    'title'    => 'Téléchargement #1',
+                    'meta'     => 'Prof. Bennani Sara • s.bennani@uh2c.ac.dz • 28/03/2024',
+                    'uuid'     => 'WM-2024-7F8A9B3C',
+                ],
+                [
+                    'title'    => 'Téléchargement #2',
+                    'meta'     => 'Dr. Mansouri Laila • l.mansouri@enp.ac.dz • 28/03/2024',
+                    'uuid'     => 'WM-2024-5D3E2F1A',
+                ],
+                [
+                    'title'    => 'Téléchargement #3',
+                    'meta'     => 'Pr M. Chakri Mohamed • m.chakri@um5.ac.dz • 27/03/2024',
+                    'uuid'     => 'WM-2024-9B4C6E8D',
+                ],
+            ],
+            'activities'     => [
+                [
+                    'title'      => 'Document téléchargé',
+                    'meta'       => 'Prof. Bennani Sara • s.bennani@uh2c.ac.dz',
+                    'timestamp'  => '2024-03-28 15:30',
+                    'icon'       => 'fa-solid fa-download',
+                    'icon_class' => 'sikds-doc-event-icon--download',
+                ],
+                [
+                    'title'      => 'Version 2.1 publiée',
+                    'meta'       => 'Équipe documentaire • docs@mesrs.dz',
+                    'timestamp'  => '2024-03-28 10:00',
+                    'icon'       => 'fa-regular fa-file-lines',
+                    'icon_class' => 'sikds-doc-event-icon--version',
+                ],
+                [
+                    'title'      => 'Document partagé avec Universités',
+                    'meta'       => 'Admin MESRS • admin@mesrs.dz',
+                    'timestamp'  => '2024-03-28 09:45',
+                    'icon'       => 'fa-solid fa-share-nodes',
+                    'icon_class' => 'sikds-doc-event-icon--share',
+                ],
+            ],
+        ];
+
+        return view('documents.show', [
+            'activeNav' => 'documents',
+            'document'  => $doc,
+        ]);
+    }
+
     public function index(): View
     {
         return view('documents.index', [

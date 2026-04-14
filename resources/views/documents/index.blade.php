@@ -89,9 +89,9 @@
                                 @foreach ($doc['actions'] as $action)
                                     @switch($action)
                                         @case('view')
-                                            <button type="button" class="sikds-docs-action-btn" title="Consulter" aria-label="Consulter">
+                                            <a href="{{ route('documents.show', $doc['reference']) }}" class="sikds-docs-action-btn" title="Consulter" aria-label="Consulter">
                                                 <i class="fa-regular fa-eye"></i>
-                                            </button>
+                                            </a>
                                             @break
                                         @case('edit')
                                             <button type="button" class="sikds-docs-action-btn" title="Modifier" aria-label="Modifier">
