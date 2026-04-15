@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Common\DashboardController;
 use App\Http\Controllers\Common\DocumentsController;
+use App\Http\Controllers\Api\DocumentsApiController;
 use App\Http\Controllers\Web\DownloadController;
 use App\Http\Controllers\Web\IndexingController;
 use App\Http\Controllers\Web\RagController;
@@ -46,5 +47,18 @@ Route::middleware(['auth'])
             ->name('watermark.index');
         Route::get('/watermark/{uuid}', [WatermarkTraceabilityController::class, 'show'])
             ->name('watermark.show');
+
+        // Documents API (secured via auth + permission checks in controller).
+        Route::prefix('api/documents')->name('api.documents.')->group(function () {
+            Route::get('/', [DocumentsApiController::class, 'index'])->name('index');
+            Route::post('/', [DocumentsApiController::class, 'store'])->name('store');
+            Route::get('/{id}', [DocumentsApiController::class, 'show'])->name('show');
+            Route::put('/{id}', [DocumentsApiController::class, 'update'])->name('update');
+            Route::patch('/{id}', [DocumentsApiController::class, 'update'])->name('patch');
+            Route::post('/{id}/publish', [DocumentsApiController::class, 'publish'])->name('publish');
+            Route::delete('/{id}', [DocumentsApiController::class, 'destroy'])->name('destroy');
+            Route::post('/{id}/restore', [DocumentsApiController::class, 'restore'])->name('restore');
+            Route::get('/{id}/versions', [DocumentsApiController::class, 'versions'])->name('versions');
+        });
     });
 

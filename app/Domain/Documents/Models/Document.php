@@ -69,13 +69,21 @@ class Document extends Model
     }
 
     /**
+     * Users this document is directly targeted to.
+     */
+    public function targetUsers(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'document_user_targets', 'document_id', 'user_id');
+    }
+
+    /**
      * Determines whether the given user is authorised to access this document.
      * Priority: document.view.all > audience=all > specific_institutions > specific_roles.
      */
     public function isAccessibleBy(User $user): bool
     {
-        // Super-permission bypasses all audience rules
-        if ($user->can('document.view.all')) {
+        // Super-permission bypasses all audience rules only for Super-Admin.
+        if ($user->can('document.view.all') && $user->hasRole('Super Administrateur')) {
             return true;
         }
 
@@ -84,13 +92,15 @@ class Document extends Model
             return false;
         }
 
+        if ($this->targetUsers()->where('users.id', $user->id)->exists()) {
+            return true;
+        }
+
         return match ($this->target_audience) {
             'all' => true,
             'specific_institutions' => $user->institution_id !== null
                 && $this->targetInstitutions()->where('institutions.id', $user->institution_id)->exists(),
-            'specific_roles' => $this->targetRoles()
-                ->whereIn('roles.id', $user->roles->pluck('id'))
-                ->exists(),
+            'specific_roles' => false,
             default => false,
         };
     }

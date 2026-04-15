@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Common;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
 class DocumentsController
@@ -37,6 +38,14 @@ class DocumentsController
 
     public function show(string $document): View
     {
+        /** @var \App\Domain\Users\Models\User $user */
+        $user = Auth::user();
+        abort_if(
+            ! $user->can('document.view.all') || ! $user->hasRole('Super Administrateur'),
+            403,
+            'Prévisualisation réservée au Super-Admin. Téléchargez le document pour consultation.'
+        );
+
         $doc = $this->buildDocumentPayload();
 
         return view('documents.show', [

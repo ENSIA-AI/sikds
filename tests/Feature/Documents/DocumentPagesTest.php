@@ -1,6 +1,8 @@
 <?php
 
 use App\Domain\Users\Models\User;
+use App\Models\Permission;
+use App\Models\Role;
 
 beforeEach(function (): void {
     config()->set('app.key', 'base64:'.base64_encode(random_bytes(32)));
@@ -59,8 +61,34 @@ test('documents list includes show and edit links', function () {
     $response->assertSee('/edit', false);
 });
 
-test('authenticated users can access the document show page', function () {
+test('authenticated non-super-admin users cannot access the document show page', function () {
     $this->actingAs(User::factory()->create());
+
+    $response = $this->get(route('documents.show', 'DOC-2024-001'));
+
+    $response->assertForbidden();
+});
+
+test('super-admin users can access the document show page', function () {
+    $user = User::factory()->create();
+    Permission::query()->firstOrCreate([
+        'name' => 'document.view.all',
+        'guard_name' => 'web',
+    ], [
+        'code' => 'document.view.all',
+        'description' => 'Consulter tous les documents',
+        'category' => 'documents',
+    ]);
+    $role = Role::query()->firstOrCreate([
+        'name' => 'Super Administrateur',
+        'guard_name' => 'web',
+    ], [
+        'slug' => 'super-admin',
+        'is_system_role' => true,
+    ]);
+    $role->givePermissionTo('document.view.all');
+    $user->assignRole($role);
+    $this->actingAs($user);
 
     $response = $this->get(route('documents.show', 'DOC-2024-001'));
 
@@ -70,8 +98,26 @@ test('authenticated users can access the document show page', function () {
     $response->assertSee(route('documents.edit', 'MESRS/DG/2024/045'), false);
 });
 
-test('document show page includes archive and delete confirmation alerts', function () {
-    $this->actingAs(User::factory()->create());
+test('super-admin document show page includes archive and delete confirmation alerts', function () {
+    $user = User::factory()->create();
+    Permission::query()->firstOrCreate([
+        'name' => 'document.view.all',
+        'guard_name' => 'web',
+    ], [
+        'code' => 'document.view.all',
+        'description' => 'Consulter tous les documents',
+        'category' => 'documents',
+    ]);
+    $role = Role::query()->firstOrCreate([
+        'name' => 'Super Administrateur',
+        'guard_name' => 'web',
+    ], [
+        'slug' => 'super-admin',
+        'is_system_role' => true,
+    ]);
+    $role->givePermissionTo('document.view.all');
+    $user->assignRole($role);
+    $this->actingAs($user);
 
     $response = $this->get(route('documents.show', 'DOC-2024-001'));
 

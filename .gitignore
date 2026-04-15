@@ -37,6 +37,7 @@ Thumbs.db
 /public/hot
 /public/build
 
+/docs/srs.txt
 secrets.txt
 .env.local
 .env.testing
