@@ -645,15 +645,21 @@
 
     .sikds-upload-filelist {
         width: 100%;
+        max-width: 100%;
+        overflow: hidden;
         display: flex;
         flex-direction: column;
         gap: 8px;
     }
 
     .sikds-upload-fileitem {
+        width: 100%;
+        max-width: 100%;
+        overflow: hidden;
         display: flex;
         align-items: center;
         gap: 8px;
+        min-width: 0;
         border-radius: 8px;
         background: #f6f6f6;
         padding: 8px 10px;
@@ -664,7 +670,9 @@
     }
 
     .sikds-upload-fileitem-name {
-        flex: 1;
+        flex: 1 1 0%;
+        min-width: 0;
+        display: block;
         font-size: 13px;
         white-space: nowrap;
         overflow: hidden;
@@ -672,11 +680,14 @@
     }
 
     .sikds-upload-fileitem-size {
+        flex-shrink: 0;
+        white-space: nowrap;
         color: #717182;
         font-size: 12px;
     }
 
     .sikds-upload-fileitem-remove {
+        flex-shrink: 0;
         border: 0;
         background: transparent;
         color: #717182;
@@ -903,12 +914,15 @@
         flex-wrap: wrap;
         align-items: center;
         gap: 8px;
+        min-width: 0;
         min-height: 30px;
+        overflow: hidden;
     }
 
     .sikds-upload-current-file-step {
         display: inline-flex;
         align-items: center;
+        flex-shrink: 0;
         height: 24px;
         padding: 0 10px;
         border-radius: 999px;
@@ -921,11 +935,17 @@
     }
 
     .sikds-upload-current-file-name {
+        display: inline-block;
+        flex: 1 1 0%;
+        max-width: 100%;
+        min-width: 0;
         color: #0a0a0a;
         font-size: 13px;
         font-weight: 500;
         line-height: 20px;
-        word-break: break-word;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
 
     .sikds-upload-current-file-empty {
