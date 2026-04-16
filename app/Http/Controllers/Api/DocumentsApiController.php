@@ -61,6 +61,16 @@ class DocumentsApiController extends Controller
         ]);
     }
 
+    public function archive(Request $request, int $id): JsonResponse
+    {
+        $document = $this->commandService->archive($request, $id, $this->authUser());
+
+        return response()->json([
+            'message' => 'Document archivé.',
+            'document' => $document,
+        ]);
+    }
+
     public function destroy(Request $request, int $id): JsonResponse
     {
         $this->commandService->softDelete($request, $id, $this->authUser());

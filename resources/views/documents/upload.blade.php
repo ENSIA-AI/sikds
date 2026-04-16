@@ -3,7 +3,18 @@
 @section('page_subtitle', 'Gérer le cycle de vie des documents institutionnels')
 @section('content')
 
-<div x-data="uploadPage()" x-effect="ensureMetaForIndex(currentFileIdx)" class="sikds-upload">
+<div
+    x-data="uploadPage({
+        storeUrl: @js(route('api.documents.store')),
+        indexUrl: @js(route('documents.index')),
+        csrfToken: @js(csrf_token()),
+        availableTags: @js($availableTags),
+        institutions: @js($institutions),
+        roles: @js($roles),
+    })"
+    x-effect="ensureMetaForIndex(currentFileIdx)"
+    class="sikds-upload"
+>
 
     <a href="{{ route('documents.index') }}" class="sikds-upload-back">
         <i class="fa-solid fa-arrow-left"></i> Retour aux documents
@@ -88,7 +99,7 @@
                 </template>
             </div>
 
-            <input type="file" x-ref="fileInput" class="hidden" accept=".pdf"
+            <input id="document-file-input" name="files[]" type="file" x-ref="fileInput" class="hidden" accept=".pdf,application/pdf"
                 :multiple="mode === 'batch'"
                 @change="handleFileSelect($event)">
         </div>
@@ -99,25 +110,25 @@
                 <i class="fa-solid fa-tag"></i> Tags
             </h3>
 
-            <p class="sikds-upload-tags-label">Tags disponibles</p>
+            <p class="sikds-upload-tags-label">Tags du document courant</p>
             <div class="sikds-upload-tags-available">
-                @foreach ($availableTags as $tag)
-                    <button type="button"
-                        class="sikds-upload-tag-chip sikds-tag sikds-tag--table {{ $tag['class'] }}"
-                        :class="selectedTags.includes('{{ $tag['label'] }}') ? 'sikds-upload-tag-chip--selected' : ''"
-                        @click="toggleTag('{{ $tag['label'] }}')"
-                    >{{ $tag['label'] }}</button>
-                @endforeach
+                <template x-for="tag in availableTags" :key="tag.id">
+                    <button
+                        type="button"
+                        class="sikds-upload-tag-chip sikds-tag sikds-tag--table"
+                        :class="[tag.class, currentMeta().tag_ids.includes(tag.id) ? 'sikds-upload-tag-chip--selected' : '']"
+                        @click="toggleCurrentTag(tag.id)"
+                        x-text="tag.label"
+                    ></button>
+                </template>
             </div>
 
-            <p class="sikds-upload-tags-label" style="margin-top: 16px;">Ajouter un tag personnalisé</p>
-            <div class="sikds-upload-tags-custom">
-                <input type="text" placeholder="Nouveau tag..." class="sikds-upload-tags-input"
-                    x-model="customTag"
-                    @keydown.enter.prevent="addCustomTag()">
-                <button type="button" class="sikds-upload-tags-add" @click="addCustomTag()">
-                    <i class="fa-solid fa-plus"></i>
-                </button>
+            <div x-show="errorList.length" x-cloak class="sikds-alert sikds-alert--danger" style="margin-top: 16px;">
+                <p class="sikds-alert-message" x-text="errorList[0]"></p>
+            </div>
+
+            <div x-show="successMessage" x-cloak class="sikds-alert sikds-alert--info" style="margin-top: 16px;">
+                <p class="sikds-alert-message" x-text="successMessage"></p>
             </div>
         </div>
     </div>
@@ -168,6 +179,8 @@
 
         <label class="sikds-upload-label">Titre <span class="sikds-upload-required">*</span></label>
         <input
+            id="document-title"
+            name="document_title"
             type="text"
             class="sikds-upload-input"
             placeholder="Ex: Directive MESRS-2024-045"
@@ -176,6 +189,8 @@
 
         <label class="sikds-upload-label" style="margin-top: 16px;">Description</label>
         <textarea
+            id="document-description"
+            name="document_description"
             class="sikds-upload-textarea"
             rows="4"
             placeholder="Description du document..."
@@ -191,15 +206,15 @@
         <div class="sikds-upload-dates-row">
             <div class="sikds-upload-date-field">
                 <label class="sikds-upload-label">Date d'Émission <span class="sikds-upload-required">*</span></label>
-                <input type="date" class="sikds-upload-input" x-model="documentsMeta[currentFileIdx].issue_date">
+                <input id="document-issue-date" name="document_issue_date" type="date" class="sikds-upload-input" x-model="documentsMeta[currentFileIdx].issue_date">
             </div>
             <div class="sikds-upload-date-field">
                 <label class="sikds-upload-label">Date d'Effet</label>
-                <input type="date" class="sikds-upload-input" x-model="documentsMeta[currentFileIdx].effective_date">
+                <input id="document-effective-date" name="document_effective_date" type="date" class="sikds-upload-input" x-model="documentsMeta[currentFileIdx].effective_date">
             </div>
             <div class="sikds-upload-date-field">
                 <label class="sikds-upload-label">Date d'Expiration</label>
-                <input type="date" class="sikds-upload-input" x-model="documentsMeta[currentFileIdx].expiration_date">
+                <input id="document-expiration-date" name="document_expiration_date" type="date" class="sikds-upload-input" x-model="documentsMeta[currentFileIdx].expiration_date">
             </div>
         </div>
     </div>
@@ -211,7 +226,7 @@
         </h3>
         <div class="sikds-upload-audience-options">
             <label class="sikds-upload-radio">
-                <input type="radio" :name="'audience_' + currentFileIdx" value="all" x-model="documentsMeta[currentFileIdx].audience">
+                <input :id="'audience-all-' + currentFileIdx" :name="'audience_' + currentFileIdx" value="all" type="radio" x-model="documentsMeta[currentFileIdx].target_audience">
                 <span class="sikds-upload-radio-mark"></span>
                 <span class="sikds-upload-radio-content">
                     <span class="sikds-upload-radio-title">Toutes les institutions</span>
@@ -219,7 +234,7 @@
                 </span>
             </label>
             <label class="sikds-upload-radio">
-                <input type="radio" :name="'audience_' + currentFileIdx" value="institutions" x-model="documentsMeta[currentFileIdx].audience">
+                <input :id="'audience-institutions-' + currentFileIdx" :name="'audience_' + currentFileIdx" value="specific_institutions" type="radio" x-model="documentsMeta[currentFileIdx].target_audience">
                 <span class="sikds-upload-radio-mark"></span>
                 <span class="sikds-upload-radio-content">
                     <span class="sikds-upload-radio-title">Institutions spécifiques</span>
@@ -227,7 +242,7 @@
                 </span>
             </label>
             <label class="sikds-upload-radio">
-                <input type="radio" :name="'audience_' + currentFileIdx" value="roles" x-model="documentsMeta[currentFileIdx].audience">
+                <input :id="'audience-roles-' + currentFileIdx" :name="'audience_' + currentFileIdx" value="specific_roles" type="radio" x-model="documentsMeta[currentFileIdx].target_audience">
                 <span class="sikds-upload-radio-mark"></span>
                 <span class="sikds-upload-radio-content">
                     <span class="sikds-upload-radio-title">Rôles spécifiques</span>
@@ -235,13 +250,31 @@
                 </span>
             </label>
         </div>
+
+        <div x-show="currentMeta().target_audience === 'specific_institutions'" x-cloak class="sikds-doc-edit-target-grid" style="margin-top: 16px;">
+            <template x-for="institution in institutions" :key="institution.id">
+                <label class="sikds-docs-filter-check">
+                    <input :id="'institution-' + currentFileIdx + '-' + institution.id" :name="'institution_' + currentFileIdx + '[]'" type="checkbox" :checked="currentMeta().target_institution_ids.includes(institution.id)" @change="toggleCurrentSelection('target_institution_ids', institution.id)">
+                    <span x-text="institution.name"></span>
+                </label>
+            </template>
+        </div>
+
+        <div x-show="currentMeta().target_audience === 'specific_roles'" x-cloak class="sikds-doc-edit-target-grid" style="margin-top: 16px;">
+            <template x-for="role in roles" :key="role.id">
+                <label class="sikds-docs-filter-check">
+                    <input :id="'role-' + currentFileIdx + '-' + role.id" :name="'role_' + currentFileIdx + '[]'" type="checkbox" :checked="currentMeta().target_role_ids.includes(role.id)" @change="toggleCurrentSelection('target_role_ids', role.id)">
+                    <span x-text="role.name"></span>
+                </label>
+            </template>
+        </div>
     </div>
 
     {{-- Footer actions --}}
     <div class="sikds-upload-footer">
         <a href="{{ route('documents.index') }}" class="sikds-upload-btn-cancel">Annuler</a>
-        <button type="button" class="sikds-upload-btn-submit" :disabled="mode === 'batch' && files.length === 0">
-            <i class="fa-solid fa-cloud-arrow-up"></i>
+        <button type="button" class="sikds-upload-btn-submit" :disabled="submitting || files.length === 0" @click="submit()">
+            <i :class="submitting ? 'fa-solid fa-spinner fa-spin' : 'fa-solid fa-cloud-arrow-up'"></i>
             <span x-text="mode === 'single'
                 ? 'Téléverser le Document'
                 : 'Téléverser ' + files.length + ' Document(s)'"></span>
@@ -251,24 +284,31 @@
 </div>
 
 <script>
-function uploadPage() {
+function uploadPage(config) {
     return {
+        availableTags: config.availableTags,
+        institutions: config.institutions,
+        roles: config.roles,
         mode: 'single',
         files: [],
         documentsMeta: [],
         dragging: false,
-        selectedTags: [],
-        customTag: '',
         currentFileIdx: 0,
+        submitting: false,
+        errorList: [],
+        successMessage: '',
 
         emptyMeta() {
             return {
                 title: '',
                 description: '',
-                issue_date: '2026-01-23',
-                effective_date: '2026-01-23',
-                expiration_date: '2026-01-23',
-                audience: '',
+                issue_date: '',
+                effective_date: '',
+                expiration_date: '',
+                target_audience: 'all',
+                target_institution_ids: [],
+                target_role_ids: [],
+                tag_ids: [],
             };
         },
 
@@ -281,6 +321,8 @@ function uploadPage() {
         setMode(nextMode) {
             this.mode = nextMode;
             this.currentFileIdx = 0;
+            this.errorList = [];
+            this.successMessage = '';
             this.ensureMetaForIndex(0);
             if (nextMode === 'single' && this.files.length > 1) {
                 this.files = this.files.slice(0, 1);
@@ -288,34 +330,47 @@ function uploadPage() {
             }
         },
 
-        toggleTag(tag) {
-            const i = this.selectedTags.indexOf(tag);
-            if (i >= 0) this.selectedTags.splice(i, 1);
-            else this.selectedTags.push(tag);
+        currentMeta() {
+            this.ensureMetaForIndex(this.currentFileIdx);
+            return this.documentsMeta[this.currentFileIdx];
         },
 
-        addCustomTag() {
-            const t = this.customTag.trim();
-            if (t && !this.selectedTags.includes(t)) {
-                this.selectedTags.push(t);
-            }
-            this.customTag = '';
+        toggleCurrentTag(tagId) {
+            const meta = this.currentMeta();
+            const i = meta.tag_ids.indexOf(tagId);
+            if (i >= 0) meta.tag_ids.splice(i, 1);
+            else meta.tag_ids.push(tagId);
+        },
+
+        toggleCurrentSelection(field, id) {
+            const meta = this.currentMeta();
+            const list = meta[field];
+            const i = list.indexOf(id);
+            if (i >= 0) list.splice(i, 1);
+            else list.push(id);
         },
 
         handleDrop(e) {
             this.dragging = false;
-            const dropped = Array.from(e.dataTransfer.files).filter(f => f.type === 'application/pdf');
+            const dropped = Array.from(e.dataTransfer.files).filter(f => this.isPdfFile(f));
+            if (dropped.length === 0 && e.dataTransfer.files.length > 0) {
+                this.errorList = ['Seuls les fichiers PDF sont autorisés.'];
+            }
             this.addFiles(dropped);
         },
 
         handleFileSelect(e) {
-            const selected = Array.from(e.target.files).filter(f => f.type === 'application/pdf');
+            const selected = Array.from(e.target.files).filter(f => this.isPdfFile(f));
+            if (selected.length === 0 && e.target.files.length > 0) {
+                this.errorList = ['Seuls les fichiers PDF sont autorisés.'];
+            }
             this.addFiles(selected);
             e.target.value = '';
         },
 
         addFiles(list) {
             const max = this.mode === 'single' ? 1 : 5;
+            this.errorList = [];
             if (this.mode === 'single') {
                 this.files = list.slice(0, 1);
                 this.documentsMeta[0] = this.documentsMeta[0] ?? this.emptyMeta();
@@ -377,7 +432,87 @@ function uploadPage() {
             if (bytes < 1024) return bytes + ' B';
             if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
             return (bytes / 1048576).toFixed(1) + ' MB';
-        }
+        },
+
+        isPdfFile(file) {
+            const type = (file.type || '').toLowerCase();
+            const name = (file.name || '').toLowerCase();
+
+            return type === 'application/pdf' || name.endsWith('.pdf');
+        },
+
+        async submit() {
+            if (this.submitting) return;
+
+            this.errorList = [];
+            this.successMessage = '';
+
+            if (this.files.length === 0) {
+                this.errorList = ['Ajoutez au moins un fichier PDF avant de continuer.'];
+                return;
+            }
+
+            const formData = new FormData();
+            this.files.forEach((file, idx) => {
+                formData.append(`files[${idx}]`, file);
+
+                const meta = this.documentsMeta[idx] ?? this.emptyMeta();
+                formData.append(`documents_meta[${idx}][title]`, meta.title || '');
+                formData.append(`documents_meta[${idx}][description]`, meta.description || '');
+                formData.append(`documents_meta[${idx}][issue_date]`, meta.issue_date || '');
+                formData.append(`documents_meta[${idx}][effective_date]`, meta.effective_date || '');
+                formData.append(`documents_meta[${idx}][expiration_date]`, meta.expiration_date || '');
+                formData.append(`documents_meta[${idx}][target_audience]`, meta.target_audience || 'all');
+
+                (meta.tag_ids || []).forEach((id, tagIdx) => {
+                    formData.append(`documents_meta[${idx}][tag_ids][${tagIdx}]`, id);
+                });
+                (meta.target_institution_ids || []).forEach((id, targetIdx) => {
+                    formData.append(`documents_meta[${idx}][target_institution_ids][${targetIdx}]`, id);
+                });
+                (meta.target_role_ids || []).forEach((id, targetIdx) => {
+                    formData.append(`documents_meta[${idx}][target_role_ids][${targetIdx}]`, id);
+                });
+            });
+
+            this.submitting = true;
+
+            try {
+                const response = await fetch(config.storeUrl, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRF-TOKEN': config.csrfToken,
+                    },
+                    credentials: 'same-origin',
+                });
+
+                if (response.redirected) {
+                    throw new Error('La requête a été redirigée par le serveur. Vérifiez les champs requis et votre session.');
+                }
+
+                const payload = await response.json().catch(() => ({}));
+
+                if (!response.ok) {
+                    if (payload.errors) {
+                        this.errorList = Object.values(payload.errors).flat();
+                    } else {
+                        this.errorList = [payload.message || 'Le téléversement a échoué.'];
+                    }
+                    return;
+                }
+
+                this.successMessage = payload.message || 'Document(s) créé(s) avec succès.';
+                window.sessionStorage.setItem('documents-success-message', this.successMessage);
+                setTimeout(() => window.location.href = config.indexUrl, 900);
+            } catch (error) {
+                this.errorList = [error.message || 'Le téléversement a échoué.'];
+            } finally {
+                this.submitting = false;
+            }
+        },
     };
 }
 </script>

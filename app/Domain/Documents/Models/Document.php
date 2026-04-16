@@ -87,6 +87,10 @@ class Document extends Model
             return true;
         }
 
+        if ((int) $this->uploaded_by === (int) $user->id) {
+            return true;
+        }
+
         // Active status required for regular users
         if ($this->status !== 'active') {
             return false;

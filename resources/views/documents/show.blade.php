@@ -3,7 +3,18 @@
 @section('page_subtitle', 'Gérer le cycle de vie des documents institutionnels')
 @section('content')
 
-<div class="sikds-doc-detail" x-data="{ activeTab: 'overview', modal: null }">
+<div
+    class="sikds-doc-detail"
+    x-data="documentShowPage({
+        csrfToken: @js(csrf_token()),
+        urls: {
+            archive: @js($document['archive_url']),
+            delete: @js($document['delete_url']),
+            restore: @js($document['restore_url']),
+            publish: @js($document['publish_url']),
+        },
+    })"
+>
 
     {{-- Top bar: back link + action buttons --}}
     <div class="sikds-doc-topbar">
@@ -13,23 +24,45 @@
         </a>
 
         <div class="sikds-doc-actions">
-            <button type="button" class="sikds-doc-action-btn sikds-doc-action-btn--default">
+            <a href="{{ $document['download_url'] }}" class="sikds-doc-action-btn sikds-doc-action-btn--default">
                 <i class="fa-solid fa-download"></i>
                 <span>Télécharger</span>
-            </button>
-            <a href="{{ route('documents.edit', $document['reference']) }}" class="sikds-doc-action-btn sikds-doc-action-btn--default">
+            </a>
+            @if ($canEdit)
+            <a href="{{ $document['edit_url'] }}" class="sikds-doc-action-btn sikds-doc-action-btn--default">
                 <i class="fa-solid fa-pen"></i>
                 <span>Modifier</span>
             </a>
+            @endif
+            @if ($canPublish && $document['status'] === 'draft')
+            <button type="button" class="sikds-doc-action-btn sikds-doc-action-btn--default" @click="performAction(urls.publish, 'POST', 'Document publié.')">
+                <i :class="loading ? 'fa-solid fa-spinner fa-spin' : 'fa-solid fa-bullhorn'"></i>
+                <span>Publier</span>
+            </button>
+            @endif
+            @if ($canPublish && $document['status'] === 'active')
             <button type="button" class="sikds-doc-action-btn sikds-doc-action-btn--warn" @click="modal = 'archive'">
                 <i class="fa-solid fa-box-archive"></i>
                 <span>Archiver</span>
             </button>
+            @endif
+            @if ($canDelete && $document['status'] !== 'deleted')
             <button type="button" class="sikds-doc-action-btn sikds-doc-action-btn--danger" @click="modal = 'delete'">
                 <i class="fa-regular fa-trash-can"></i>
                 <span>Supprimer</span>
             </button>
+            @endif
+            @if ($canRestore && $document['status'] === 'deleted')
+            <button type="button" class="sikds-doc-action-btn sikds-doc-action-btn--default" @click="performAction(urls.restore, 'POST', 'Document restauré.')">
+                <i :class="loading ? 'fa-solid fa-spinner fa-spin' : 'fa-solid fa-rotate-left'"></i>
+                <span>Restaurer</span>
+            </button>
+            @endif
         </div>
+    </div>
+
+    <div x-show="banner.message" x-cloak class="sikds-alert" :class="banner.type === 'danger' ? 'sikds-alert--danger' : 'sikds-alert--info'" style="margin-bottom: 16px;">
+        <p class="sikds-alert-message" x-text="banner.message"></p>
     </div>
 
     {{-- Title row --}}
@@ -236,7 +269,7 @@
                 <p class="sikds-doc-history-sub">Toutes les versions de ce document</p>
             </div>
             <div class="sikds-doc-history-list">
-                @foreach ($document['versions'] as $version)
+                @forelse ($document['versions'] as $version)
                     <div class="sikds-doc-history-row">
                         <div class="sikds-doc-history-row-main">
                             <div class="sikds-doc-history-icon-wrap sikds-doc-history-icon-wrap--version {{ $loop->first ? 'sikds-doc-history-icon-wrap--current' : '' }}">
@@ -254,15 +287,18 @@
                             </div>
                         </div>
                         <div class="sikds-doc-history-tools">
-                            <button type="button" class="sikds-doc-tool-btn" aria-label="Consulter version">
-                                <i class="fa-regular fa-eye"></i>
-                            </button>
-                            <button type="button" class="sikds-doc-tool-btn" aria-label="Télécharger version">
+                            <a href="{{ $document['download_url'] }}" class="sikds-doc-tool-btn" aria-label="Télécharger version">
                                 <i class="fa-solid fa-download"></i>
-                            </button>
+                            </a>
                         </div>
                     </div>
-                @endforeach
+                @empty
+                    <div class="sikds-doc-history-row">
+                        <div class="sikds-doc-history-content">
+                            <p class="sikds-doc-history-item-title">Aucune version archivée</p>
+                        </div>
+                    </div>
+                @endforelse
             </div>
         </div>
     </div>
@@ -274,7 +310,7 @@
                 <p class="sikds-doc-history-sub">Tous les téléchargements de ce document</p>
             </div>
             <div class="sikds-doc-history-list">
-                @foreach ($document['download_history'] as $download)
+                @forelse ($document['download_history'] as $download)
                     <div class="sikds-doc-history-row">
                         <div class="sikds-doc-history-row-main">
                             <div class="sikds-doc-history-icon-wrap sikds-doc-history-icon-wrap--download">
@@ -287,15 +323,18 @@
                             </div>
                         </div>
                         <div class="sikds-doc-history-tools">
-                            <button type="button" class="sikds-doc-tool-btn" aria-label="Consulter téléchargement">
-                                <i class="fa-regular fa-eye"></i>
-                            </button>
-                            <button type="button" class="sikds-doc-tool-btn" aria-label="Télécharger copie">
+                            <a href="{{ $document['download_url'] }}" class="sikds-doc-tool-btn" aria-label="Télécharger copie">
                                 <i class="fa-solid fa-download"></i>
-                            </button>
+                            </a>
                         </div>
                     </div>
-                @endforeach
+                @empty
+                    <div class="sikds-doc-history-row">
+                        <div class="sikds-doc-history-content">
+                            <p class="sikds-doc-history-item-title">Aucun téléchargement enregistré</p>
+                        </div>
+                    </div>
+                @endforelse
             </div>
         </div>
     </div>
@@ -307,7 +346,7 @@
                 <p class="sikds-doc-history-sub">Historique des actions sur ce document</p>
             </div>
             <div class="sikds-doc-history-list">
-                @foreach ($document['activities'] as $activity)
+                @forelse ($document['activities'] as $activity)
                     <div class="sikds-doc-history-row sikds-doc-history-row--compact">
                         <div class="sikds-doc-history-row-main">
                             <div class="sikds-doc-event-icon {{ $activity['icon_class'] }}">
@@ -320,7 +359,13 @@
                             </div>
                         </div>
                     </div>
-                @endforeach
+                @empty
+                    <div class="sikds-doc-history-row">
+                        <div class="sikds-doc-history-content">
+                            <p class="sikds-doc-history-item-title">Aucune activité enregistrée</p>
+                        </div>
+                    </div>
+                @endforelse
             </div>
         </div>
     </div>
@@ -351,8 +396,8 @@
                 <button type="button" class="sikds-doc-modal-btn sikds-doc-modal-btn--cancel" @click="modal = null">
                     Annuler
                 </button>
-                <button type="button" class="sikds-doc-modal-btn sikds-doc-modal-btn--archive">
-                    <i class="fa-solid fa-box-archive"></i>
+                <button type="button" class="sikds-doc-modal-btn sikds-doc-modal-btn--archive" @click="performAction(urls.archive, 'POST', 'Document archivé.')">
+                    <i :class="loading ? 'fa-solid fa-spinner fa-spin' : 'fa-solid fa-box-archive'"></i>
                     Archiver
                 </button>
             </div>
@@ -385,8 +430,8 @@
                 <button type="button" class="sikds-doc-modal-btn sikds-doc-modal-btn--cancel" @click="modal = null">
                     Annuler
                 </button>
-                <button type="button" class="sikds-doc-modal-btn sikds-doc-modal-btn--delete">
-                    <i class="fa-regular fa-trash-can"></i>
+                <button type="button" class="sikds-doc-modal-btn sikds-doc-modal-btn--delete" @click="performAction(urls.delete, 'DELETE', 'Document supprimé.')">
+                    <i :class="loading ? 'fa-solid fa-spinner fa-spin' : 'fa-regular fa-trash-can'"></i>
                     Supprimer
                 </button>
             </div>
@@ -394,5 +439,52 @@
     </div>
 
 </div>
+
+<script>
+    function documentShowPage(config) {
+        return {
+            activeTab: 'overview',
+            modal: null,
+            loading: false,
+            banner: { message: '', type: 'info' },
+            urls: config.urls,
+            async performAction(url, method, successMessage) {
+                if (this.loading) return;
+
+                this.loading = true;
+                this.banner = { message: '', type: 'info' };
+
+                try {
+                    const response = await fetch(url, {
+                        method,
+                        headers: {
+                            'Accept': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'X-CSRF-TOKEN': config.csrfToken,
+                        },
+                        credentials: 'same-origin',
+                    });
+
+                    if (response.redirected) {
+                        throw new Error('La requête a été redirigée par le serveur. Vérifiez votre session.');
+                    }
+
+                    const payload = await response.json().catch(() => ({}));
+                    if (!response.ok) {
+                        throw new Error(payload.message || 'Action impossible.');
+                    }
+
+                    this.modal = null;
+                    this.banner = { message: successMessage, type: 'info' };
+                    window.location.reload();
+                } catch (error) {
+                    this.banner = { message: error.message || 'Action impossible.', type: 'danger' };
+                } finally {
+                    this.loading = false;
+                }
+            },
+        };
+    }
+</script>
 
 @endsection

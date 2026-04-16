@@ -1,125 +1,166 @@
 <?php
 
+use App\Domain\Documents\Models\Document;
+use App\Domain\Institutions\Models\Institution;
 use App\Domain\Users\Models\User;
 use App\Models\Permission;
 use App\Models\Role;
+use Illuminate\Support\Str;
+use Spatie\Permission\PermissionRegistrar;
 
 beforeEach(function (): void {
     config()->set('app.key', 'base64:'.base64_encode(random_bytes(32)));
     $this->withoutVite();
+    app(PermissionRegistrar::class)->forgetCachedPermissions();
+    Institution::query()->firstOrCreate(
+        ['code' => 'MESRS'],
+        ['name' => 'Ministère', 'type' => 'ministry', 'domain' => 'mesrs.dz']
+    );
 });
+
+function webGrantPermission(User $user, string $code): void
+{
+    Permission::query()->firstOrCreate(
+        ['name' => $code, 'guard_name' => 'web'],
+        ['code' => $code, 'description' => $code, 'category' => 'documents']
+    );
+    $user->givePermissionTo($code);
+}
+
+function webEnsureSuperAdmin(User $user): void
+{
+    $role = Role::query()->firstOrCreate(
+        ['name' => 'Super Administrateur', 'guard_name' => 'web'],
+        ['slug' => 'super-admin', 'is_system_role' => true]
+    );
+    webGrantPermission($user, 'document.view.all');
+    $role->givePermissionTo('document.view.all');
+    $user->assignRole($role);
+}
+
+function webCreateDocument(User $uploader, array $overrides = []): Document
+{
+    $defaults = [
+        'reference_number' => now()->format('Y').'-'.str_pad((string) random_int(1, 9999), 4, '0', STR_PAD_LEFT),
+        'title' => 'Document '.Str::random(6),
+        'description' => 'Description',
+        'file_path' => 'documents/test.pdf',
+        'file_hash' => str_repeat('a', 64),
+        'file_size' => 1024,
+        'issue_date' => now()->toDateString(),
+        'effective_date' => now()->toDateString(),
+        'expiration_date' => now()->addMonth()->toDateString(),
+        'status' => 'active',
+        'indexing_status' => 'pending',
+        'target_audience' => 'all',
+        'version_number' => 1,
+        'uploaded_by' => $uploader->id,
+    ];
+
+    return Document::query()->create(array_merge($defaults, $overrides));
+}
 
 test('guests are redirected from document pages to login', function () {
     $this->get(route('documents.index'))->assertRedirect('/login');
     $this->get(route('documents.create'))->assertRedirect('/login');
-    $this->get(route('documents.show', 'DOC-2024-001'))->assertRedirect('/login');
-    $this->get(route('documents.edit', 'DOC-2024-001'))->assertRedirect('/login');
+    $this->get(route('documents.show', '1'))->assertRedirect('/login');
+    $this->get(route('documents.edit', '1'))->assertRedirect('/login');
 });
 
 test('authenticated users can access the documents list page', function () {
-    $this->actingAs(User::factory()->create());
+    $user = User::factory()->create();
+    $this->actingAs($user);
+    webCreateDocument($user, ['title' => 'Circulaire active']);
 
     $response = $this->get(route('documents.index'));
 
     $response->assertOk();
     $response->assertSee('Titre & Référence', false);
     $response->assertSee('Téléverser un Document', false);
+    $response->assertSee('Circulaire active', false);
 });
 
 test('documents list filters by search query', function () {
-    $this->actingAs(User::factory()->create());
+    $user = User::factory()->create();
+    $this->actingAs($user);
+    webCreateDocument($user, ['title' => 'Budget Universitaire 2026']);
+    webCreateDocument($user, ['title' => 'Rapport Annuel 2025']);
 
     $response = $this->get(route('documents.index', ['q' => 'Budget Universitaire']));
 
     $response->assertOk();
-    $response->assertSee('Décision Ministérielle sur le Budget Universitaire', false);
-    $response->assertDontSee('Rapport Annuel d\'Activité 2023', false);
+    $response->assertSee('Budget Universitaire 2026', false);
+    $response->assertDontSee('Rapport Annuel 2025', false);
 });
 
 test('documents list filters by date and status', function () {
-    $this->actingAs(User::factory()->create());
+    $user = User::factory()->create();
+    $this->actingAs($user);
+    webCreateDocument($user, ['title' => 'Document actif mars', 'status' => 'active', 'issue_date' => '2026-03-15']);
+    webCreateDocument($user, ['title' => 'Document brouillon mars', 'status' => 'draft', 'issue_date' => '2026-03-20']);
+    webCreateDocument($user, ['title' => 'Document actif janvier', 'status' => 'active', 'issue_date' => '2026-01-10']);
 
     $response = $this->get(route('documents.index', [
         'status' => ['active'],
-        'date_from' => '2024-03-11',
-        'date_to' => '2024-03-31',
+        'date_from' => '2026-03-01',
+        'date_to' => '2026-03-31',
     ]));
 
     $response->assertOk();
-    $response->assertSee('Directive MESRS – Réforme Pédagogique 2024', false);
-    $response->assertDontSee('Décision Ministérielle sur le Budget Universitaire', false);
-    $response->assertDontSee('Document Test Supprimé', false);
+    $response->assertSee('Document actif mars', false);
+    $response->assertDontSee('Document brouillon mars', false);
+    $response->assertDontSee('Document actif janvier', false);
 });
 
-test('documents list includes show and edit links', function () {
-    $this->actingAs(User::factory()->create());
+test('documents list includes document action links', function () {
+    $user = User::factory()->create();
+    webGrantPermission($user, 'document.edit');
+    webEnsureSuperAdmin($user);
+    $this->actingAs($user);
+    $document = webCreateDocument($user);
 
     $response = $this->get(route('documents.index'));
 
     $response->assertOk();
-    $response->assertSee('/documents/', false);
-    $response->assertSee('/edit', false);
+    $response->assertSee(route('documents.show', $document->id), false);
+    $response->assertSee(route('documents.edit', $document->id), false);
+    $response->assertSee(route('documents.download', $document->id), false);
 });
 
 test('authenticated non-super-admin users cannot access the document show page', function () {
-    $this->actingAs(User::factory()->create());
+    $user = User::factory()->create();
+    $document = webCreateDocument($user);
+    $this->actingAs($user);
 
-    $response = $this->get(route('documents.show', 'DOC-2024-001'));
+    $response = $this->get(route('documents.show', $document->id));
 
     $response->assertForbidden();
 });
 
 test('super-admin users can access the document show page', function () {
     $user = User::factory()->create();
-    Permission::query()->firstOrCreate([
-        'name' => 'document.view.all',
-        'guard_name' => 'web',
-    ], [
-        'code' => 'document.view.all',
-        'description' => 'Consulter tous les documents',
-        'category' => 'documents',
-    ]);
-    $role = Role::query()->firstOrCreate([
-        'name' => 'Super Administrateur',
-        'guard_name' => 'web',
-    ], [
-        'slug' => 'super-admin',
-        'is_system_role' => true,
-    ]);
-    $role->givePermissionTo('document.view.all');
-    $user->assignRole($role);
+    webEnsureSuperAdmin($user);
+    webGrantPermission($user, 'document.edit');
     $this->actingAs($user);
+    $document = webCreateDocument($user, ['title' => 'Circulaire MESRS']);
 
-    $response = $this->get(route('documents.show', 'DOC-2024-001'));
+    $response = $this->get(route('documents.show', $document->id));
 
     $response->assertOk();
-    $response->assertSee('Circulaire MESRS - Réforme Pédagogique 2024', false);
+    $response->assertSee('Circulaire MESRS', false);
     $response->assertSee('Historique des Versions', false);
-    $response->assertSee(route('documents.edit', 'MESRS/DG/2024/045'), false);
+    $response->assertSee(route('documents.edit', $document->id), false);
 });
 
 test('super-admin document show page includes archive and delete confirmation alerts', function () {
     $user = User::factory()->create();
-    Permission::query()->firstOrCreate([
-        'name' => 'document.view.all',
-        'guard_name' => 'web',
-    ], [
-        'code' => 'document.view.all',
-        'description' => 'Consulter tous les documents',
-        'category' => 'documents',
-    ]);
-    $role = Role::query()->firstOrCreate([
-        'name' => 'Super Administrateur',
-        'guard_name' => 'web',
-    ], [
-        'slug' => 'super-admin',
-        'is_system_role' => true,
-    ]);
-    $role->givePermissionTo('document.view.all');
-    $user->assignRole($role);
+    webEnsureSuperAdmin($user);
+    webGrantPermission($user, 'document.delete');
+    webGrantPermission($user, 'document.publish');
     $this->actingAs($user);
+    $document = webCreateDocument($user, ['status' => 'active']);
 
-    $response = $this->get(route('documents.show', 'DOC-2024-001'));
+    $response = $this->get(route('documents.show', $document->id));
 
     $response->assertOk();
     $response->assertSee('Archiver le Document', false);
@@ -128,10 +169,13 @@ test('super-admin document show page includes archive and delete confirmation al
     $response->assertSee('Action irréversible', false);
 });
 
-test('authenticated users can access the document edit page', function () {
-    $this->actingAs(User::factory()->create());
+test('users with edit permission can access the document edit page', function () {
+    $user = User::factory()->create();
+    webGrantPermission($user, 'document.edit');
+    $this->actingAs($user);
+    $document = webCreateDocument($user);
 
-    $response = $this->get(route('documents.edit', 'DOC-2024-001'));
+    $response = $this->get(route('documents.edit', $document->id));
 
     $response->assertOk();
     $response->assertSee('Modifier le Document', false);
@@ -140,9 +184,12 @@ test('authenticated users can access the document edit page', function () {
 });
 
 test('document edit page includes cancel confirmation alert', function () {
-    $this->actingAs(User::factory()->create());
+    $user = User::factory()->create();
+    webGrantPermission($user, 'document.edit');
+    $this->actingAs($user);
+    $document = webCreateDocument($user);
 
-    $response = $this->get(route('documents.edit', 'DOC-2024-001'));
+    $response = $this->get(route('documents.edit', $document->id));
 
     $response->assertOk();
     $response->assertSee('Annuler les Modifications', false);

@@ -204,6 +204,27 @@ class DocumentApiCommandService
         return $document;
     }
 
+    public function archive(Request $request, int $id, User $user): Document
+    {
+        $this->authorization->assertPermission($user, 'document.publish');
+
+        $document = Document::withTrashed()->findOrFail($id);
+        if ($document->status !== 'active') {
+            abort(Response::HTTP_UNPROCESSABLE_ENTITY, 'Seuls les documents actifs peuvent être archivés.');
+        }
+
+        $document->status = 'archived';
+        $document->save();
+
+        $this->audit($request, $user, 'document.archived', 'document', $document->id, [
+            'reference_number' => $document->reference_number,
+            'status_before' => 'active',
+            'status_after' => 'archived',
+        ]);
+
+        return $document;
+    }
+
     public function softDelete(Request $request, int $id, User $user): void
     {
         $this->authorization->assertPermission($user, 'document.delete');

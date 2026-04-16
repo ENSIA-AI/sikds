@@ -3,6 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ $title ?? 'SIKDS' }}</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -13,6 +14,9 @@
     @php
         $pageTitle = trim($__env->yieldContent('page_title')) ?: 'Tableau de Bord';
         $pageSubtitle = trim($__env->yieldContent('page_subtitle')) ?: "Aperçu de l'activité du système SIKDS";
+        $authUser = auth()->user();
+        $userRole = $authUser?->roles?->pluck('name')->first() ?? 'Utilisateur';
+        $userName = $authUser?->full_name ?? $authUser?->name ?? $authUser?->email ?? 'Utilisateur';
     @endphp
 
     <div class="sikds-decor-wrap" aria-hidden="true">
@@ -45,8 +49,8 @@
 
                 <div class="sikds-profile" aria-label="Informations du profil">
                     <div class="sikds-user-meta">
-                        <p class="sikds-user-role">Super Administrateur</p>
-                        <p class="sikds-user-name">Nadia Benyahia</p>
+                        <p class="sikds-user-role">{{ $userRole }}</p>
+                        <p class="sikds-user-name">{{ $userName }}</p>
                     </div>
                     <a href="#" class="sikds-header-notif" aria-label="Notifications">
                         <span class="relative inline-flex">

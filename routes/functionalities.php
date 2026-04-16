@@ -56,6 +56,7 @@ Route::middleware(['auth'])
             Route::put('/{id}', [DocumentsApiController::class, 'update'])->name('update');
             Route::patch('/{id}', [DocumentsApiController::class, 'update'])->name('patch');
             Route::post('/{id}/publish', [DocumentsApiController::class, 'publish'])->name('publish');
+            Route::post('/{id}/archive', [DocumentsApiController::class, 'archive'])->name('archive');
             Route::delete('/{id}', [DocumentsApiController::class, 'destroy'])->name('destroy');
             Route::post('/{id}/restore', [DocumentsApiController::class, 'restore'])->name('restore');
             Route::get('/{id}/versions', [DocumentsApiController::class, 'versions'])->name('versions');

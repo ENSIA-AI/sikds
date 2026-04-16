@@ -3,7 +3,17 @@
 @section('page_subtitle', 'Gérer le cycle de vie des documents institutionnels')
 @section('content')
 
-    <div x-data="{ filtersOpen: false }" @keydown.escape.window="filtersOpen = false" class="relative">
+    <div
+        x-data="documentListPage({
+            csrfToken: @js(csrf_token()),
+        })"
+        @keydown.escape.window="filtersOpen = false"
+        class="relative"
+    >
+
+    <div x-show="banner.message" x-cloak class="sikds-alert" :class="banner.type === 'danger' ? 'sikds-alert--danger' : 'sikds-alert--info'">
+        <p class="sikds-alert-message" x-text="banner.message"></p>
+    </div>
 
     <div class="flex justify-end mb-5">
         <a href="{{ route('documents.create') }}" class="sikds-btn-upload">
@@ -83,11 +93,12 @@
                     <div class="sikds-docs-filter-section">
                         <p class="sikds-docs-filter-title">Tags</p>
                         <div class="sikds-docs-filter-tags">
-                            <label class="sikds-docs-filter-check"><input type="checkbox" name="tags[]" value="Directive" {{ in_array('Directive', $selectedTags, true) ? 'checked' : '' }}><span class="sikds-tag sikds-tag--table sikds-tag--directive">Directive</span></label>
-                            <label class="sikds-docs-filter-check"><input type="checkbox" name="tags[]" value="Urgente" {{ in_array('Urgente', $selectedTags, true) ? 'checked' : '' }}><span class="sikds-tag sikds-tag--table sikds-tag--urgent">Urgente</span></label>
-                            <label class="sikds-docs-filter-check"><input type="checkbox" name="tags[]" value="Décision" {{ in_array('Décision', $selectedTags, true) ? 'checked' : '' }}><span class="sikds-tag sikds-tag--table sikds-tag--decision">Décision</span></label>
-                            <label class="sikds-docs-filter-check"><input type="checkbox" name="tags[]" value="Règlement" {{ in_array('Règlement', $selectedTags, true) ? 'checked' : '' }}><span class="sikds-tag sikds-tag--table sikds-tag--reg">Règlement</span></label>
-                            <label class="sikds-docs-filter-check"><input type="checkbox" name="tags[]" value="Rapport" {{ in_array('Rapport', $selectedTags, true) ? 'checked' : '' }}><span class="sikds-tag sikds-tag--table sikds-tag--rapport">Rapport</span></label>
+                            @foreach ($availableTags as $tag)
+                                <label class="sikds-docs-filter-check">
+                                    <input type="checkbox" name="tags[]" value="{{ $tag['label'] }}" {{ in_array($tag['label'], $selectedTags, true) ? 'checked' : '' }}>
+                                    <span class="sikds-tag sikds-tag--table {{ $tag['class'] }}">{{ $tag['label'] }}</span>
+                                </label>
+                            @endforeach
                         </div>
                     </div>
 
@@ -167,33 +178,33 @@
                                 @foreach ($doc['actions'] as $action)
                                     @switch($action)
                                         @case('view')
-                                            <a href="{{ route('documents.show', $doc['reference']) }}" class="sikds-docs-action-btn" title="Consulter" aria-label="Consulter">
+                                            <a href="{{ $doc['show_url'] }}" class="sikds-docs-action-btn" title="Consulter" aria-label="Consulter">
                                                 <i class="fa-regular fa-eye"></i>
                                             </a>
                                             @break
                                         @case('edit')
-                                            <a href="{{ route('documents.edit', $doc['reference']) }}" class="sikds-docs-action-btn" title="Modifier" aria-label="Modifier">
+                                            <a href="{{ $doc['edit_url'] }}" class="sikds-docs-action-btn" title="Modifier" aria-label="Modifier">
                                                 <i class="fa-regular fa-pen-to-square"></i>
                                             </a>
                                             @break
                                         @case('download')
-                                            <button type="button" class="sikds-docs-action-btn" title="Télécharger" aria-label="Télécharger">
+                                            <a href="{{ $doc['download_url'] }}" class="sikds-docs-action-btn" title="Télécharger" aria-label="Télécharger">
                                                 <i class="fa-solid fa-download"></i>
-                                            </button>
+                                            </a>
                                             @break
                                         @case('copy')
-                                            <button type="button" class="sikds-docs-action-btn" title="Copier" aria-label="Copier">
+                                            <button type="button" class="sikds-docs-action-btn" title="Copier" aria-label="Copier" @click="copyReference(@js($doc['reference']))">
                                                 <i class="fa-regular fa-copy"></i>
                                             </button>
                                             @break
                                         @case('delete')
-                                            <button type="button" class="sikds-docs-action-btn sikds-docs-action-btn--danger" title="Supprimer" aria-label="Supprimer">
-                                                <i class="fa-regular fa-trash-can"></i>
+                                            <button type="button" class="sikds-docs-action-btn sikds-docs-action-btn--danger" title="Supprimer" aria-label="Supprimer" @click="performAction(@js($doc['delete_url']), 'DELETE', 'Document supprimé.')">
+                                                <i :class="loading ? 'fa-solid fa-spinner fa-spin' : 'fa-regular fa-trash-can'"></i>
                                             </button>
                                             @break
                                         @case('restore')
-                                            <button type="button" class="sikds-docs-action-btn" title="Restaurer" aria-label="Restaurer">
-                                                <i class="fa-solid fa-rotate-left"></i>
+                                            <button type="button" class="sikds-docs-action-btn" title="Restaurer" aria-label="Restaurer" @click="performAction(@js($doc['restore_url']), 'POST', 'Document restauré.')">
+                                                <i :class="loading ? 'fa-solid fa-spinner fa-spin' : 'fa-solid fa-rotate-left'"></i>
                                             </button>
                                             @break
                                     @endswitch
@@ -214,14 +225,83 @@
 
     <div class="sikds-docs-pagination">
         <span class="sikds-docs-pagination-info">
-            Affichage de 1-{{ count($documents) }} sur {{ count($documents) }} documents
+            Affichage de {{ $documents->firstItem() ?? 0 }}-{{ $documents->lastItem() ?? 0 }} sur {{ $documents->total() }} documents
         </span>
         <div class="sikds-docs-pagination-btns">
-            <button type="button" class="sikds-docs-page-btn" disabled>Précédent</button>
-            <button type="button" class="sikds-docs-page-btn" disabled>Suivant</button>
+            @if ($documents->onFirstPage())
+                <button type="button" class="sikds-docs-page-btn" disabled>Précédent</button>
+            @else
+                <a href="{{ $documents->previousPageUrl() }}" class="sikds-docs-page-btn">Précédent</a>
+            @endif
+
+            @if ($documents->hasMorePages())
+                <a href="{{ $documents->nextPageUrl() }}" class="sikds-docs-page-btn">Suivant</a>
+            @else
+                <button type="button" class="sikds-docs-page-btn" disabled>Suivant</button>
+            @endif
         </div>
     </div>
 
     </div>
+
+    <script>
+        function documentListPage(config) {
+            return {
+                filtersOpen: false,
+                loading: false,
+                banner: { message: '', type: 'info' },
+                init() {
+                    const message = window.sessionStorage.getItem('documents-success-message');
+                    if (message) {
+                        this.banner = { message, type: 'info' };
+                        window.sessionStorage.removeItem('documents-success-message');
+                    }
+                },
+                async performAction(url, method, successMessage) {
+                    if (this.loading) return;
+
+                    this.loading = true;
+                    this.banner = { message: '', type: 'info' };
+
+                    try {
+                        const response = await fetch(url, {
+                            method,
+                            headers: {
+                                'Accept': 'application/json',
+                                'X-Requested-With': 'XMLHttpRequest',
+                                'X-CSRF-TOKEN': config.csrfToken,
+                            },
+                            credentials: 'same-origin',
+                        });
+
+                        if (response.redirected) {
+                            throw new Error('La requête a été redirigée par le serveur. Vérifiez votre session.');
+                        }
+
+                        const payload = await response.json().catch(() => ({}));
+
+                        if (!response.ok) {
+                            throw new Error(payload.message || 'Une erreur est survenue.');
+                        }
+
+                        this.banner = { message: successMessage, type: 'info' };
+                        window.location.reload();
+                    } catch (error) {
+                        this.banner = { message: error.message || 'Action impossible.', type: 'danger' };
+                    } finally {
+                        this.loading = false;
+                    }
+                },
+                async copyReference(reference) {
+                    try {
+                        await navigator.clipboard.writeText(reference);
+                        this.banner = { message: 'Référence copiée.', type: 'info' };
+                    } catch (error) {
+                        this.banner = { message: 'Copie impossible.', type: 'danger' };
+                    }
+                },
+            };
+        }
+    </script>
 
 @endsection
