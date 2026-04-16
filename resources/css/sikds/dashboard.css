@@ -94,7 +94,8 @@
     }
 
     .sikds-bottom-card {
-        height:       188px;
+        height:       auto;
+        min-height:   188px;
         background:   var(--sikds-surface);
         @apply rounded-[14px] border;
         border-color: var(--sikds-border-solid);
