@@ -8,7 +8,9 @@
 
     {{ $slot }}
 
+    @isset($footer)
     <footer class="sikds-link-footer mt-auto shrink-0">
         {{ $footer }}
     </footer>
+    @endisset
 </article>

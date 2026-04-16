@@ -4,12 +4,14 @@
 @section('page_subtitle', "Aperçu de l'activité du système SIKDS")
 @section('content')
 
+    {{-- KPI cards --}}
     <section class="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
         @foreach ($kpis as $kpi)
             <x-stat-card :icon="$kpi['icon']" :value="$kpi['value']" :label="$kpi['label']" :trend="$kpi['trend']" />
         @endforeach
     </section>
 
+    {{-- Activity feed + Alerts --}}
     <section class="sikds-grid-panels xl:gap-6">
 
         <x-dashboard-panel
@@ -17,7 +19,7 @@
             subtitle="Actions des utilisateurs en temps réel"
         >
             <div class="min-h-0 flex-1 divide-y divide-black/10 overflow-y-auto">
-                @foreach ($activities as $activity)
+                @forelse ($activities as $activity)
                     <x-activity-item
                         :icon="$activity['icon']"
                         :user="$activity['user']"
@@ -25,7 +27,9 @@
                         :document="$activity['document']"
                         :time="$activity['time']"
                     />
-                @endforeach
+                @empty
+                    <p class="px-4 py-6 text-sm sikds-muted-text">Aucune activité récente.</p>
+                @endforelse
             </div>
             <x-slot:footer>Voir toute l'activité →</x-slot:footer>
         </x-dashboard-panel>
@@ -35,15 +39,18 @@
             subtitle="Notifications importantes"
         >
             <div class="min-h-0 flex-1 space-y-3 overflow-y-hidden px-4 py-4">
-                @foreach ($alerts as $alert)
+                @forelse ($alerts as $alert)
                     <x-alert-item :type="$alert['type']" :message="$alert['message']" :timestamp="$alert['timestamp']" />
-                @endforeach
+                @empty
+                    <p class="text-sm sikds-muted-text">Aucune alerte active.</p>
+                @endforelse
             </div>
             <x-slot:footer>Voir toutes les alertes →</x-slot:footer>
         </x-dashboard-panel>
 
     </section>
 
+    {{-- Bottom summary cards --}}
     <section class="mt-5 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
 
         <x-summary-card title="Documents par Statut">
@@ -67,12 +74,14 @@
 
         <x-summary-card title="Institutions Actives">
             <div class="mt-4 space-y-3 text-sm">
-                @foreach ($activeInstitutions as $institution)
+                @forelse ($activeInstitutions as $institution)
                     <div class="flex items-center justify-between">
                         <span class="sikds-muted-text">{{ $institution['label'] }}</span>
                         <span class="text-base font-semibold sikds-ink">{{ $institution['value'] }}</span>
                     </div>
-                @endforeach
+                @empty
+                    <p class="sikds-muted-text">Aucune institution active.</p>
+                @endforelse
             </div>
         </x-summary-card>
 
