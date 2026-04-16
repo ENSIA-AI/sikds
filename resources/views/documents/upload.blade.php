@@ -23,6 +23,17 @@
     <h2 class="sikds-upload-heading">Téléverser des Documents</h2>
     <p class="sikds-upload-sub">Ajouter de nouveaux documents au système SIKDS</p>
 
+    <div x-ref="uploadAlerts" class="sikds-upload-page-alerts">
+        <div x-show="errorList.length" x-cloak class="sikds-alert sikds-alert--danger">
+            <template x-for="(msg, idx) in errorList" :key="idx">
+                <p class="sikds-alert-message" x-text="msg"></p>
+            </template>
+        </div>
+        <div x-show="successMessage" x-cloak class="sikds-alert sikds-alert--info">
+            <p class="sikds-alert-message" x-text="successMessage"></p>
+        </div>
+    </div>
+
     {{-- Tab switcher --}}
     <div class="sikds-upload-tabs">
         <button type="button"
@@ -110,7 +121,7 @@
                 <i class="fa-solid fa-tag"></i> Tags
             </h3>
 
-            <p class="sikds-upload-tags-label">Tags du document courant</p>
+            <p class="sikds-upload-tags-label">Tags du document courant <span class="sikds-muted-text">(au moins un obligatoire)</span></p>
             <div class="sikds-upload-tags-available">
                 <template x-for="tag in availableTags" :key="tag.id">
                     <button
@@ -121,14 +132,6 @@
                         x-text="tag.label"
                     ></button>
                 </template>
-            </div>
-
-            <div x-show="errorList.length" x-cloak class="sikds-alert sikds-alert--danger" style="margin-top: 16px;">
-                <p class="sikds-alert-message" x-text="errorList[0]"></p>
-            </div>
-
-            <div x-show="successMessage" x-cloak class="sikds-alert sikds-alert--info" style="margin-top: 16px;">
-                <p class="sikds-alert-message" x-text="successMessage"></p>
             </div>
         </div>
     </div>
@@ -298,11 +301,19 @@ function uploadPage(config) {
         errorList: [],
         successMessage: '',
 
+        todayIsoDate() {
+            const d = new Date();
+            const yyyy = d.getFullYear();
+            const mm = String(d.getMonth() + 1).padStart(2, '0');
+            const dd = String(d.getDate()).padStart(2, '0');
+            return `${yyyy}-${mm}-${dd}`;
+        },
+
         emptyMeta() {
             return {
                 title: '',
                 description: '',
-                issue_date: '',
+                issue_date: this.todayIsoDate(),
                 effective_date: '',
                 expiration_date: '',
                 target_audience: 'all',
@@ -354,7 +365,8 @@ function uploadPage(config) {
             this.dragging = false;
             const dropped = Array.from(e.dataTransfer.files).filter(f => this.isPdfFile(f));
             if (dropped.length === 0 && e.dataTransfer.files.length > 0) {
-                this.errorList = ['Seuls les fichiers PDF sont autorisés.'];
+                this.showErrors(['Seuls les fichiers PDF sont autorisés.']);
+                return;
             }
             this.addFiles(dropped);
         },
@@ -362,7 +374,9 @@ function uploadPage(config) {
         handleFileSelect(e) {
             const selected = Array.from(e.target.files).filter(f => this.isPdfFile(f));
             if (selected.length === 0 && e.target.files.length > 0) {
-                this.errorList = ['Seuls les fichiers PDF sont autorisés.'];
+                this.showErrors(['Seuls les fichiers PDF sont autorisés.']);
+                e.target.value = '';
+                return;
             }
             this.addFiles(selected);
             e.target.value = '';
@@ -441,6 +455,17 @@ function uploadPage(config) {
             return type === 'application/pdf' || name.endsWith('.pdf');
         },
 
+        scrollToUploadAlerts() {
+            this.$nextTick(() => {
+                window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
+            });
+        },
+
+        showErrors(messages) {
+            this.errorList = Array.isArray(messages) ? messages : [messages];
+            this.scrollToUploadAlerts();
+        },
+
         async submit() {
             if (this.submitting) return;
 
@@ -448,8 +473,16 @@ function uploadPage(config) {
             this.successMessage = '';
 
             if (this.files.length === 0) {
-                this.errorList = ['Ajoutez au moins un fichier PDF avant de continuer.'];
+                this.showErrors(['Ajoutez au moins un fichier PDF avant de continuer.']);
                 return;
+            }
+
+            for (let idx = 0; idx < this.files.length; idx++) {
+                const meta = this.documentsMeta[idx] ?? this.emptyMeta();
+                if (!meta.tag_ids || meta.tag_ids.length === 0) {
+                    this.showErrors(['Sélectionnez au moins un tag pour chaque document.']);
+                    return;
+                }
             }
 
             const formData = new FormData();
@@ -497,23 +530,24 @@ function uploadPage(config) {
 
                 if (!response.ok) {
                     if (payload.errors) {
-                        this.errorList = Object.values(payload.errors).flat();
+                        this.showErrors(Object.values(payload.errors).flat());
                     } else {
-                        this.errorList = [payload.message || 'Le téléversement a échoué.'];
+                        this.showErrors([payload.message || 'Le téléversement a échoué.']);
                     }
                     return;
                 }
 
                 if (response.status !== 201 || !Array.isArray(payload.documents) || payload.documents.length === 0) {
-                    this.errorList = [payload.message || `Réponse inattendue du serveur (${response.status}). Aucun document créé.`];
+                    this.showErrors([payload.message || `Réponse inattendue du serveur (${response.status}). Aucun document créé.`]);
                     return;
                 }
 
                 this.successMessage = payload.message || 'Document(s) créé(s) avec succès.';
+                this.scrollToUploadAlerts();
                 window.sessionStorage.setItem('documents-success-message', this.successMessage);
                 setTimeout(() => window.location.href = config.indexUrl, 900);
             } catch (error) {
-                this.errorList = [error.message || 'Le téléversement a échoué.'];
+                this.showErrors([error.message || 'Le téléversement a échoué.']);
             } finally {
                 this.submitting = false;
             }

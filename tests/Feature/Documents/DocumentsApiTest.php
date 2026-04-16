@@ -56,6 +56,22 @@ function fakePdfUpload(string $name = 'document.pdf'): UploadedFile
     return new UploadedFile($tempPath, $name, 'application/pdf', null, true);
 }
 
+function seedDocumentsTestTag(): int
+{
+    return DB::table('tags')->insertGetId([
+        'name' => 'Tag test',
+        'slug' => 'tag-test-'.Str::random(8),
+        'description' => null,
+        'color' => '#000000',
+        'category' => 'test',
+        'parent_id' => null,
+        'is_predefined' => false,
+        'created_at' => now(),
+        'updated_at' => now(),
+        'created_by' => null,
+    ]);
+}
+
 /**
  * @param  array<string, mixed>  $overrides
  */
@@ -164,6 +180,7 @@ test('documents api list returns only assigned documents for non super admin', f
 test('document upload requires create permission', function () {
     $user = User::factory()->create();
     $this->actingAs($user);
+    $tagId = seedDocumentsTestTag();
 
     $payload = [
         'files' => [fakePdfUpload()],
@@ -174,7 +191,7 @@ test('document upload requires create permission', function () {
             'effective_date' => now()->toDateString(),
             'expiration_date' => now()->addDays(2)->toDateString(),
             'target_audience' => 'all',
-            'tag_ids' => [],
+            'tag_ids' => [$tagId],
         ]],
     ];
 
@@ -186,6 +203,7 @@ test('document upload enforces pdf only and batch max five', function () {
     $user = User::factory()->create();
     grantPermission($user, 'document.create');
     $this->actingAs($user);
+    $tagId = seedDocumentsTestTag();
 
     $badPayload = [
         'files' => [UploadedFile::fake()->create('bad.txt', 1, 'text/plain')],
@@ -193,6 +211,7 @@ test('document upload enforces pdf only and batch max five', function () {
             'title' => 'Bad file',
             'issue_date' => now()->toDateString(),
             'target_audience' => 'all',
+            'tag_ids' => [$tagId],
         ]],
     ];
 
@@ -207,6 +226,7 @@ test('document upload enforces pdf only and batch max five', function () {
             'title' => "Doc {$i}",
             'issue_date' => now()->toDateString(),
             'target_audience' => 'all',
+            'tag_ids' => [$tagId],
         ];
     }
 
@@ -218,6 +238,7 @@ test('document upload creates draft document and stores file', function () {
     $user = User::factory()->create();
     grantPermission($user, 'document.create');
     $this->actingAs($user);
+    $tagId = seedDocumentsTestTag();
 
     $payload = [
         'files' => [fakePdfUpload('valid.pdf')],
@@ -228,7 +249,7 @@ test('document upload creates draft document and stores file', function () {
             'effective_date' => now()->toDateString(),
             'expiration_date' => now()->addDays(1)->toDateString(),
             'target_audience' => 'all',
-            'tag_ids' => [],
+            'tag_ids' => [$tagId],
         ]],
     ];
 
@@ -242,6 +263,25 @@ test('document upload creates draft document and stores file', function () {
     expect($doc->status)->toBe('draft');
     expect($doc->file_path)->not->toBe('');
     Storage::disk((string) config('filesystems.documents_disk'))->assertExists($doc->file_path);
+});
+
+test('document upload requires at least one tag', function () {
+    $user = User::factory()->create();
+    grantPermission($user, 'document.create');
+    $this->actingAs($user);
+
+    $payload = [
+        'files' => [fakePdfUpload()],
+        'documents_meta' => [[
+            'title' => 'Doc test',
+            'issue_date' => now()->toDateString(),
+            'target_audience' => 'all',
+            'tag_ids' => [],
+        ]],
+    ];
+
+    $this->post('/api/documents', $payload)
+        ->assertSessionHasErrors(['documents_meta.0.tag_ids']);
 });
 
 test('publish endpoint enforces draft to active transition', function () {
