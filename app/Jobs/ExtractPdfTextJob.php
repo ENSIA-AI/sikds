@@ -43,9 +43,10 @@ class ExtractPdfTextJob implements ShouldQueue
         $tempFile = null;
 
         try {
-            $pdfBytes = Storage::disk('s3')->get($document->file_path);
+            $disk = (string) config('filesystems.documents_disk', 'local');
+            $pdfBytes = Storage::disk($disk)->get($document->file_path);
             if (! is_string($pdfBytes) || $pdfBytes === '') {
-                throw new \RuntimeException('Failed to download PDF bytes from S3 for key: ' . $document->file_path);
+                throw new \RuntimeException('Failed to read PDF from storage ('.$disk.') for key: ' . $document->file_path);
             }
 
             $tempFile = rtrim(sys_get_temp_dir(), DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR

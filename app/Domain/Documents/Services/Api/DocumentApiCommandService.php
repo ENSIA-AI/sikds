@@ -301,9 +301,10 @@ class DocumentApiCommandService
         $filename = $safeName !== '' ? "{$safeName}.pdf" : ('document-'.$version.'.pdf');
         $path = sprintf('documents/%s/%s/v%d/%s', Carbon::now()->format('Y'), $reference, $version, $filename);
 
-        $written = Storage::disk('s3')->putFileAs(dirname($path), $file, basename($path));
+        $disk = (string) config('filesystems.documents_disk', 'local');
+        $written = Storage::disk($disk)->putFileAs(dirname($path), $file, basename($path));
         if ($written === false) {
-            abort(Response::HTTP_INTERNAL_SERVER_ERROR, 'Échec de stockage du fichier sur SeaweedFS/S3.');
+            abort(Response::HTTP_INTERNAL_SERVER_ERROR, 'Échec de stockage du fichier ('.$disk.').');
         }
 
         return ['path' => $path, 'hash' => $hash, 'size' => (int) $file->getSize()];

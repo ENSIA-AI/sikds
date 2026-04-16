@@ -15,6 +15,7 @@ use Spatie\Permission\PermissionRegistrar;
 beforeEach(function (): void {
     config()->set('app.key', 'base64:'.base64_encode(random_bytes(32)));
     $this->withoutVite();
+    config(['filesystems.documents_disk' => 's3']);
     Storage::fake('s3');
     Queue::fake();
     app(PermissionRegistrar::class)->forgetCachedPermissions();
@@ -240,7 +241,7 @@ test('document upload creates draft document and stores file', function () {
 
     expect($doc->status)->toBe('draft');
     expect($doc->file_path)->not->toBe('');
-    Storage::disk('s3')->assertExists($doc->file_path);
+    Storage::disk((string) config('filesystems.documents_disk'))->assertExists($doc->file_path);
 });
 
 test('publish endpoint enforces draft to active transition', function () {

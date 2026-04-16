@@ -20,8 +20,8 @@ class WatermarkService
      */
     public function generateWatermarkedPdf(Document $document, DownloadLog $downloadLog): string
     {
-        // Use Storage::get because the file may be on SeaweedFS (S3-compatible) and not on the local filesystem.
-        $fileContents = Storage::get($document->file_path);
+        $disk = (string) config('filesystems.documents_disk', 'local');
+        $fileContents = Storage::disk($disk)->get($document->file_path);
 
         if (!$fileContents) {
             throw new \RuntimeException('Document file could not be read from storage.');

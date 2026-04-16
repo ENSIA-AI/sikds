@@ -52,6 +52,7 @@ Route::middleware(['auth'])
         Route::prefix('api/documents')->name('api.documents.')->group(function () {
             Route::get('/', [DocumentsApiController::class, 'index'])->name('index');
             Route::post('/', [DocumentsApiController::class, 'store'])->name('store');
+            Route::post('/create', [DocumentsApiController::class, 'store'])->name('create');
             Route::get('/{id}', [DocumentsApiController::class, 'show'])->name('show');
             Route::put('/{id}', [DocumentsApiController::class, 'update'])->name('update');
             Route::patch('/{id}', [DocumentsApiController::class, 'update'])->name('patch');

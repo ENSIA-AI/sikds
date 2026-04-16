@@ -5,7 +5,7 @@
 
 <div
     x-data="uploadPage({
-        storeUrl: @js(route('api.documents.store')),
+        storeUrl: @js(route('api.documents.create')),
         indexUrl: @js(route('documents.index')),
         csrfToken: @js(csrf_token()),
         availableTags: @js($availableTags),
@@ -501,6 +501,11 @@ function uploadPage(config) {
                     } else {
                         this.errorList = [payload.message || 'Le téléversement a échoué.'];
                     }
+                    return;
+                }
+
+                if (response.status !== 201 || !Array.isArray(payload.documents) || payload.documents.length === 0) {
+                    this.errorList = [payload.message || `Réponse inattendue du serveur (${response.status}). Aucun document créé.`];
                     return;
                 }
 
