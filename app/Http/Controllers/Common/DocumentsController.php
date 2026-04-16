@@ -192,7 +192,10 @@ class DocumentsController
     {
         $tags = $this->documentTags($document->id);
 
-        $actions = ['download', 'copy'];
+        $actions = ['download'];
+        if ($document->status === 'draft' && $user->can('document.publish')) {
+            $actions[] = 'publish';
+        }
         if ($this->canPreview($user)) {
             $actions[] = 'view';
         }
@@ -222,6 +225,7 @@ class DocumentsController
             'edit_url' => route('documents.edit', $document->id),
             'delete_url' => route('api.documents.destroy', $document->id),
             'restore_url' => route('api.documents.restore', $document->id),
+            'publish_url' => route('api.documents.publish', $document->id),
         ];
     }
 

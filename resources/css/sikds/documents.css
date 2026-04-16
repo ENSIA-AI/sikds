@@ -496,6 +496,17 @@
         line-height: 20px;
     }
 
+    .sikds-upload-page-alerts {
+        margin-top: 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .sikds-upload-page-alerts .sikds-alert-message + .sikds-alert-message {
+        margin-top: 8px;
+    }
+
     .sikds-upload-tabs {
         margin-top: 24px;
         margin-bottom: 24px;

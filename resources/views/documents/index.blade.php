@@ -192,9 +192,9 @@
                                                 <i class="fa-solid fa-download"></i>
                                             </a>
                                             @break
-                                        @case('copy')
-                                            <button type="button" class="sikds-docs-action-btn" title="Copier" aria-label="Copier" @click="copyReference(@js($doc['reference']))">
-                                                <i class="fa-regular fa-copy"></i>
+                                        @case('publish')
+                                            <button type="button" class="sikds-docs-action-btn" title="Publier" aria-label="Publier" @click="performAction(@js($doc['publish_url']), 'POST', 'Document publié.')">
+                                                <i :class="loading ? 'fa-solid fa-spinner fa-spin' : 'fa-solid fa-paper-plane'"></i>
                                             </button>
                                             @break
                                         @case('delete')
@@ -290,14 +290,6 @@
                         this.banner = { message: error.message || 'Action impossible.', type: 'danger' };
                     } finally {
                         this.loading = false;
-                    }
-                },
-                async copyReference(reference) {
-                    try {
-                        await navigator.clipboard.writeText(reference);
-                        this.banner = { message: 'Référence copiée.', type: 'info' };
-                    } catch (error) {
-                        this.banner = { message: 'Copie impossible.', type: 'danger' };
                     }
                 },
             };

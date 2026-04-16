@@ -35,7 +35,7 @@ class StoreDocumentsRequest extends FormRequest
             'documents_meta.*.target_role_ids.*' => ['integer', 'exists:roles,id'],
             'documents_meta.*.target_user_ids' => ['nullable', 'array'],
             'documents_meta.*.target_user_ids.*' => ['integer', 'exists:users,id'],
-            'documents_meta.*.tag_ids' => ['nullable', 'array'],
+            'documents_meta.*.tag_ids' => ['required', 'array', 'min:1'],
             'documents_meta.*.tag_ids.*' => ['integer', 'exists:tags,id'],
         ];
     }
