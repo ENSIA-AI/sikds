@@ -16,5 +16,9 @@ class DatabaseSeeder extends Seeder
             RolesSeeder::class,
             TagsSeeder::class,
         ]);
+
+        if (app()->environment('local')) {
+            $this->call(DevSeeder::class);
+        }
     }
 }
