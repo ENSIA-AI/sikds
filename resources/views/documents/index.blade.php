@@ -11,8 +11,31 @@
         class="relative"
     >
 
-    <div x-show="banner.message" x-cloak class="sikds-alert" :class="banner.type === 'danger' ? 'sikds-alert--danger' : 'sikds-alert--info'">
-        <p class="sikds-alert-message" x-text="banner.message"></p>
+    <div x-show="banner.message"
+         x-cloak
+         class="sikds-toast"
+         :class="{
+            'sikds-toast--success': banner.type === 'success',
+            'sikds-toast--danger':  banner.type === 'danger',
+            'sikds-toast--info':    !['success','danger'].includes(banner.type),
+         }"
+         :role="banner.type === 'danger' ? 'alert' : 'status'">
+        <span class="sikds-toast-icon">
+            <i class="fa-solid"
+               :class="{
+                    'fa-circle-check':        banner.type === 'success',
+                    'fa-circle-exclamation':  banner.type === 'danger',
+                    'fa-circle-info':         !['success','danger'].includes(banner.type),
+               }"></i>
+        </span>
+        <div class="sikds-toast-body">
+            <p class="sikds-toast-title"
+               x-text="banner.type === 'danger' ? 'Action impossible' : (banner.type === 'success' ? 'Opération réussie' : 'Information')"></p>
+            <p class="sikds-toast-message" x-text="banner.message"></p>
+        </div>
+        <button type="button" @click="banner.message = ''" class="sikds-toast-dismiss" aria-label="Fermer">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
     </div>
 
     <div class="flex justify-end mb-5">
@@ -192,9 +215,9 @@
                                                 <i class="fa-solid fa-download"></i>
                                             </a>
                                             @break
-                                        @case('publish')
-                                            <button type="button" class="sikds-docs-action-btn" title="Publier" aria-label="Publier" @click="performAction(@js($doc['publish_url']), 'POST', 'Document publié.')">
-                                                <i :class="loading ? 'fa-solid fa-spinner fa-spin' : 'fa-solid fa-paper-plane'"></i>
+                                        @case('copy')
+                                            <button type="button" class="sikds-docs-action-btn" title="Copier" aria-label="Copier" @click="copyReference(@js($doc['reference']))">
+                                                <i class="fa-regular fa-copy"></i>
                                             </button>
                                             @break
                                         @case('delete')
@@ -253,7 +276,7 @@
                 init() {
                     const message = window.sessionStorage.getItem('documents-success-message');
                     if (message) {
-                        this.banner = { message, type: 'info' };
+                        this.banner = { message, type: 'success' };
                         window.sessionStorage.removeItem('documents-success-message');
                     }
                 },
@@ -284,12 +307,20 @@
                             throw new Error(payload.message || 'Une erreur est survenue.');
                         }
 
-                        this.banner = { message: successMessage, type: 'info' };
+                        this.banner = { message: successMessage, type: 'success' };
                         window.location.reload();
                     } catch (error) {
                         this.banner = { message: error.message || 'Action impossible.', type: 'danger' };
                     } finally {
                         this.loading = false;
+                    }
+                },
+                async copyReference(reference) {
+                    try {
+                        await navigator.clipboard.writeText(reference);
+                        this.banner = { message: 'Référence copiée.', type: 'info' };
+                    } catch (error) {
+                        this.banner = { message: 'Copie impossible.', type: 'danger' };
                     }
                 },
             };
