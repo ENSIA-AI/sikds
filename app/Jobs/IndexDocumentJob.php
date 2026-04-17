@@ -11,6 +11,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\DB;
 
 /**
  * Entry point for document indexing: validates state, sets status=processing,
@@ -38,6 +39,12 @@ class IndexDocumentJob implements ShouldQueue
         }
 
         try {
+            if ($document->status !== 'active') {
+                DB::table('document_chunks')->where('document_id', $document->id)->delete();
+
+                return;
+            }
+
             if ($document->indexing_status !== 'pending') {
                 return;
             }

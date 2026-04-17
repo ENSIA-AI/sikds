@@ -157,35 +157,7 @@ class DocumentsController
             return $query;
         }
 
-        return $query->where(function (Builder $sub) use ($user): void {
-            $sub->where('uploaded_by', $user->id)
-                ->orWhere(function (Builder $s): void {
-                $s->where('status', 'active')->where('target_audience', 'all');
-            })->orWhere(function (Builder $s) use ($user): void {
-                if ($user->institution_id === null) {
-                    $s->whereRaw('1 = 0');
-
-                    return;
-                }
-
-                $s->where('status', 'active')
-                    ->where('target_audience', 'specific_institutions')
-                    ->whereExists(function ($q) use ($user): void {
-                        $q->selectRaw('1')
-                            ->from('document_institution_targets')
-                            ->whereColumn('document_institution_targets.document_id', 'documents.id')
-                            ->where('document_institution_targets.institution_id', $user->institution_id);
-                    });
-            })->orWhere(function (Builder $s) use ($user): void {
-                $s->where('status', 'active')
-                    ->whereExists(function ($q) use ($user): void {
-                        $q->selectRaw('1')
-                            ->from('document_user_targets')
-                            ->whereColumn('document_user_targets.document_id', 'documents.id')
-                            ->where('document_user_targets.user_id', $user->id);
-                    });
-            });
-        });
+        return $query->visibleTo($user);
     }
 
     private function mapListDocument(Document $document, User $user): array

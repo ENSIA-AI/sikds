@@ -42,37 +42,55 @@ class GenerateChunkEmbeddingsJob implements ShouldQueue
         try {
             $batchSize = (int) config('rag.embedding.batch_size');
 
-            $chunks = DocumentChunk::query()
+            $chunkBatch = DocumentChunk::query()
                 ->forDocument($document->id)
                 ->missingEmbeddings()
                 ->orderBy('chunk_index')
+                ->limit(max(1, $batchSize))
                 ->get(['id', 'content']);
 
-            if ($chunks->isEmpty()) {
+            if ($chunkBatch->isEmpty()) {
                 FinalizeDocumentIndexJob::dispatch($document->id)->onQueue('indexing');
                 return;
             }
 
-            $chunks->chunk($batchSize)->each(function ($chunkBatch) use ($embeddings) {
-                $texts = $chunkBatch->pluck('content')->map(fn ($v) => (string) $v)->all();
-                $vectors = $embeddings->embedPassages($texts);
+            $texts = $chunkBatch->pluck('content')->map(fn ($v) => (string) $v)->all();
+            $vectors = $embeddings->embedPassages($texts);
 
-                foreach ($chunkBatch->values() as $i => $row) {
-                    $vec = $vectors[$i] ?? null;
-                    if (! is_array($vec)) {
-                        continue;
-                    }
-
-                    $literal = $this->vectorLiteral($vec);
-                    DB::statement(
-                        'UPDATE document_chunks SET embedding = (?::vector) WHERE id = ?',
-                        [$literal, (int) $row->id]
-                    );
+            foreach ($chunkBatch->values() as $i => $row) {
+                $vec = $vectors[$i] ?? null;
+                if (! is_array($vec)) {
+                    continue;
                 }
-            });
+
+                $literal = $this->vectorLiteral($vec);
+                DB::statement(
+                    'UPDATE document_chunks SET embedding = (?::vector) WHERE id = ?',
+                    [$literal, (int) $row->id]
+                );
+            }
+
+            $remaining = DocumentChunk::query()
+                ->forDocument($document->id)
+                ->missingEmbeddings()
+                ->count();
+
+            if ($remaining > 0) {
+                // Throttle embedding throughput; prevents hitting provider TPM limits.
+                self::dispatch($document->id)->onQueue('indexing')->delay(now()->addSeconds(2));
+                return;
+            }
 
             FinalizeDocumentIndexJob::dispatch($document->id)->onQueue('indexing');
         } catch (\Throwable $e) {
+            // Jina token rate limiting: back off without marking the whole document as failed.
+            $msg = $e->getMessage();
+            if (str_contains($msg, 'HTTP 429') || str_contains($msg, 'RATE_TOKEN_LIMIT_EXCEEDED')) {
+                $this->release(75);
+
+                return;
+            }
+
             $document->indexing_status = 'failed';
             $document->save();
 

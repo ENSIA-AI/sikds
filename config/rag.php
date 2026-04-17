@@ -13,7 +13,8 @@ return [
     'embedding' => [
         'model' => 'jina-embeddings-v5-text-small',
         'dimensions' => 1024,
-        'batch_size' => 50,
+        // Keep low to avoid Jina token rate limits during indexing bursts.
+        'batch_size' => (int) env('RAG_EMBED_BATCH_SIZE', 10),
         'passage_task' => 'retrieval.passage',
         'query_task' => 'retrieval.query',
     ],
