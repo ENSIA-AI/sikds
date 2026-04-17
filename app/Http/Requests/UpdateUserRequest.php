@@ -14,6 +14,36 @@ final class UpdateUserRequest extends FormRequest
         return $this->user()->can('user.manage');
     }
 
+    protected function prepareForValidation(): void
+    {
+        $fullName = $this->input('full_name');
+        if (is_string($fullName)) {
+            $this->merge([
+                'full_name' => preg_replace('/\s+/', ' ', trim($fullName)),
+            ]);
+        }
+
+        $email = $this->input('email');
+        if (is_string($email)) {
+            $this->merge([
+                'email' => strtolower(trim($email)),
+            ]);
+        }
+
+        if ($this->has('institution_id')) {
+            $institutionId = $this->input('institution_id');
+            $this->merge([
+                'institution_id' => is_numeric($institutionId) ? (int) $institutionId : $institutionId,
+            ]);
+        }
+
+        if ($this->has('is_active')) {
+            $this->merge([
+                'is_active' => $this->boolean('is_active'),
+            ]);
+        }
+    }
+
     public function rules(): array
     {
         $userId = $this->route('user')->id;
