@@ -76,6 +76,7 @@ class DocumentsController
         }
 
         $documents = $query
+            ->with(['tags', 'targetInstitutions', 'targetRoles'])
             ->orderByDesc('issue_date')
             ->paginate(15)
             ->withQueryString()
@@ -190,12 +191,15 @@ class DocumentsController
 
     private function mapListDocument(Document $document, User $user): array
     {
-        $tags = $this->documentTags($document->id);
+        $tags = $document->relationLoaded('tags')
+            ? $document->tags->sortBy('name')->map(fn ($tag): array => [
+                'id' => (int) $tag->id,
+                'label' => (string) $tag->name,
+                'class' => $this->tagClass((string) $tag->slug, (string) $tag->name),
+            ])->values()->all()
+            : $this->documentTags($document->id);
 
-        $actions = ['download'];
-        if ($document->status === 'draft' && $user->can('document.publish')) {
-            $actions[] = 'publish';
-        }
+        $actions = ['download', 'copy'];
         if ($this->canPreview($user)) {
             $actions[] = 'view';
         }
@@ -225,7 +229,6 @@ class DocumentsController
             'edit_url' => route('documents.edit', $document->id),
             'delete_url' => route('api.documents.destroy', $document->id),
             'restore_url' => route('api.documents.restore', $document->id),
-            'publish_url' => route('api.documents.publish', $document->id),
         ];
     }
 

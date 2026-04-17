@@ -37,12 +37,26 @@
         </div>
     </div>
 
-    <div x-show="errorList.length" x-cloak class="sikds-alert sikds-alert--danger" style="margin-bottom: 16px;">
-        <p class="sikds-alert-message" x-text="errorList[0]"></p>
+    <div x-show="errorList.length" x-cloak class="sikds-toast sikds-toast--danger" role="alert">
+        <span class="sikds-toast-icon"><i class="fa-solid fa-circle-exclamation"></i></span>
+        <div class="sikds-toast-body">
+            <p class="sikds-toast-title">Action impossible</p>
+            <p class="sikds-toast-message" x-text="errorList[0]"></p>
+        </div>
+        <button type="button" @click="errorList = []" class="sikds-toast-dismiss" aria-label="Fermer">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
     </div>
 
-    <div x-show="successMessage" x-cloak class="sikds-alert sikds-alert--info" style="margin-bottom: 16px;">
-        <p class="sikds-alert-message" x-text="successMessage"></p>
+    <div x-show="successMessage" x-cloak class="sikds-toast sikds-toast--success" role="status">
+        <span class="sikds-toast-icon"><i class="fa-solid fa-circle-check"></i></span>
+        <div class="sikds-toast-body">
+            <p class="sikds-toast-title">Opération réussie</p>
+            <p class="sikds-toast-message" x-text="successMessage"></p>
+        </div>
+        <button type="button" @click="successMessage = ''" class="sikds-toast-dismiss" aria-label="Fermer">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
     </div>
 
     <div class="sikds-doc-edit-heading">
