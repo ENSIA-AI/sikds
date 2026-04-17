@@ -33,7 +33,7 @@ final class RoleController extends Controller
         
         $roles = Role::query()
             ->with('permissions:id,name,code')
-            ->withCount('users')
+            ->withCount(['users', 'permissions'])
             ->when($request->search, function ($query, $search) {
                 $query->where('name', 'ilike', "%{$search}%")
                     ->orWhere('description', 'ilike', "%{$search}%");
