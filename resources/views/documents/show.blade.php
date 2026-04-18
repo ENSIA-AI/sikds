@@ -26,7 +26,7 @@
         <div class="sikds-doc-actions">
             <button type="button"
                     class="sikds-doc-action-btn sikds-doc-action-btn--default"
-                    @click="$dispatch('open-download-modal', { id: {{ $document['id'] }} })">
+                    @click="$dispatch('open-download-modal', { downloadUrl: @js(route('documents.download', $document['id'])) })">
                 <i class="fa-solid fa-download"></i>
                 <span>Télécharger</span>
             </button>
