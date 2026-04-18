@@ -53,6 +53,9 @@ class IndexingController extends Controller
         if ($document->indexing_status !== 'failed') {
             return back()->with('error', 'Seuls les documents en échec peuvent être relancés.');
         }
+        if ($document->status !== 'active' || $document->trashed()) {
+            return back()->with('error', 'Seuls les documents actifs peuvent être relancés.');
+        }
 
         $document->indexing_status = 'pending';
         $document->save();
