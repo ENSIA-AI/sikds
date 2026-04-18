@@ -12,6 +12,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -24,7 +25,7 @@ class GenerateChunkEmbeddingsJob implements ShouldQueue
 
     public int $tries = 3;
 
-    public array $backoff = [30, 120, 300];
+    public array $backoff = [60, 180, 420];
 
     public function __construct(
         protected int $documentId,
@@ -40,14 +41,17 @@ class GenerateChunkEmbeddingsJob implements ShouldQueue
         }
 
         try {
-            $batchSize = (int) config('rag.embedding.batch_size');
+            $configuredBatch = max(1, (int) config('rag.embedding.batch_size'));
+            $tokensPerCallBudget = $this->tokensPerCallBudget();
 
-            $chunkBatch = DocumentChunk::query()
+            $candidates = DocumentChunk::query()
                 ->forDocument($document->id)
                 ->missingEmbeddings()
                 ->orderBy('chunk_index')
-                ->limit(max(1, $batchSize))
-                ->get(['id', 'content']);
+                ->limit($configuredBatch)
+                ->get(['id', 'content', 'token_count']);
+
+            $chunkBatch = $this->selectChunksWithinTokenBudget($candidates, $tokensPerCallBudget, $configuredBatch);
 
             if ($chunkBatch->isEmpty()) {
                 FinalizeDocumentIndexJob::dispatch($document->id)->onQueue('indexing');
@@ -76,8 +80,8 @@ class GenerateChunkEmbeddingsJob implements ShouldQueue
                 ->count();
 
             if ($remaining > 0) {
-                // Throttle embedding throughput; prevents hitting provider TPM limits.
-                self::dispatch($document->id)->onQueue('indexing')->delay(now()->addSeconds(2));
+                $delaySeconds = $this->embeddingDispatchDelaySeconds();
+                self::dispatch($document->id)->onQueue('indexing')->delay(now()->addSeconds($delaySeconds));
                 return;
             }
 
@@ -86,7 +90,7 @@ class GenerateChunkEmbeddingsJob implements ShouldQueue
             // Jina token rate limiting: back off without marking the whole document as failed.
             $msg = $e->getMessage();
             if (str_contains($msg, 'HTTP 429') || str_contains($msg, 'RATE_TOKEN_LIMIT_EXCEEDED')) {
-                $this->release(75);
+                $this->release((int) config('rag.jina.backoff_429', 75));
 
                 return;
             }
@@ -96,6 +100,61 @@ class GenerateChunkEmbeddingsJob implements ShouldQueue
 
             throw $e;
         }
+    }
+
+    /**
+     * Max tokens we can send in one embedding call when RPM slots are fully used (TPM/RPM envelope).
+     */
+    protected function tokensPerCallBudget(): float
+    {
+        $tpm = (float) config('rag.jina.tpm_limit');
+        $headroom = (float) config('rag.jina.rate_headroom');
+        $rpm = (float) max(1, (int) config('rag.jina.rpm_limit'));
+
+        return max(1.0, ($tpm * $headroom) / $rpm);
+    }
+
+    /**
+     * delay_seconds = ceil(60 / (rpm_limit × rate_headroom)), clamped between 1 and 60.
+     */
+    protected function embeddingDispatchDelaySeconds(): int
+    {
+        $rpm = (float) config('rag.jina.rpm_limit');
+        $headroom = (float) config('rag.jina.rate_headroom');
+        $effectiveRpm = max(0.001, $rpm * $headroom);
+
+        return max(1, min(60, (int) ceil(60 / $effectiveRpm)));
+    }
+
+    /**
+     * @param  \Illuminate\Support\Collection<int, DocumentChunk>  $candidates
+     * @return \Illuminate\Support\Collection<int, DocumentChunk>
+     */
+    protected function selectChunksWithinTokenBudget(Collection $candidates, float $budget, int $configuredBatch): Collection
+    {
+        $maxTokensHint = max(1, (int) config('rag.chunking.max_tokens'));
+        $selected = collect();
+        $sum = 0;
+
+        foreach ($candidates as $chunk) {
+            $tc = (int) ($chunk->token_count ?? 0);
+            if ($tc < 1) {
+                $tc = $maxTokensHint;
+            }
+
+            if ($selected->isNotEmpty() && $sum + $tc > $budget) {
+                break;
+            }
+
+            $selected->push($chunk);
+            $sum += $tc;
+
+            if ($selected->count() >= $configuredBatch) {
+                break;
+            }
+        }
+
+        return $selected;
     }
 
     /**
@@ -109,4 +168,3 @@ class GenerateChunkEmbeddingsJob implements ShouldQueue
         )) . ']';
     }
 }
-
