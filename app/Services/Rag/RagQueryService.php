@@ -81,6 +81,10 @@ class RagQueryService
 
         $citations = array_map(function (array $c) {
             $meta = is_array($c['metadata'] ?? null) ? $c['metadata'] : [];
+            $chunkText = trim((string) ($c['content'] ?? ''));
+            if (mb_strlen($chunkText) > 500) {
+                $chunkText = mb_substr($chunkText, 0, 500) . '...';
+            }
 
             return [
                 'document_title' => (string) ($meta['document_title'] ?? ''),
@@ -90,6 +94,7 @@ class RagQueryService
                 'score' => (float) ($c['score'] ?? 0.0),
                 'chunk_id' => (int) ($c['id'] ?? 0),
                 'document_id' => (int) ($c['document_id'] ?? 0),
+                'chunk_text' => $chunkText,
             ];
         }, $reranked);
 
@@ -174,7 +179,8 @@ class RagQueryService
     protected function callLlm(string $question, string $context): string
     {
         $system = "You are an institutional assistant. Answer ONLY using the provided document\n"
-            . "excerpts. For every claim, cite the source as [Title, §Section, p.N].\n"
+            . "excerpts. Do not include inline citations, brackets, or source markers in the response text.\n"
+            . "Write clear and concise prose in the same language as the user question.\n"
             . "If the context does not contain enough information to answer confidently,\n"
             . "respond with exactly: INSUFFICIENT_CONTEXT";
 
