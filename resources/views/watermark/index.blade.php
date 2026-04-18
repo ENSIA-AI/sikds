@@ -1,8 +1,7 @@
-<x-app-layout :activeNav="'traceability'">
-    <x-slot name="header">
-        <h1 class="sikds-page-title">Tra&ccedil;abilit&eacute; des T&eacute;l&eacute;chargements</h1>
-        <p class="sikds-page-subtitle">Historique complet des t&eacute;l&eacute;chargements</p>
-    </x-slot>
+@extends('layouts.app')
+@section('page_title', 'Traçabilité des Téléchargements')
+@section('page_subtitle', 'Historique complet des téléchargements')
+@section('content')
 
     {{-- ===== Stats Row ===== --}}
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-5 mb-6">
@@ -211,4 +210,4 @@
             </div>
         </div>
     </div>
-</x-app-layout>
+@endsection
