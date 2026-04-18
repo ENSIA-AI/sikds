@@ -136,13 +136,15 @@ test(
         // so we must decompress the PDF before doing a byte-level search.
         $decompressed = tempnam(sys_get_temp_dir(), 'wm_dec_') . '.pdf';
         exec('qpdf --qdf --object-streams=disable ' . escapeshellarg($outputPath) . ' ' . escapeshellarg($decompressed), $qOut, $qExit);
-        $content = $qExit === 0 ? file_get_contents($decompressed) : file_get_contents($outputPath);
+        if ($qExit !== 0) {
+            @unlink($decompressed);
+            @unlink($outputPath);
+            test()->markTestSkipped('qpdf is not installed — cannot decompress PDF for byte search.');
+        }
+        $content = file_get_contents($decompressed);
         @unlink($decompressed);
 
-        expect($content)->toContain(
-            $shortUuid,
-            "Short UUID [{$shortUuid}] not found in watermarked output for [{$filename}]"
-        );
+        expect($content)->toContain($shortUuid);
 
         @unlink($outputPath);
     }
@@ -164,14 +166,8 @@ test(
         $outputPath = (new WatermarkService())->generateWatermarkedPdf($document, $log);
         $content    = file_get_contents($outputPath);
 
-        expect($content)->toContain(
-            'SIKDS-UUID:' . $log->watermark_uuid,
-            "SIKDS-UUID metadata missing from output for [{$filename}]"
-        );
-        expect($content)->toContain(
-            '[SIKDS-SECURED]',
-            "[SIKDS-SECURED] tag missing from output for [{$filename}]"
-        );
+        expect($content)->toContain('SIKDS-UUID:' . $log->watermark_uuid);
+        expect($content)->toContain('[SIKDS-SECURED]');
 
         @unlink($outputPath);
     }

@@ -114,7 +114,7 @@ test('watermark index shows empty state when there are no logs', function () {
     $response = $this->get(route('watermark.index'));
 
     $response->assertOk();
-    $response->assertSee('Aucun téléchargement trouvé', false);
+    $response->assertSee('Aucun téléchargement trouvé');
 });
 
 // --- Show page ---

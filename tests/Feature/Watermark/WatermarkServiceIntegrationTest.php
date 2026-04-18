@@ -95,7 +95,8 @@ test('watermark service generates a valid pdf from a standard pdf 1.4 file', fun
 // ─── Test 2: Compressed PDF 1.5+ (the previously failing case) ───────────────
 
 test('watermark service processes a pdf 1.5+ compressed file produced by qpdf', function () {
-    if (!trim((string) shell_exec('which qpdf'))) {
+    exec('qpdf --version', $verOut, $verExit);
+    if ($verExit !== 0) {
         $this->markTestSkipped('qpdf is not installed on this system.');
     }
 
@@ -124,7 +125,7 @@ test('watermark service processes a pdf 1.5+ compressed file produced by qpdf', 
 
     // Verify qpdf actually produced a compressed (1.5+) file by checking for /ObjStm
     $rawPdf = file_get_contents($tmpCmp);
-    expect($rawPdf)->toContain('/ObjStm', 'Expected a PDF with object streams — test fixture is not compressed.');
+    expect($rawPdf)->toContain('/ObjStm');
 
     $storagePath = 'documents/compressed_test.pdf';
     Storage::disk('local')->put($storagePath, $rawPdf);
@@ -161,7 +162,12 @@ test('watermark service embeds the short uuid in the pdf output', function () {
     // decompress with qpdf so the string is searchable in raw bytes.
     $decompressed = tempnam(sys_get_temp_dir(), 'wm_dec_') . '.pdf';
     exec('qpdf --qdf --object-streams=disable ' . escapeshellarg($outputPath) . ' ' . escapeshellarg($decompressed), $qOut, $qExit);
-    $content = $qExit === 0 ? file_get_contents($decompressed) : file_get_contents($outputPath);
+    if ($qExit !== 0) {
+        @unlink($decompressed);
+        @unlink($outputPath);
+        test()->markTestSkipped('qpdf is not installed — cannot decompress PDF for byte search.');
+    }
+    $content = file_get_contents($decompressed);
     @unlink($decompressed);
 
     expect($content)->toContain($shortUuid);
