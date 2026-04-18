@@ -24,10 +24,12 @@
         </a>
 
         <div class="sikds-doc-actions">
-            <a href="{{ $document['download_url'] }}" class="sikds-doc-action-btn sikds-doc-action-btn--default">
+            <button type="button"
+                    class="sikds-doc-action-btn sikds-doc-action-btn--default"
+                    @click="$dispatch('open-download-modal', { id: {{ $document['id'] }} })">
                 <i class="fa-solid fa-download"></i>
                 <span>Télécharger</span>
-            </a>
+            </button>
             @if ($canEdit)
             <a href="{{ $document['edit_url'] }}" class="sikds-doc-action-btn sikds-doc-action-btn--default">
                 <i class="fa-solid fa-pen"></i>
@@ -486,5 +488,7 @@
         };
     }
 </script>
+
+@include('documents.partials.download_modal')
 
 @endsection

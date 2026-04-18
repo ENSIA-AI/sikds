@@ -104,7 +104,9 @@ class Document extends Model
             'all' => true,
             'specific_institutions' => $user->institution_id !== null
                 && $this->targetInstitutions()->where('institutions.id', $user->institution_id)->exists(),
-            'specific_roles' => false,
+            'specific_roles' => $this->targetRoles()
+                ->whereIn('roles.id', $user->roles->pluck('id'))
+                ->exists(),
             default => false,
         };
     }
