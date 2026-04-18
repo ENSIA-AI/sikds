@@ -32,6 +32,9 @@ jobs:
           coverage: none
           tools: composer:v2
 
+      - name: Install system dependencies
+        run: sudo apt-get install -y qpdf
+
       - name: Cache Composer packages
         uses: actions/cache@v4
         with:

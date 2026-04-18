@@ -12,11 +12,12 @@ $items = [
     ['id' => 'institutions', 'label' => 'Institutions',        'icon' => '/building.svg',          'icon_active' => '/institutions-blue.svg', 'href' => $safeRoute('institutions.index')],
     ['id' => 'chatbot',      'label' => 'Chatbot',             'icon' => '/search.svg',            'icon_active' => '/search-blue.svg',       'href' => $safeRoute('rag.index')],
     ['id' => 'indexing',     'label' => 'Moniteur Indexation', 'icon' => '/indexing.svg',          'icon_active' => '/indexing-blue.svg',     'href' => $safeRoute('indexing.index')],
-    ['id' => 'traceability', 'label' => 'Traçabilité',         'icon' => '/traceability.svg',      'icon_active' => '/traceability-blue.svg', 'href' => '#'],
+    ['id' => 'traceability', 'label' => 'Traçabilité',         'icon' => '/traceability.svg',      'icon_active' => '/traceability-blue.svg', 'href' => $safeRoute('watermark.index')],
     ['id' => 'audits',       'label' => "Journaux d'Audit",    'icon' => '/audit.svg',             'icon_active' => '/audit-blue.svg',        'href' => '#'],
     ['id' => 'notifications','label' => 'Notifications',       'icon' => '/bell.svg',              'icon_active' => '/bell-blue.svg',         'href' => '#'],
     ['id' => 'settings',     'label' => 'Paramètres',          'icon' => '/parameters.svg',        'icon_active' => '/parameters-blue.svg',   'href' => '#'],
 ];
+
 @endphp
 
 <aside class="sikds-sidebar" id="sikds-sidebar">

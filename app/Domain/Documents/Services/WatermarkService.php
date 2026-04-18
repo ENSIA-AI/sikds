@@ -136,6 +136,25 @@ class WatermarkService
         $tempOriginalFile = tempnam(sys_get_temp_dir(), 'sikds_in_');
         file_put_contents($tempOriginalFile, $fileContents);
 
+        // Decompress PDF 1.5+ object/xref streams so the free FPDI parser can read them.
+        $decompressedFile = tempnam(sys_get_temp_dir(), 'sikds_dec_');
+        $exitCode = -1;
+        exec(
+            'qpdf --decode-level=generalized --object-streams=disable '
+            . escapeshellarg($tempOriginalFile) . ' '
+            . escapeshellarg($decompressedFile) . ' 2>&1',
+            $output,
+            $exitCode
+        );
+
+        if ($exitCode === 0 && filesize($decompressedFile) > 0) {
+            @unlink($tempOriginalFile);
+            $tempOriginalFile = $decompressedFile;
+        } else {
+            // qpdf failed — try the original file as-is (works for PDF ≤ 1.4)
+            @unlink($decompressedFile);
+        }
+
         $fpdi = new RotatableFpdi();
         $pageCount = $fpdi->setSourceFile($tempOriginalFile);
 
@@ -215,7 +234,7 @@ class WatermarkService
             // Alpha 0.30 — clearly visible for traceability but still allows
             // the underlying content to be read.
             // ---------------------------------------------------------------
-            $fpdi->setAlpha(0.30);
+            $fpdi->setAlpha(0.40);
             $fpdi->SetTextColor(100, 100, 100);
 
             // Line 1 — UUID (primary identifier for leak tracing)
