@@ -1,0 +1,697 @@
+@layer components {
+
+    /* ── Panel card ─────────────────────────────────────────── */
+    .sikds-tag-panel {
+        background:    var(--sikds-surface);
+        border:        1px solid var(--sikds-border-solid);
+        border-radius: var(--sikds-radius-md);
+        box-shadow:    var(--sikds-shadow-panel);
+        padding:       28px;
+    }
+
+    .sikds-tag-panel-title {
+        font-size:   18px;
+        font-weight: 600;
+        color:       var(--sikds-ink);
+        line-height: 1.4;
+    }
+
+    /* ── Tag row ────────────────────────────────────────────── */
+    .sikds-tag-row {
+        display:         flex;
+        align-items:     center;
+        justify-content: space-between;
+        border:          1px solid var(--sikds-border-solid);
+        border-radius:   var(--sikds-radius-sm);
+        padding:         10px 14px;
+        transition:      border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .sikds-tag-row:hover {
+        border-color: rgba(28, 57, 142, 0.2);
+        box-shadow:   0 2px 8px rgba(28, 57, 142, 0.06);
+    }
+
+    /* ── Badge icon ─────────────────────────────────────────── */
+    .sikds-tag-badge {
+        display:         flex;
+        align-items:     center;
+        justify-content: center;
+        width:           40px;
+        height:          40px;
+        border-radius:   var(--sikds-radius-sm);
+        flex-shrink:     0;
+    }
+
+    /* Single consistent icon for all tag types */
+    .sikds-tag-svg-icon {
+        width:       22px;
+        height:      22px;
+        flex-shrink: 0;
+        display:     block;
+    }
+
+    /* ── Action buttons ─────────────────────────────────────── */
+    .sikds-tag-actions {
+        display:    flex;
+        gap:        4px;
+        opacity:    0;
+        transition: opacity 0.2s;
+    }
+
+    .sikds-tag-row:hover .sikds-tag-actions,
+    .sikds-tag-row:focus-within .sikds-tag-actions {
+        opacity: 1;
+    }
+
+    .sikds-tag-action-btn {
+        display:         inline-flex;
+        align-items:     center;
+        justify-content: center;
+        width:           32px;
+        height:          32px;
+        border-radius:   var(--sikds-radius-sm);
+        border:          none;
+        background:      transparent;
+        color:           var(--sikds-muted);
+        font-size:       14px;
+        cursor:          pointer;
+        transition:      background-color 0.15s, color 0.15s;
+    }
+
+    .sikds-tag-action-btn:hover {
+        background-color: var(--sikds-primary-hover-bg);
+        color:            var(--sikds-primary);
+    }
+
+    .sikds-tag-action-btn--danger:hover {
+        background-color: var(--sikds-danger-bg);
+        color:            #e7000b;
+    }
+
+    /* ── Create button ──────────────────────────────────────── */
+    .sikds-tags-btn-create {
+        display:          inline-flex;
+        align-items:      center;
+        gap:              8px;
+        height:           44px;
+        padding:          0 24px;
+        border-radius:    var(--sikds-radius-sm);
+        background-color: #1e3a8a;
+        color:            #fff;
+        font-size:        15px;
+        font-weight:      600;
+        border:           none;
+        cursor:           pointer;
+        box-shadow:       0 10px 15px rgba(0,0,0,0.1), 0 4px 6px rgba(0,0,0,0.1);
+        transition:       background-color 0.18s, box-shadow 0.18s;
+    }
+
+    .sikds-tags-btn-create:hover {
+        background-color: var(--sikds-primary-dark);
+        box-shadow:       0 14px 20px rgba(0,0,0,0.13), 0 4px 8px rgba(0,0,0,0.1);
+    }
+
+    /* ── Modal backdrop ─────────────────────────────────────── */
+    .sikds-modal-backdrop {
+        position:        fixed;
+        inset:           0;
+        background:      rgba(0, 0, 0, 0.45);
+        backdrop-filter: blur(3px);
+        display:         flex;
+        align-items:     center;
+        justify-content: center;
+        z-index:         50;
+        padding:         16px;
+    }
+
+    /* ── Modal card ─────────────────────────────────────────── */
+    .sikds-modal {
+        background:    var(--sikds-surface);
+        border-radius: 18px;
+        box-shadow:    0 24px 60px rgba(0, 0, 0, 0.22), 0 8px 24px rgba(0, 0, 0, 0.1);
+        width:         100%;
+        max-width:     480px;
+        overflow:      hidden;
+    }
+
+    .sikds-modal-header {
+        display:         flex;
+        align-items:     flex-start;
+        justify-content: space-between;
+        gap:             16px;
+        padding:         22px 26px 18px;
+        background:      #fafafa;
+        border-bottom:   1px solid var(--sikds-border-solid);
+    }
+
+    .sikds-modal-title {
+        font-size:   17px;
+        font-weight: 600;
+        color:       var(--sikds-ink);
+        letter-spacing: -0.01em;
+        line-height: 1.3;
+        margin:      0;
+    }
+
+    .sikds-modal-subtitle {
+        font-size:   12.5px;
+        color:       var(--sikds-muted);
+        margin:      3px 0 0;
+        line-height: 1.4;
+    }
+
+    .sikds-modal-close {
+        display:         inline-flex;
+        align-items:     center;
+        justify-content: center;
+        width:           32px;
+        height:          32px;
+        border-radius:   8px;
+        border:          none;
+        background:      transparent;
+        color:           var(--sikds-muted);
+        font-size:       16px;
+        cursor:          pointer;
+        transition:      background-color 0.15s, color 0.15s;
+    }
+
+    .sikds-modal-close:hover {
+        background-color: var(--sikds-primary-hover-bg);
+        color:            var(--sikds-primary);
+    }
+
+    .sikds-modal-body {
+        padding: 24px 28px 28px;
+    }
+
+    .sikds-modal-footer {
+        display:         flex;
+        justify-content: flex-end;
+        gap:             10px;
+        padding-top:     22px;
+        border-top:      1px solid var(--sikds-border-solid);
+        margin-top:      24px;
+    }
+
+    .sikds-modal-btn-cancel {
+        height:        40px;
+        padding:       0 20px;
+        border-radius: var(--sikds-radius-sm);
+        border:        1px solid var(--sikds-border-solid);
+        background:    transparent;
+        color:         var(--sikds-ink);
+        font-size:     14px;
+        font-weight:   500;
+        cursor:        pointer;
+        transition:    background-color 0.15s, border-color 0.15s;
+    }
+
+    .sikds-modal-btn-cancel:hover {
+        background-color: #f4f4f6;
+        border-color:     rgba(0,0,0,0.15);
+    }
+
+    .sikds-modal-btn-confirm {
+        height:           40px;
+        padding:          0 22px;
+        border-radius:    var(--sikds-radius-sm);
+        border:           none;
+        background-color: var(--sikds-primary);
+        color:            #fff;
+        font-size:        14px;
+        font-weight:      600;
+        cursor:           pointer;
+        transition:       background-color 0.15s, opacity 0.15s;
+    }
+
+    .sikds-modal-btn-confirm:hover {
+        background-color: var(--sikds-primary-dark);
+    }
+
+    .sikds-modal-btn-confirm:disabled {
+        opacity: 0.45;
+        cursor:  not-allowed;
+    }
+
+    /* ── Form elements ──────────────────────────────────────── */
+    .sikds-form-group {
+        margin-bottom: 18px;
+    }
+
+    .sikds-form-label {
+        display:       block;
+        font-size:     13px;
+        font-weight:   500;
+        color:         var(--sikds-ink);
+        margin-bottom: 7px;
+    }
+
+    .sikds-form-input {
+        width:         100%;
+        height:        42px;
+        padding:       0 13px;
+        border:        1px solid var(--sikds-border-solid);
+        border-radius: var(--sikds-radius-sm);
+        font-size:     14px;
+        color:         var(--sikds-ink);
+        background:    var(--sikds-surface);
+        outline:       none;
+        transition:    border-color 0.15s, box-shadow 0.15s;
+    }
+
+    .sikds-form-input:focus {
+        border-color: var(--sikds-primary);
+        box-shadow:   0 0 0 3px rgba(28, 57, 142, 0.08);
+    }
+
+    .sikds-form-input.is-error {
+        border-color: #e7000b;
+        box-shadow:   0 0 0 3px rgba(231, 0, 11, 0.07);
+    }
+
+    /* Validation error — styled pill instead of plain text */
+    .sikds-form-error-pill {
+        display:          inline-flex;
+        align-items:      center;
+        gap:              5px;
+        background-color: #fff1f2;
+        border:           1px solid #ffd0d3;
+        color:            #c0000e;
+        font-size:        12px;
+        font-weight:      500;
+        border-radius:    6px;
+        padding:          4px 10px 4px 8px;
+        margin-top:       6px;
+        line-height:      1.4;
+    }
+
+    .sikds-form-error-pill i {
+        font-size:   11px;
+        flex-shrink: 0;
+        opacity:     0.85;
+    }
+
+    /* ── Confirm dialog (shared delete/destructive) ─────────── */
+    .sikds-confirm {
+        max-width: 440px;
+        position:  relative;
+    }
+
+    .sikds-confirm-close {
+        position:         absolute;
+        top:              14px;
+        right:            14px;
+        width:            30px;
+        height:           30px;
+        display:          inline-flex;
+        align-items:      center;
+        justify-content:  center;
+        border:           none;
+        background:       transparent;
+        color:            var(--sikds-muted);
+        border-radius:    8px;
+        cursor:           pointer;
+        font-size:        15px;
+        transition:       background-color 0.15s, color 0.15s;
+    }
+
+    .sikds-confirm-close:hover {
+        background-color: rgba(0, 0, 0, 0.05);
+        color:            var(--sikds-ink);
+    }
+
+    .sikds-confirm-head {
+        display:         flex;
+        align-items:     center;
+        gap:             14px;
+        padding:         26px 28px 12px;
+    }
+
+    .sikds-confirm-icon {
+        width:           48px;
+        height:          48px;
+        border-radius:   999px;
+        display:         inline-flex;
+        align-items:     center;
+        justify-content: center;
+        flex-shrink:     0;
+        background:      #fee2e2;
+        color:           #dc2626;
+        font-size:       22px;
+        box-shadow:      0 0 0 6px rgba(220, 38, 38, 0.06);
+    }
+
+    .sikds-confirm-title {
+        font-size:      17px;
+        font-weight:    600;
+        color:          var(--sikds-ink);
+        letter-spacing: -0.01em;
+        line-height:    1.3;
+        margin:         0;
+    }
+
+    .sikds-confirm-subtitle {
+        font-size:   12px;
+        color:       var(--sikds-muted);
+        margin:      2px 0 0;
+        line-height: 1.3;
+    }
+
+    .sikds-confirm-body {
+        padding:    4px 28px 4px;
+        font-size:  14px;
+        color:      var(--sikds-ink);
+        line-height: 1.5;
+    }
+
+    .sikds-confirm-body .sikds-confirm-badge {
+        display:         inline-flex;
+        align-items:     center;
+        gap:             6px;
+        padding:         2px 10px;
+        border-radius:   6px;
+        background:      var(--sikds-primary-hover-bg);
+        color:           var(--sikds-ink);
+        font-weight:     600;
+        font-size:       13px;
+        margin:          0 2px;
+        border:          1px solid var(--sikds-border-solid);
+    }
+
+    .sikds-confirm-body .sikds-confirm-badge-dot {
+        width:         10px;
+        height:        10px;
+        border-radius: 999px;
+        flex-shrink:   0;
+        border:        1px solid rgba(0, 0, 0, 0.08);
+    }
+
+    .sikds-confirm-footer {
+        display:         flex;
+        justify-content: flex-end;
+        gap:             10px;
+        padding:         20px 28px 24px;
+    }
+
+    .sikds-modal-btn-danger {
+        height:           40px;
+        padding:          0 22px;
+        border-radius:    var(--sikds-radius-sm);
+        border:           none;
+        background-color: #e7000b;
+        color:            #fff;
+        font-size:        14px;
+        font-weight:      600;
+        cursor:           pointer;
+        display:          inline-flex;
+        align-items:      center;
+        gap:              8px;
+        transition:       background-color 0.15s, box-shadow 0.15s;
+    }
+
+    .sikds-modal-btn-danger:hover {
+        background-color: #b91c1c;
+        box-shadow:       0 4px 12px rgba(231, 0, 11, 0.18);
+    }
+
+    /* ── Select (category dropdown) ─────────────────────────── */
+    .sikds-form-select {
+        appearance:         none;
+        -webkit-appearance: none;
+        -moz-appearance:    none;
+        padding-right:      36px;
+        background-image:   url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8' fill='none'%3E%3Cpath d='M1 1.5L6 6.5L11 1.5' stroke='%236b7280' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+        background-repeat:  no-repeat;
+        background-position: right 14px center;
+        cursor:             pointer;
+    }
+
+    /* Slide-in for the "new category" field */
+    .sikds-new-category {
+        margin-top: 8px;
+        animation:  sikds-fade-in 0.18s ease-out both;
+    }
+
+    @keyframes sikds-fade-in {
+        from { opacity: 0; transform: translateY(-3px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── Color picker ───────────────────────────────────────── */
+    .sikds-color-picker {
+        display:             flex;
+        flex-direction:      column;
+        gap:                 8px;
+        user-select:         none;
+        -webkit-user-select: none;
+    }
+
+    /* Spectrum canvas — shorter, clearly framed */
+    .sikds-cp-spectrum {
+        width:         100%;
+        height:        120px;
+        border-radius: 10px;
+        cursor:        crosshair;
+        display:       block;
+        border:        1px solid rgba(0, 0, 0, 0.1);
+        box-shadow:    inset 0 1px 3px rgba(0, 0, 0, 0.06);
+    }
+
+    /* Hue range slider — pill track, floating thumb */
+    .sikds-cp-hue-range {
+        -webkit-appearance: none;
+        appearance:         none;
+        display:            block;
+        width:              100%;
+        height:             10px;
+        border-radius:      5px;
+        background:         linear-gradient(
+            to right,
+            hsl(0,100%,50%),   hsl(60,100%,50%),
+            hsl(120,100%,50%), hsl(180,100%,50%),
+            hsl(240,100%,50%), hsl(300,100%,50%),
+            hsl(360,100%,50%)
+        );
+        cursor:             pointer;
+        outline:            none;
+        flex-shrink:        0;
+    }
+
+    .sikds-cp-hue-range::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        width:              18px;
+        height:             18px;
+        border-radius:      50%;
+        background:         #ffffff;
+        border:             2px solid rgba(0, 0, 0, 0.15);
+        box-shadow:         0 1px 5px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(0,0,0,0.04);
+        cursor:             grab;
+        transition:         transform 0.1s, box-shadow 0.1s;
+    }
+
+    .sikds-cp-hue-range:active::-webkit-slider-thumb {
+        cursor:     grabbing;
+        transform:  scale(1.15);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(0,0,0,0.04);
+    }
+
+    .sikds-cp-hue-range::-moz-range-track {
+        height:        10px;
+        border-radius: 5px;
+        background:    linear-gradient(
+            to right,
+            hsl(0,100%,50%),   hsl(60,100%,50%),
+            hsl(120,100%,50%), hsl(180,100%,50%),
+            hsl(240,100%,50%), hsl(300,100%,50%),
+            hsl(360,100%,50%)
+        );
+    }
+
+    .sikds-cp-hue-range::-moz-range-thumb {
+        width:       18px;
+        height:      18px;
+        border-radius: 50%;
+        background:  #ffffff;
+        border:      2px solid rgba(0, 0, 0, 0.15);
+        box-shadow:  0 1px 5px rgba(0, 0, 0, 0.25);
+        cursor:      grab;
+    }
+
+    /* Bottom row: swatch circle + hex input group */
+    .sikds-cp-bottom {
+        display:     flex;
+        align-items: center;
+        gap:         8px;
+        margin-top:  2px;
+    }
+
+    .sikds-cp-swatch {
+        width:         32px;
+        height:        32px;
+        border-radius: 50%;
+        border:        2px solid rgba(0, 0, 0, 0.1);
+        flex-shrink:   0;
+        transition:    background-color 0.08s;
+    }
+
+    .sikds-cp-hex-wrap {
+        display:       flex;
+        align-items:   center;
+        flex:          1;
+        border:        1px solid var(--sikds-border-solid);
+        border-radius: var(--sikds-radius-sm);
+        height:        36px;
+        padding:       0 12px;
+        gap:           2px;
+        background:    var(--sikds-surface);
+        transition:    border-color 0.15s, box-shadow 0.15s;
+    }
+
+    .sikds-cp-hex-wrap:focus-within {
+        border-color: var(--sikds-primary);
+        box-shadow:   0 0 0 3px rgba(28, 57, 142, 0.08);
+    }
+
+    .sikds-cp-hex-wrap.is-error {
+        border-color: #e7000b;
+        box-shadow:   0 0 0 3px rgba(231, 0, 11, 0.07);
+    }
+
+    .sikds-cp-hex-hash {
+        color:       var(--sikds-muted);
+        font-size:   13px;
+        font-weight: 600;
+        line-height: 1;
+        flex-shrink: 0;
+    }
+
+    .sikds-cp-hex-input {
+        flex:           1;
+        border:         none;
+        outline:        none;
+        font-size:      13px;
+        font-family:    ui-monospace, 'Cascadia Code', 'Source Code Pro', Menlo, monospace;
+        color:          var(--sikds-ink);
+        background:     transparent;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        min-width:      0;
+        padding:        0;
+    }
+
+    /* ── Category select (custom wrap with placeholder state) ─ */
+    .sikds-select-wrap {
+        position:      relative;
+        border:        1px solid var(--sikds-border-solid);
+        border-radius: var(--sikds-radius-sm);
+        background:    var(--sikds-surface);
+        transition:    border-color 0.15s, box-shadow 0.15s;
+    }
+
+    .sikds-select-wrap:focus-within {
+        border-color: var(--sikds-primary);
+        box-shadow:   0 0 0 3px rgba(28, 57, 142, 0.08);
+    }
+
+    .sikds-select-wrap.is-error {
+        border-color: #e7000b;
+        box-shadow:   0 0 0 3px rgba(231, 0, 11, 0.07);
+    }
+
+    .sikds-select-wrap::after {
+        content:       '';
+        position:      absolute;
+        top:           50%;
+        right:         14px;
+        width:         10px;
+        height:        10px;
+        transform:     translateY(-70%) rotate(45deg);
+        border-right:  1.6px solid #6b7280;
+        border-bottom: 1.6px solid #6b7280;
+        pointer-events: none;
+        transition:    border-color 0.15s;
+    }
+
+    .sikds-select-wrap:focus-within::after {
+        border-color: var(--sikds-primary);
+    }
+
+    .sikds-form-select-native {
+        width:              100%;
+        height:             42px;
+        padding:            0 40px 0 14px;
+        border:             none;
+        outline:            none;
+        background:         transparent;
+        font-size:          14px;
+        color:              var(--sikds-ink);
+        cursor:             pointer;
+        appearance:         none;
+        -webkit-appearance: none;
+        -moz-appearance:    none;
+        border-radius:      var(--sikds-radius-sm);
+    }
+
+    /* Greyed-out placeholder state when nothing selected */
+    .sikds-select-wrap[data-empty="true"] .sikds-form-select-native {
+        color: var(--sikds-muted);
+    }
+
+    .sikds-form-select-native option {
+        color: var(--sikds-ink);
+    }
+
+    .sikds-form-select-native option[value=""] {
+        color: var(--sikds-muted);
+    }
+
+    /* ── Confirm dialog: contextual notice ─────────────────── */
+    .sikds-confirm-notice {
+        display:       flex;
+        align-items:   flex-start;
+        gap:           8px;
+        margin-top:    14px;
+        padding:       10px 12px;
+        background:    #eff6ff;
+        border:        1px solid #bedbff;
+        border-radius: 8px;
+        font-size:     12.5px;
+        line-height:   1.45;
+        color:         #1e40af;
+    }
+
+    .sikds-confirm-notice i {
+        color:       #2563eb;
+        font-size:   13px;
+        margin-top:  2px;
+        flex-shrink: 0;
+    }
+
+    /* ── Edit modal: usage badge ("tag used in X docs") ────── */
+    .sikds-modal-usage {
+        display:       flex;
+        align-items:   center;
+        gap:           8px;
+        margin-top:    18px;
+        padding:       10px 14px;
+        background:    #fffbeb;
+        border:        1px solid #fde68a;
+        border-radius: 8px;
+        font-size:     12.5px;
+        color:         #92400e;
+        line-height:   1.4;
+    }
+
+    .sikds-modal-usage i {
+        color:     #d97706;
+        font-size: 13px;
+        flex-shrink: 0;
+    }
+
+    .sikds-modal-usage strong {
+        font-weight: 700;
+        color:       #78350f;
+    }
+
+}

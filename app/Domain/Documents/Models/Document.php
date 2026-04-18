@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Documents\Models;
 
 use App\Domain\Institutions\Models\Institution;
+use App\Domain\Tags\Models\Tag;
 use App\Domain\Users\Models\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -66,6 +67,14 @@ class Document extends Model
     public function targetRoles(): BelongsToMany
     {
         return $this->belongsToMany(Role::class, 'document_role_targets', 'document_id', 'role_id');
+    }
+
+    /**
+     * Tags assigned to this document.
+     */
+    public function tags(): BelongsToMany
+    {
+        return $this->belongsToMany(Tag::class, 'document_tags', 'document_id', 'tag_id');
     }
 
     /**

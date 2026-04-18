@@ -25,10 +25,14 @@
 
     --sikds-danger-bg:      #fef2f2;
     --sikds-danger-border:  #ffc9c9;
+    --sikds-danger-ink:     #b91c1c;
     --sikds-warn-bg:        #fffbeb;
     --sikds-warn-border:    #fee685;
     --sikds-info-bg:        #eff6ff;
     --sikds-info-border:    #bedbff;
+    --sikds-success-bg:     #f0fdf4;
+    --sikds-success-border: #bbf7d0;
+    --sikds-success-ink:    #15803d;
 
     --sikds-tag-directive-bg:   #dbeafe;
     --sikds-tag-directive-text: #1447e6;

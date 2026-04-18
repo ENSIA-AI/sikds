@@ -15,6 +15,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 class DocumentsController
@@ -76,6 +77,7 @@ class DocumentsController
         }
 
         $documents = $query
+            ->with(['tags', 'targetInstitutions', 'targetRoles'])
             ->orderByDesc('issue_date')
             ->paginate(15)
             ->withQueryString()
@@ -160,37 +162,45 @@ class DocumentsController
         return $query->where(function (Builder $sub) use ($user): void {
             $sub->where('uploaded_by', $user->id)
                 ->orWhere(function (Builder $s): void {
-                $s->where('status', 'active')->where('target_audience', 'all');
-            })->orWhere(function (Builder $s) use ($user): void {
-                if ($user->institution_id === null) {
-                    $s->whereRaw('1 = 0');
+                    $s->where('status', 'active')->where('target_audience', 'all');
+                })->orWhere(function (Builder $s) use ($user): void {
+                    if ($user->institution_id === null) {
+                        $s->whereRaw('1 = 0');
 
-                    return;
-                }
+                        return;
+                    }
 
-                $s->where('status', 'active')
-                    ->where('target_audience', 'specific_institutions')
-                    ->whereExists(function ($q) use ($user): void {
-                        $q->selectRaw('1')
-                            ->from('document_institution_targets')
-                            ->whereColumn('document_institution_targets.document_id', 'documents.id')
-                            ->where('document_institution_targets.institution_id', $user->institution_id);
-                    });
-            })->orWhere(function (Builder $s) use ($user): void {
-                $s->where('status', 'active')
-                    ->whereExists(function ($q) use ($user): void {
-                        $q->selectRaw('1')
-                            ->from('document_user_targets')
-                            ->whereColumn('document_user_targets.document_id', 'documents.id')
-                            ->where('document_user_targets.user_id', $user->id);
-                    });
-            });
+                    $s->where('status', 'active')
+                        ->where('target_audience', 'specific_institutions')
+                        ->whereExists(function ($q) use ($user): void {
+                            $q->selectRaw('1')
+                                ->from('document_institution_targets')
+                                ->whereColumn('document_institution_targets.document_id', 'documents.id')
+                                ->where('document_institution_targets.institution_id', $user->institution_id);
+                        });
+                })->orWhere(function (Builder $s) use ($user): void {
+                    $s->where('status', 'active')
+                        ->whereExists(function ($q) use ($user): void {
+                            $q->selectRaw('1')
+                                ->from('document_user_targets')
+                                ->whereColumn('document_user_targets.document_id', 'documents.id')
+                                ->where('document_user_targets.user_id', $user->id);
+                        });
+                });
         });
     }
 
     private function mapListDocument(Document $document, User $user): array
     {
-        $tags = $this->documentTags($document->id);
+        $tags = $document->relationLoaded('tags')
+            ? $document->tags->sortBy('name')->map(fn ($tag): array => [
+                'id' => (int) $tag->id,
+                'label' => (string) $tag->name,
+                'class' => $this->tagClass((string) $tag->slug, (string) $tag->name),
+            ])->values()->all()
+            : $this->documentTags($document->id);
+
+        $uiStatus = $document->status === 'soft_deleted' ? 'deleted' : $document->status;
 
         $actions = ['download'];
         if ($document->status === 'draft' && $user->can('document.publish')) {
@@ -214,11 +224,28 @@ class DocumentsController
             'id' => $document->id,
             'title' => $document->title,
             'reference' => $document->reference_number,
-            'status' => $document->status === 'soft_deleted' ? 'deleted' : $document->status,
+            'status' => $uiStatus,
+            'status_label' => $this->statusLabel($document->status),
+            'status_badge_class' => match ($uiStatus) {
+                'active' => 'sikds-status--active',
+                'draft' => 'sikds-status--draft',
+                'archived' => 'sikds-status--archived',
+                'deleted' => 'sikds-status--deleted',
+                default => 'sikds-status--draft',
+            },
+            'status_icon' => match ($uiStatus) {
+                'active' => 'fa-regular fa-circle-check',
+                'draft' => 'fa-solid fa-gear',
+                'archived' => 'fa-solid fa-box-archive',
+                'deleted' => 'fa-regular fa-circle-xmark',
+                default => 'fa-solid fa-gear',
+            },
             'tags' => array_slice($tags, 0, 2),
+            'tags_full' => $tags,
             'extra_tags' => max(count($tags) - 2, 0),
             'target_audience' => $this->formatAudience($document),
             'issue_date' => $this->formatDate($document->issue_date),
+            'description_excerpt' => $this->excerptDescription($document->description),
             'actions' => $actions,
             'download_url' => route('documents.download', $document->id),
             'show_url' => route('documents.show', $document->id),
@@ -289,7 +316,7 @@ class DocumentsController
                     'title' => 'Version '.$version->version_number,
                     'status' => null,
                     'status_class' => null,
-                    'meta' => ($version->created_at?->format('d/m/Y') ?? '-') . ' • ' . $this->formatBytes((int) (DB::table('documents')->where('id', $version->document_id)->value('file_size') ?? 0)),
+                    'meta' => ($version->created_at?->format('d/m/Y') ?? '-').' • '.$this->formatBytes((int) (DB::table('documents')->where('id', $version->document_id)->value('file_size') ?? 0)),
                     'description' => (string) ($metadata['description'] ?? 'Version archivée'),
                 ];
             })
@@ -455,6 +482,17 @@ class DocumentsController
     private function canPreview(User $user): bool
     {
         return $user->can('document.view.all') && $user->hasRole('Super Administrateur');
+    }
+
+    private function excerptDescription(?string $html): string
+    {
+        if ($html === null || $html === '') {
+            return '';
+        }
+
+        $plain = trim(preg_replace('/\s+/', ' ', strip_tags($html)));
+
+        return $plain === '' ? '' : Str::limit($plain, 220, '…');
     }
 
     private function formatDate($date): string
