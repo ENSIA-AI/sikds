@@ -234,7 +234,7 @@ class WatermarkService
             // Alpha 0.30 — clearly visible for traceability but still allows
             // the underlying content to be read.
             // ---------------------------------------------------------------
-            $fpdi->setAlpha(0.30);
+            $fpdi->setAlpha(0.40);
             $fpdi->SetTextColor(100, 100, 100);
 
             // Line 1 — UUID (primary identifier for leak tracing)
