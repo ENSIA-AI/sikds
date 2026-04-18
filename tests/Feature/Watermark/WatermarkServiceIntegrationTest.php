@@ -156,7 +156,13 @@ test('watermark service embeds the short uuid in the pdf output', function () {
     $shortUuid  = 'WM-' . strtoupper(substr(str_replace('-', '', $log->watermark_uuid), 0, 8));
 
     $outputPath = (new WatermarkService())->generateWatermarkedPdf($document, $log);
-    $content    = file_get_contents($outputPath);
+
+    // Watermark text is inside FlateDecode-compressed content streams;
+    // decompress with qpdf so the string is searchable in raw bytes.
+    $decompressed = tempnam(sys_get_temp_dir(), 'wm_dec_') . '.pdf';
+    exec('qpdf --qdf --object-streams=disable ' . escapeshellarg($outputPath) . ' ' . escapeshellarg($decompressed), $qOut, $qExit);
+    $content = $qExit === 0 ? file_get_contents($decompressed) : file_get_contents($outputPath);
+    @unlink($decompressed);
 
     expect($content)->toContain($shortUuid);
 

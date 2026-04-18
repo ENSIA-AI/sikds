@@ -132,7 +132,14 @@ test(
         $shortUuid  = 'WM-' . strtoupper(substr(str_replace('-', '', $log->watermark_uuid), 0, 8));
         $outputPath = (new WatermarkService())->generateWatermarkedPdf($document, $log);
 
-        expect(file_get_contents($outputPath))->toContain(
+        // Watermark text lives inside FlateDecode-compressed content streams,
+        // so we must decompress the PDF before doing a byte-level search.
+        $decompressed = tempnam(sys_get_temp_dir(), 'wm_dec_') . '.pdf';
+        exec('qpdf --qdf --object-streams=disable ' . escapeshellarg($outputPath) . ' ' . escapeshellarg($decompressed), $qOut, $qExit);
+        $content = $qExit === 0 ? file_get_contents($decompressed) : file_get_contents($outputPath);
+        @unlink($decompressed);
+
+        expect($content)->toContain(
             $shortUuid,
             "Short UUID [{$shortUuid}] not found in watermarked output for [{$filename}]"
         );
