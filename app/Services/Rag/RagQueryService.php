@@ -114,32 +114,7 @@ class RagQueryService
             return $q->pluck('id')->map(fn ($v) => (int) $v)->all();
         }
 
-        if ($user->can('document.view.all')) {
-            return $q->pluck('id')->map(fn ($v) => (int) $v)->all();
-        }
-
-        $q->where(function ($outer) use ($user) {
-            $outer->where('target_audience', 'all')
-                ->orWhere(function ($s) use ($user) {
-                    $s->where('target_audience', 'specific_institutions')
-                        ->whereExists(function ($sub) use ($user) {
-                            $sub->select(DB::raw(1))
-                                ->from('document_institution_targets')
-                                ->whereColumn('document_institution_targets.document_id', 'documents.id')
-                                ->where('document_institution_targets.institution_id', $user->institution_id);
-                        });
-                })
-                ->orWhere(function ($s) use ($user) {
-                    $roleIds = $user->roles->pluck('id')->all();
-                    $s->where('target_audience', 'specific_roles')
-                        ->whereExists(function ($sub) use ($roleIds) {
-                            $sub->select(DB::raw(1))
-                                ->from('document_role_targets')
-                                ->whereColumn('document_role_targets.document_id', 'documents.id')
-                                ->whereIn('document_role_targets.role_id', $roleIds);
-                        });
-                });
-        });
+        $q->visibleTo($user);
 
         return $q->pluck('id')->map(fn ($v) => (int) $v)->all();
     }
