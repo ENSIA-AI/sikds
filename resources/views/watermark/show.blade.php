@@ -176,15 +176,15 @@
                     <div class="grid grid-cols-3 gap-2 text-xs pt-1">
                         <div>
                             <p style="color:var(--sikds-muted)">Position</p>
-                            <p class="font-medium mt-0.5" style="color:var(--sikds-ink)">Header &amp; Footer</p>
+                            <p class="font-medium mt-0.5" style="color:var(--sikds-ink)">Diagonale + Pied</p>
                         </div>
                         <div>
                             <p style="color:var(--sikds-muted)">Opacit&eacute;</p>
-                            <p class="font-medium mt-0.5" style="color:var(--sikds-ink)">30%</p>
+                            <p class="font-medium mt-0.5" style="color:var(--sikds-ink)">18%</p>
                         </div>
                         <div>
                             <p style="color:var(--sikds-muted)">Couleur</p>
-                            <p class="font-medium mt-0.5 font-mono" style="color:var(--sikds-ink)">#666666</p>
+                            <p class="font-medium mt-0.5 font-mono" style="color:var(--sikds-ink)">#787878</p>
                         </div>
                     </div>
                 </div>
