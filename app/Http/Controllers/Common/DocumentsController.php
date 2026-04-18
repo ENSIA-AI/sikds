@@ -314,7 +314,6 @@ class DocumentsController
             'effective_date' => $this->formatDate($document->effective_date),
             'expiry_date' => $this->formatDate($document->expiration_date),
             'audience' => $this->formatAudience($document),
-            'views' => 0,
             'downloads' => count($downloadHistory),
             'version' => 'v'.$document->version_number,
             'file_name' => basename((string) $document->file_path),

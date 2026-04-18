@@ -244,12 +244,6 @@
                     <div class="sikds-doc-stat-rows">
                         <div class="sikds-doc-stat-row">
                             <span class="sikds-doc-stat-label">
-                                <i class="fa-regular fa-eye"></i> Vues
-                            </span>
-                            <span class="sikds-doc-stat-value">{{ $document['views'] }}</span>
-                        </div>
-                        <div class="sikds-doc-stat-row">
-                            <span class="sikds-doc-stat-label">
                                 <i class="fa-solid fa-download"></i> Téléchargements
                             </span>
                             <span class="sikds-doc-stat-value">{{ $document['downloads'] }}</span>
