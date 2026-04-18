@@ -183,7 +183,7 @@
                     @empty
                         <tr>
                             <td colspan="7" class="px-5 py-14 text-center text-sm" style="color:var(--sikds-muted)">
-                                Aucun t&eacute;l&eacute;chargement trouv&eacute;.
+                                Aucun téléchargement trouvé.
                             </td>
                         </tr>
                     @endforelse
