@@ -91,14 +91,29 @@ Route::middleware(['auth'])
             Route::get('/', [PermissionController::class, 'index'])->name('index');
         });
 
+        Route::get('/utilisateurs', [UserController::class, 'index'])->name('utilisateurs');
+
         // User management
         Route::prefix('users')->name('users.')->group(function () {
             Route::get('/', [UserController::class, 'index'])->name('index');
+
+            // Create user
+            Route::get('/create', [UserController::class, 'create'])->name('create');
+            Route::post('/', [UserController::class, 'store'])->name('store');
+           
+
+            // View user details
             Route::get('/{user}', [UserController::class, 'show'])->name('show');
+
+            // Edit user details
             Route::get('/{user}/edit', [UserController::class, 'edit'])->name('edit');
             Route::put('/{user}', [UserController::class, 'update'])->name('update');
-            Route::get('/{user}/roles', [UserController::class, 'editRoles'])->name('edit-roles');
-            Route::put('/{user}/roles', [UserController::class, 'updateRoles'])->name('update-roles');
+         
+            // Manage user roles AND custom permissions (NEW - replaces edit-roles)
+            Route::get('/{user}/permissions', [UserController::class, 'editPermissions'])->name('edit-permissions');
+            Route::put('/{user}/permissions', [UserController::class, 'updatePermissions'])->name('update-permissions');
+            
+            // Activate/Deactivate user
             Route::post('/{user}/deactivate', [UserController::class, 'deactivate'])->name('deactivate');
             Route::post('/{user}/activate', [UserController::class, 'activate'])->name('activate');
         });

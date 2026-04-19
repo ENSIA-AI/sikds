@@ -4,7 +4,7 @@ $items = [
     ['id' => 'documents',    'label' => 'Documents',           'icon' => '/document.svg',          'icon_active' => '/document-blue.svg',     'href' => route('documents.index')],
     ['id' => 'tags',         'label' => 'Tags',                'icon' => '/tags.svg',              'icon_active' => '/tags-blue.svg',         'href' => '#'],
     ['id' => 'distribution', 'label' => 'Distribution',        'icon' => '/distribution.svg',      'icon_active' => '/distribution-blue.svg', 'href' => '#'],
-    ['id' => 'users',        'label' => 'Utilisateurs',        'icon' => '/people.svg',            'icon_active' => '/users-blue.svg',        'href' => '#'],
+    ['id' => 'users',        'label' => 'Utilisateurs',        'icon' => '/people.svg',            'icon_active' => '/users-blue.svg',        'href' => route('utilisateurs')],
     ['id' => 'roles',        'label' => 'Rôles',               'icon' => '/key.svg',               'icon_active' => '/key-blue.svg',          'href' => route('roles.index')],
     ['id' => 'permissions',  'label' => 'Permissions',         'icon' => '/permissions-blue.svg',  'icon_active' => '/permissions-blue.svg',  'href' => route('permissions.index')],
     ['id' => 'institutions', 'label' => 'Institutions',        'icon' => '/building.svg',          'icon_active' => '/institutions-blue.svg', 'href' => route('institutions.index')],

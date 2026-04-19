@@ -21,7 +21,7 @@
 <article
     id="institution-card-{{ $institution->id }}"
     data-institution-card
-    class="flex h-full min-h-[250px] w-full min-w-0 flex-col overflow-hidden rounded-[14px] border border-black/10 bg-white shadow-[0px_1px_2px_-1px_rgba(0,0,0,0.10),0px_1px_3px_0px_rgba(0,0,0,0.10)] sm:min-h-[260px] lg:min-h-[280px]"
+    class="flex w-full min-w-0 pb-2 flex-col overflow-hidden rounded-[14px] border border-black/10 bg-white shadow-[0px_1px_2px_-1px_rgba(0,0,0,0.10),0px_1px_3px_0px_rgba(0,0,0,0.10)]"
 >
     <div class=" px-4 pb-[10px] pt-4">
         <div class="flex w-full min-w-0 items-start justify-between gap-3">
@@ -86,7 +86,7 @@
             {{ $institution->name }}
         </p>
 
-        <div class="mt-auto flex flex-wrap items-center gap-4 text-sm font-normal leading-5 text-[#717182]">
+        <div class="flex flex-wrap items-center gap-4 text-sm font-normal leading-5 text-[#717182]">
             <div class="flex items-center gap-2">
                 <svg viewBox="0 0 24 24" fill="none" class="size-4 shrink-0 text-[#717182]" aria-hidden="true">
                     <path
