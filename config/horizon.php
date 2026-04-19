@@ -98,6 +98,7 @@ return [
 
     'waits' => [
         'redis:default' => 60,
+        'redis:indexing' => 120,
     ],
 
     /*
@@ -218,7 +219,7 @@ return [
             'maxTime' => 0,
             'maxJobs' => 0,
             'memory' => 256,
-            'tries' => 1,
+            'tries' => 3,
             'timeout' => 300,
             'nice' => 0,
         ],

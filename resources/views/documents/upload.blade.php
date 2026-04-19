@@ -24,13 +24,27 @@
     <p class="sikds-upload-sub">Ajouter de nouveaux documents au système SIKDS</p>
 
     <div x-ref="uploadAlerts" class="sikds-upload-page-alerts">
-        <div x-show="errorList.length" x-cloak class="sikds-alert sikds-alert--danger">
-            <template x-for="(msg, idx) in errorList" :key="idx">
-                <p class="sikds-alert-message" x-text="msg"></p>
-            </template>
+        <div x-show="errorList.length" x-cloak class="sikds-toast sikds-toast--danger" role="alert">
+            <span class="sikds-toast-icon"><i class="fa-solid fa-circle-exclamation"></i></span>
+            <div class="sikds-toast-body">
+                <p class="sikds-toast-title">Action impossible</p>
+                <template x-for="(msg, idx) in errorList" :key="idx">
+                    <p class="sikds-toast-message" x-text="msg"></p>
+                </template>
+            </div>
+            <button type="button" @click="errorList = []" class="sikds-toast-dismiss" aria-label="Fermer">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
         </div>
-        <div x-show="successMessage" x-cloak class="sikds-alert sikds-alert--info">
-            <p class="sikds-alert-message" x-text="successMessage"></p>
+        <div x-show="successMessage" x-cloak class="sikds-toast sikds-toast--success" role="status">
+            <span class="sikds-toast-icon"><i class="fa-solid fa-circle-check"></i></span>
+            <div class="sikds-toast-body">
+                <p class="sikds-toast-title">Opération réussie</p>
+                <p class="sikds-toast-message" x-text="successMessage"></p>
+            </div>
+            <button type="button" @click="successMessage = ''" class="sikds-toast-dismiss" aria-label="Fermer">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
         </div>
     </div>
 

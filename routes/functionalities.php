@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Common\DashboardController;
 use App\Http\Controllers\Common\DocumentsController;
+use App\Http\Controllers\Common\TagsController;
 use App\Http\Controllers\Api\DocumentsApiController;
 use App\Http\Controllers\Web\DownloadController;
 use App\Http\Controllers\Web\IndexingController;
@@ -20,6 +21,11 @@ Route::middleware(['auth'])
 
         Route::get('/documents', [DocumentsController::class, 'index'])
             ->name('documents.index');
+
+        Route::get('/tags', [TagsController::class, 'index'])->name('tags.index');
+        Route::post('/tags', [TagsController::class, 'store'])->name('tags.store');
+        Route::patch('/tags/{tag}', [TagsController::class, 'update'])->name('tags.update');
+        Route::delete('/tags/{tag}', [TagsController::class, 'destroy'])->name('tags.destroy');
 
         Route::get('/documents/upload', [DocumentsController::class, 'create'])
             ->name('documents.create');

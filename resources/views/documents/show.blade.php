@@ -24,10 +24,12 @@
         </a>
 
         <div class="sikds-doc-actions">
-            <a href="{{ $document['download_url'] }}" class="sikds-doc-action-btn sikds-doc-action-btn--default">
+            <button type="button"
+                    class="sikds-doc-action-btn sikds-doc-action-btn--default"
+                    @click="$dispatch('open-download-modal', { downloadUrl: @js(route('documents.download', $document['id'])) })">
                 <i class="fa-solid fa-download"></i>
                 <span>Télécharger</span>
-            </a>
+            </button>
             @if ($canEdit)
             <a href="{{ $document['edit_url'] }}" class="sikds-doc-action-btn sikds-doc-action-btn--default">
                 <i class="fa-solid fa-pen"></i>
@@ -61,8 +63,31 @@
         </div>
     </div>
 
-    <div x-show="banner.message" x-cloak class="sikds-alert" :class="banner.type === 'danger' ? 'sikds-alert--danger' : 'sikds-alert--info'" style="margin-bottom: 16px;">
-        <p class="sikds-alert-message" x-text="banner.message"></p>
+    <div x-show="banner.message"
+         x-cloak
+         class="sikds-toast"
+         :class="{
+            'sikds-toast--success': banner.type === 'success',
+            'sikds-toast--danger':  banner.type === 'danger',
+            'sikds-toast--info':    !['success','danger'].includes(banner.type),
+         }"
+         :role="banner.type === 'danger' ? 'alert' : 'status'">
+        <span class="sikds-toast-icon">
+            <i class="fa-solid"
+               :class="{
+                    'fa-circle-check':       banner.type === 'success',
+                    'fa-circle-exclamation': banner.type === 'danger',
+                    'fa-circle-info':        !['success','danger'].includes(banner.type),
+               }"></i>
+        </span>
+        <div class="sikds-toast-body">
+            <p class="sikds-toast-title"
+               x-text="banner.type === 'danger' ? 'Action impossible' : (banner.type === 'success' ? 'Opération réussie' : 'Information')"></p>
+            <p class="sikds-toast-message" x-text="banner.message"></p>
+        </div>
+        <button type="button" @click="banner.message = ''" class="sikds-toast-dismiss" aria-label="Fermer">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
     </div>
 
     {{-- Title row --}}
@@ -217,12 +242,6 @@
                     <h3 class="sikds-doc-card-heading">Statistiques</h3>
 
                     <div class="sikds-doc-stat-rows">
-                        <div class="sikds-doc-stat-row">
-                            <span class="sikds-doc-stat-label">
-                                <i class="fa-regular fa-eye"></i> Vues
-                            </span>
-                            <span class="sikds-doc-stat-value">{{ $document['views'] }}</span>
-                        </div>
                         <div class="sikds-doc-stat-row">
                             <span class="sikds-doc-stat-label">
                                 <i class="fa-solid fa-download"></i> Téléchargements
@@ -475,7 +494,7 @@
                     }
 
                     this.modal = null;
-                    this.banner = { message: successMessage, type: 'info' };
+                    this.banner = { message: successMessage, type: 'success' };
                     window.location.reload();
                 } catch (error) {
                     this.banner = { message: error.message || 'Action impossible.', type: 'danger' };
@@ -486,5 +505,7 @@
         };
     }
 </script>
+
+@include('documents.partials.download_modal')
 
 @endsection

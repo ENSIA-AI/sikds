@@ -81,6 +81,10 @@ class RagQueryService
 
         $citations = array_map(function (array $c) {
             $meta = is_array($c['metadata'] ?? null) ? $c['metadata'] : [];
+            $chunkText = trim((string) ($c['content'] ?? ''));
+            if (mb_strlen($chunkText) > 500) {
+                $chunkText = mb_substr($chunkText, 0, 500) . '...';
+            }
 
             return [
                 'document_title' => (string) ($meta['document_title'] ?? ''),
@@ -90,6 +94,7 @@ class RagQueryService
                 'score' => (float) ($c['score'] ?? 0.0),
                 'chunk_id' => (int) ($c['id'] ?? 0),
                 'document_id' => (int) ($c['document_id'] ?? 0),
+                'chunk_text' => $chunkText,
             ];
         }, $reranked);
 
@@ -114,32 +119,7 @@ class RagQueryService
             return $q->pluck('id')->map(fn ($v) => (int) $v)->all();
         }
 
-        if ($user->can('document.view.all')) {
-            return $q->pluck('id')->map(fn ($v) => (int) $v)->all();
-        }
-
-        $q->where(function ($outer) use ($user) {
-            $outer->where('target_audience', 'all')
-                ->orWhere(function ($s) use ($user) {
-                    $s->where('target_audience', 'specific_institutions')
-                        ->whereExists(function ($sub) use ($user) {
-                            $sub->select(DB::raw(1))
-                                ->from('document_institution_targets')
-                                ->whereColumn('document_institution_targets.document_id', 'documents.id')
-                                ->where('document_institution_targets.institution_id', $user->institution_id);
-                        });
-                })
-                ->orWhere(function ($s) use ($user) {
-                    $roleIds = $user->roles->pluck('id')->all();
-                    $s->where('target_audience', 'specific_roles')
-                        ->whereExists(function ($sub) use ($roleIds) {
-                            $sub->select(DB::raw(1))
-                                ->from('document_role_targets')
-                                ->whereColumn('document_role_targets.document_id', 'documents.id')
-                                ->whereIn('document_role_targets.role_id', $roleIds);
-                        });
-                });
-        });
+        $q->visibleTo($user);
 
         return $q->pluck('id')->map(fn ($v) => (int) $v)->all();
     }
@@ -199,7 +179,8 @@ class RagQueryService
     protected function callLlm(string $question, string $context): string
     {
         $system = "You are an institutional assistant. Answer ONLY using the provided document\n"
-            . "excerpts. For every claim, cite the source as [Title, §Section, p.N].\n"
+            . "excerpts. Do not include inline citations, brackets, or source markers in the response text.\n"
+            . "Write clear and concise prose in the same language as the user question.\n"
             . "If the context does not contain enough information to answer confidently,\n"
             . "respond with exactly: INSUFFICIENT_CONTEXT";
 

@@ -1,30 +1,28 @@
-<x-app-layout :activeNav="'traceability'">
-    <x-slot name="header">
-        @php
-            $year       = $log->downloaded_at?->format('Y') ?? date('Y');
-            $shortUuid  = 'WM-' . $year . '-' . strtoupper(substr(str_replace('-', '', $log->watermark_uuid), 0, 8));
-            $userId     = 'USR-' . ($log->user?->created_at?->format('Y') ?? date('Y')) . '-' . str_pad($log->user?->id, 3, '0', STR_PAD_LEFT);
-            $downloadId = 'DL-'  . $year . '-' . str_pad($log->id, 4, '0', STR_PAD_LEFT);
-            $auditId    = $auditEntry ? ('AUD-' . ($auditEntry->created_at?->format('Y') ?? date('Y')) . '-' . str_pad($auditEntry->id, 4, '0', STR_PAD_LEFT)) : null;
-        @endphp
+@extends('layouts.app')
+@section('page_title', 'Détail du Filigrane')
+@section('page_subtitle', 'Traçabilité du filigrane de téléchargement')
+@section('content')
+    @php
+        $year       = $log->downloaded_at?->format('Y') ?? date('Y');
+        $shortUuid  = 'WM-' . $year . '-' . strtoupper(substr(str_replace('-', '', $log->watermark_uuid), 0, 8));
+        $userId     = 'USR-' . ($log->user?->created_at?->format('Y') ?? date('Y')) . '-' . str_pad($log->user?->id, 3, '0', STR_PAD_LEFT);
+        $downloadId = 'DL-'  . $year . '-' . str_pad($log->id, 4, '0', STR_PAD_LEFT);
+        $auditId    = $auditEntry ? ('AUD-' . ($auditEntry->created_at?->format('Y') ?? date('Y')) . '-' . str_pad($auditEntry->id, 4, '0', STR_PAD_LEFT)) : null;
+    @endphp
+
+    {{-- Top bar: back link + identity --}}
+    <div class="flex items-center gap-3 mb-6">
+        <img src="/shield.svg" alt="" class="h-10 w-10 flex-shrink-0">
         <div>
-            <a href="{{ route('watermark.index') }}" class="flex items-center gap-1 text-xs font-medium mb-1 hover:underline" style="color:var(--sikds-muted)">
-                &larr; Retour &agrave; la tra&ccedil;abilit&eacute;
-            </a>
-            <div class="flex items-center gap-3">
-                <img src="/shield.svg" alt="" class="h-10 w-10 flex-shrink-0">
-                <div>
-                    <div class="flex items-center gap-2">
-                        <h1 class="sikds-page-title">D&eacute;tail du Filigrane</h1>
-                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold" style="background:#dcfce7;color:#15803d;">
-                            &#10003; V&eacute;rifi&eacute;
-                        </span>
-                    </div>
-                    <p class="sikds-page-subtitle font-mono"># {{ $shortUuid }}</p>
-                </div>
+            <div class="flex items-center gap-2 mb-0.5">
+                <a href="{{ route('watermark.index') }}" class="flex items-center gap-1 text-xs font-medium hover:underline" style="color:var(--sikds-muted)">
+                    &larr; Retour &agrave; la tra&ccedil;abilit&eacute;
+                </a>
+                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold" style="background:#dcfce7;color:#15803d;">&#10003; V&eacute;rifi&eacute;</span>
             </div>
+            <p class="font-semibold text-base font-mono" style="color:var(--sikds-ink)"># {{ $shortUuid }}</p>
         </div>
-    </x-slot>
+    </div>
 
     <div class="grid grid-cols-3 gap-5">
 
@@ -176,15 +174,15 @@
                     <div class="grid grid-cols-3 gap-2 text-xs pt-1">
                         <div>
                             <p style="color:var(--sikds-muted)">Position</p>
-                            <p class="font-medium mt-0.5" style="color:var(--sikds-ink)">Header &amp; Footer</p>
+                            <p class="font-medium mt-0.5" style="color:var(--sikds-ink)">Diagonale + Pied</p>
                         </div>
                         <div>
                             <p style="color:var(--sikds-muted)">Opacit&eacute;</p>
-                            <p class="font-medium mt-0.5" style="color:var(--sikds-ink)">30%</p>
+                            <p class="font-medium mt-0.5" style="color:var(--sikds-ink)">18%</p>
                         </div>
                         <div>
                             <p style="color:var(--sikds-muted)">Couleur</p>
-                            <p class="font-medium mt-0.5 font-mono" style="color:var(--sikds-ink)">#666666</p>
+                            <p class="font-medium mt-0.5 font-mono" style="color:var(--sikds-ink)">#787878</p>
                         </div>
                     </div>
                 </div>
@@ -249,4 +247,4 @@
             </div>
         </div>
     </div>
-</x-app-layout>
+@endsection

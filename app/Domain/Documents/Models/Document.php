@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace App\Domain\Documents\Models;
 
 use App\Domain\Institutions\Models\Institution;
+use App\Domain\Tags\Models\Tag;
 use App\Domain\Users\Models\User;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -69,6 +71,14 @@ class Document extends Model
     }
 
     /**
+     * Tags assigned to this document.
+     */
+    public function tags(): BelongsToMany
+    {
+        return $this->belongsToMany(Tag::class, 'document_tags', 'document_id', 'tag_id');
+    }
+
+    /**
      * Users this document is directly targeted to.
      */
     public function targetUsers(): BelongsToMany
@@ -82,31 +92,80 @@ class Document extends Model
      */
     public function isAccessibleBy(User $user): bool
     {
-        // Super-permission bypasses all audience rules only for Super-Admin.
+        return self::query()
+            ->whereKey($this->id)
+            ->visibleTo($user)
+            ->exists();
+    }
+
+    public function scopeVisibleTo(Builder $query, User $user, bool $includeUploader = true): Builder
+    {
         if ($user->can('document.view.all') && $user->hasRole('Super Administrateur')) {
-            return true;
+            return $query;
         }
 
-        if ((int) $this->uploaded_by === (int) $user->id) {
-            return true;
-        }
+        $institutionId = $user->institution_id;
+        $roleIds = $user->roles()->pluck('roles.id')->map(fn ($id): int => (int) $id)->all();
 
-        // Active status required for regular users
-        if ($this->status !== 'active') {
-            return false;
-        }
+        return $query->where(function (Builder $sub) use ($user, $includeUploader, $institutionId, $roleIds): void {
+            if ($includeUploader) {
+                $sub->where('uploaded_by', $user->id)
+                    ->orWhere(function (Builder $activeScope) use ($user, $institutionId, $roleIds): void {
+                        $this->applyActiveAudienceScope($activeScope, $user, $institutionId, $roleIds);
+                    });
 
-        if ($this->targetUsers()->where('users.id', $user->id)->exists()) {
-            return true;
-        }
+                return;
+            }
 
-        return match ($this->target_audience) {
-            'all' => true,
-            'specific_institutions' => $user->institution_id !== null
-                && $this->targetInstitutions()->where('institutions.id', $user->institution_id)->exists(),
-            'specific_roles' => false,
-            default => false,
-        };
+            $this->applyActiveAudienceScope($sub, $user, $institutionId, $roleIds);
+        });
+    }
+
+    /**
+     * @param  array<int, int>  $roleIds
+     */
+    private function applyActiveAudienceScope(Builder $query, User $user, ?int $institutionId, array $roleIds): void
+    {
+        $query->where('status', 'active')
+            ->where(function (Builder $outer) use ($user, $institutionId, $roleIds): void {
+                $outer->where('target_audience', 'all')
+                    ->orWhere(function (Builder $s) use ($institutionId): void {
+                        if ($institutionId === null) {
+                            $s->whereRaw('1 = 0');
+
+                            return;
+                        }
+
+                        $s->where('target_audience', 'specific_institutions')
+                            ->whereExists(function ($sub) use ($institutionId): void {
+                                $sub->selectRaw('1')
+                                    ->from('document_institution_targets')
+                                    ->whereColumn('document_institution_targets.document_id', 'documents.id')
+                                    ->where('document_institution_targets.institution_id', $institutionId);
+                            });
+                    })
+                    ->orWhere(function (Builder $s) use ($roleIds): void {
+                        if ($roleIds === []) {
+                            $s->whereRaw('1 = 0');
+
+                            return;
+                        }
+
+                        $s->where('target_audience', 'specific_roles')
+                            ->whereExists(function ($sub) use ($roleIds): void {
+                                $sub->selectRaw('1')
+                                    ->from('document_role_targets')
+                                    ->whereColumn('document_role_targets.document_id', 'documents.id')
+                                    ->whereIn('document_role_targets.role_id', $roleIds);
+                            });
+                    })
+                    ->orWhereExists(function ($sub) use ($user): void {
+                        $sub->selectRaw('1')
+                            ->from('document_user_targets')
+                            ->whereColumn('document_user_targets.document_id', 'documents.id')
+                            ->where('document_user_targets.user_id', $user->id);
+                    });
+            });
     }
 
     /**

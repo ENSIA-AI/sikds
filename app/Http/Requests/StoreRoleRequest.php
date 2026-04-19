@@ -15,6 +15,30 @@ final class StoreRoleRequest extends FormRequest
         return $this->user()->can('role.create');
     }
 
+    protected function prepareForValidation(): void
+    {
+        $name = $this->input('name');
+        if (is_string($name)) {
+            $this->merge([
+                'name' => preg_replace('/\s+/', ' ', trim($name)),
+            ]);
+        }
+
+        $description = $this->input('description');
+        if (is_string($description)) {
+            $description = trim($description);
+            $this->merge([
+                'description' => $description === '' ? null : $description,
+            ]);
+        }
+
+        if (is_array($this->input('permission_ids'))) {
+            $this->merge([
+                'permission_ids' => array_values(array_unique(array_map('intval', $this->input('permission_ids')))),
+            ]);
+        }
+    }
+
     
     // Get the validation rules that apply to the request.
      

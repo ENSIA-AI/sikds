@@ -80,7 +80,7 @@ class WatermarkTraceabilityController extends Controller
                 ->count('users.institution_id'),
         ];
 
-        return view('watermark.index', compact('logs', 'stats'));
+        return view('watermark.index', compact('logs', 'stats') + ['activeNav' => 'traceability']);
     }
 
     /**
@@ -107,7 +107,7 @@ class WatermarkTraceabilityController extends Controller
             ->where('event_type', 'document.download')
             ->first();
 
-        return view('watermark.show', compact('log', 'auditEntry'));
+        return view('watermark.show', compact('log', 'auditEntry') + ['activeNav' => 'traceability']);
     }
 }
 

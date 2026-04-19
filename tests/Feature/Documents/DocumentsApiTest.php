@@ -3,6 +3,7 @@
 use App\Domain\Documents\Models\Document;
 use App\Domain\Institutions\Models\Institution;
 use App\Domain\Users\Models\User;
+use App\Jobs\IndexDocumentJob;
 use App\Models\Permission;
 use App\Models\Role;
 use Illuminate\Http\UploadedFile;
@@ -261,6 +262,7 @@ test('document upload creates draft document and stores file', function () {
     $doc = Document::query()->findOrFail($id);
 
     expect($doc->status)->toBe('draft');
+    expect($doc->indexing_status)->toBe('pending');
     expect($doc->file_path)->not->toBe('');
     Storage::disk((string) config('filesystems.documents_disk'))->assertExists($doc->file_path);
 });
@@ -293,10 +295,102 @@ test('publish endpoint enforces draft to active transition', function () {
     $this->postJson('/api/documents/'.$draft->id.'/publish')
         ->assertOk()
         ->assertJsonPath('document.status', 'active');
+    $draft->refresh();
+    expect($draft->indexing_status)->toBe('pending');
+    Queue::assertPushed(IndexDocumentJob::class, fn (IndexDocumentJob $job): bool => true);
 
     $active = createDocument($user, ['status' => 'active']);
     $this->postJson('/api/documents/'.$active->id.'/publish')
         ->assertStatus(422);
+});
+
+test('archive removes document chunks from vector corpus', function () {
+    $user = User::factory()->create();
+    grantPermission($user, 'document.publish');
+    $this->actingAs($user);
+
+    $doc = createDocument($user, ['status' => 'active', 'indexing_status' => 'indexed']);
+    DB::table('document_chunks')->insert([
+        'document_id' => $doc->id,
+        'chunk_index' => 0,
+        'content' => 'Old indexed content',
+        'metadata' => json_encode(['document_title' => $doc->title]),
+        'embedding' => null,
+        'created_at' => now(),
+    ]);
+
+    $this->postJson('/api/documents/'.$doc->id.'/archive')->assertOk();
+    $doc->refresh();
+
+    expect($doc->status)->toBe('archived');
+    expect($doc->indexing_status)->toBe('failed');
+    expect(DB::table('document_chunks')->where('document_id', $doc->id)->count())->toBe(0);
+});
+
+test('soft delete removes document chunks from vector corpus', function () {
+    $owner = User::factory()->create();
+    $doc = createDocument($owner, ['status' => 'active', 'indexing_status' => 'indexed']);
+    DB::table('document_chunks')->insert([
+        'document_id' => $doc->id,
+        'chunk_index' => 0,
+        'content' => 'Active indexed chunk',
+        'metadata' => json_encode(['document_title' => $doc->title]),
+        'embedding' => null,
+        'created_at' => now(),
+    ]);
+
+    $deleter = User::factory()->create();
+    grantPermission($deleter, 'document.delete');
+    $this->actingAs($deleter);
+
+    $this->deleteJson('/api/documents/'.$doc->id)->assertOk();
+    $doc->refresh();
+
+    expect($doc->status)->toBe('soft_deleted');
+    expect($doc->indexing_status)->toBe('failed');
+    expect(DB::table('document_chunks')->where('document_id', $doc->id)->count())->toBe(0);
+});
+
+test('updating active document with a new file purges old chunks and requeues indexing', function () {
+    $editor = User::factory()->create();
+    grantPermission($editor, 'document.edit');
+    $this->actingAs($editor);
+    $tagId = seedDocumentsTestTag();
+
+    $doc = createDocument($editor, [
+        'status' => 'active',
+        'indexing_status' => 'indexed',
+        'target_audience' => 'all',
+    ]);
+    DB::table('document_tags')->insert([
+        'document_id' => $doc->id,
+        'tag_id' => $tagId,
+        'assigned_at' => now(),
+        'assigned_by' => $editor->id,
+    ]);
+    DB::table('document_chunks')->insert([
+        'document_id' => $doc->id,
+        'chunk_index' => 0,
+        'content' => 'Stale chunk',
+        'metadata' => json_encode(['document_title' => $doc->title]),
+        'embedding' => null,
+        'created_at' => now(),
+    ]);
+
+    $payload = [
+        'title' => $doc->title,
+        'issue_date' => now()->toDateString(),
+        'target_audience' => 'all',
+        'tag_ids' => [$tagId],
+        'file' => fakePdfUpload('new-version.pdf'),
+    ];
+
+    $this->putJson('/api/documents/'.$doc->id, $payload)->assertOk();
+    $doc->refresh();
+
+    expect($doc->indexing_status)->toBe('pending');
+    expect(DB::table('document_chunks')->where('document_id', $doc->id)->count())->toBe(0);
+    Queue::assertPushed(IndexDocumentJob::class, fn (IndexDocumentJob $job): bool => true);
 });
 
 test('soft delete and restore require correct permissions and super admin', function () {
