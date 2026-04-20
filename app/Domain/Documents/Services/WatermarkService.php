@@ -231,7 +231,7 @@ class WatermarkService
             // ---------------------------------------------------------------
             // Large diagonal watermark — rotated -45° (clockwise) around the
             // page centre so text runs from TOP-LEFT to BOTTOM-RIGHT.
-            // Alpha 0.30 — clearly visible for traceability but still allows
+            // Alpha 0.40 — clearly visible for traceability but still allows
             // the underlying content to be read.
             // ---------------------------------------------------------------
             $fpdi->setAlpha(0.40);

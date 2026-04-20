@@ -48,7 +48,6 @@ class DownloadController extends Controller
         // Eager-load relations needed by WatermarkService
         $downloadLog->load('user.institution');
 
-        // Generate watermarked PDF (visible header+footer + PDF info metadata)
         try {
             $watermarkedPdfPath = $this->watermarkService->generateWatermarkedPdf($document, $downloadLog);
         } catch (\Exception $e) {
