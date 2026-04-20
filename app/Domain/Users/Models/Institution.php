@@ -9,6 +9,7 @@ namespace App\Domain\Users\Models;
 
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Storage;
@@ -85,5 +86,10 @@ class Institution extends Model
     public function getActiveUsersCountAttribute(): int
     {
         return $this->users()->where('is_active', true)->count();
+    }
+
+    protected static function newFactory(): Factory
+    {
+        return \Database\Factories\Domain\Users\Models\InstitutionFactory::new();
     }
 }

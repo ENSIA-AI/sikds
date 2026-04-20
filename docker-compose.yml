@@ -14,14 +14,14 @@ services:
       - "${APP_PORT:-80}:8000"
     environment:
       APP_ENV: ${APP_ENV:-local}
+      # 0 = no subprocess timeout (composer git/unzip/curl on slow networks or bind mounts)
+      COMPOSER_PROCESS_TIMEOUT: ${COMPOSER_PROCESS_TIMEOUT:-0}
     depends_on:
       postgres:
         condition: service_healthy
       redis:
         condition: service_healthy
-    command: >
-      sh -c "test -d vendor || composer install --no-interaction --prefer-dist
-      && php artisan serve --host=0.0.0.0 --port=8000"
+    command: sh /var/www/html/docker/php/docker-entrypoint-dev.sh
     networks:
       - sikds
 

@@ -431,13 +431,13 @@
 
                             <div class="w-full max-w-[607px] rounded-[10px] border border-black/10 p-4">
                                 <p class="font-inter text-sm font-semibold text-[#0A0A0A]">Rôle &amp; Accès</p>
-                                <div class="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3" data-edit-role-grid>
+                                <div class="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-2" data-edit-role-grid>
                                     @foreach ($rolesForUi as $role)
                                         <x-user-role-card
                                             :roleName="$role->name"
                                             :inactifusers="$role->permissions->count() . ' permissions'"
                                             :description="(string) ($role->description ?? '')"
-                                            :icon="asset('images/roles.png')"
+                                        
                                             :roleId="$role->id"
                                             data-edit-role-card
                                         />

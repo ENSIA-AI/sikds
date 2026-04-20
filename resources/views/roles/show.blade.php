@@ -192,7 +192,7 @@
                             <th class="pb-3 text-left text-sm font-semibold text-[#0A0A0A]">Nom</th>
                             <th class="pb-3 text-left text-sm font-semibold text-[#0A0A0A]">Email</th>
                             <th class="pb-3 text-left text-sm font-semibold text-[#0A0A0A]">Institution</th>
-                            <th class="pb-3 text-right text-sm font-semibold text-[#0A0A0A]">Actions</th>
+                            <!-- <th class="pb-3 text-right text-sm font-semibold text-[#0A0A0A]">Actions</th> -->
                         </tr>
                     </thead>
                     <tbody>
@@ -202,14 +202,14 @@
                                 <td class="py-3 text-sm text-[#717182]">{{ $user->email }}</td>
                                 <td class="py-3 text-sm text-[#717182]">{{ $user->institution->name ?? 'N/A' }}</td>
                                 <td class="py-3 text-right">
-                                    @can('user.view.all')
+                                    <!-- @can('user.view.all')
                                         <a
                                             href="{{ route('users.show', $user) }}"
                                             class="text-sm font-medium text-[#1E3A8A] hover:underline"
                                         >
                                             Voir
                                         </a>
-                                    @endcan
+                                    @endcan -->
                                 </td>
                             </tr>
                         @endforeach
