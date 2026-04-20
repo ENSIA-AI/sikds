@@ -8,26 +8,30 @@
         <x-stat-card
             icon="/upload-blue.svg"
             value="{{ number_format($stats['total']) }}"
-            label="Total T&eacute;l&eacute;chargements"
+            label="Total Téléchargements"
             trend="{{ $stats['total'] }}"
+            iconBg="#dbeafe"
         />
         <x-stat-card
-            icon="/time-blue.svg"
+            icon="/time-orange.svg"
             value="{{ number_format($stats['today']) }}"
-            label="Aujourd&apos;hui"
+            label="Aujourd'hui"
             trend="{{ $stats['today'] }}"
+            iconBg="#ffedd5"
         />
         <x-stat-card
-            icon="/users-blue.svg"
+            icon="/users-pink.svg"
             value="{{ number_format($stats['unique_users']) }}"
             label="Utilisateurs Uniques"
             trend="{{ $stats['unique_users'] }}"
+            iconBg="#fce7f3"
         />
         <x-stat-card
-            icon="/building-blue.svg"
+            icon="/building-orange.svg"
             value="{{ number_format($stats['institutions']) }}"
             label="Institutions"
             trend="{{ $stats['institutions'] }}"
+            iconBg="#ffedd5"
         />
     </div>
 
@@ -38,7 +42,7 @@
 
                 {{-- Text search --}}
                 <div class="flex-1 min-w-48 relative">
-                    <img src="/search.svg" alt="" class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 opacity-40">
+                    <img src="/search-blue.svg" alt="" class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 opacity-40">
                     <input type="text" name="q" value="{{ request('q') }}"
                            placeholder="Rechercher par UUID, document, utilisateur..."
                            class="w-full pl-9 pr-4 py-2 text-sm border border-black/10 rounded-[10px] focus:outline-none focus:ring-2 focus:ring-[color:var(--sikds-primary)]/30">
@@ -59,7 +63,7 @@
                         :class="filtersOpen ? 'bg-[color:var(--sikds-primary)] text-white' : 'bg-white border border-black/10 hover:border-black/20'"
                         class="flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-[10px] transition-colors flex-shrink-0"
                         :style="filtersOpen ? '' : 'color:var(--sikds-ink)'">
-                    <img src="/parameters.svg" alt="" class="h-4 w-4" :class="filtersOpen ? 'brightness-0 invert' : ''">
+                    <img src="/parameters-blue.svg" alt="" class="h-4 w-4" :class="filtersOpen ? 'brightness-0 invert' : ''">
                     Filtres
                 </button>
             </div>
@@ -70,7 +74,7 @@
                     <label class="block text-xs font-medium mb-1" style="color:var(--sikds-muted)">Document</label>
                     <input type="text" name="document" value="{{ request('document') }}"
                            class="w-full text-sm border border-black/10 rounded-[10px] px-3 py-2 focus:outline-none"
-                           placeholder="Titre ou r&eacute;f&eacute;rence...">
+                           placeholder="Titre ou référence...">
                 </div>
                 <div>
                     <label class="block text-xs font-medium mb-1" style="color:var(--sikds-muted)">Utilisateur</label>
@@ -82,7 +86,7 @@
                     <label class="block text-xs font-medium mb-1" style="color:var(--sikds-muted)">Institution</label>
                     <input type="text" name="institution" value="{{ request('institution') }}"
                            class="w-full text-sm border border-black/10 rounded-[10px] px-3 py-2 focus:outline-none"
-                           placeholder="Nom de l&apos;institution...">
+                           placeholder="Nom de l'institution...">
                 </div>
                 <div class="col-span-3 flex justify-end pt-1">
                     <button type="submit"
@@ -142,7 +146,7 @@
                             {{-- Institution --}}
                             <td class="px-5 py-4">
                                 <div class="flex items-center gap-1.5">
-                                    <img src="/lock-blue.svg" alt="" class="h-3.5 w-3.5 opacity-50 flex-shrink-0">
+                                    <span class="inline-block h-2 w-2 rounded-full flex-shrink-0" style="background-color:var(--sikds-primary);"></span>
                                     <span class="text-sm" style="color:var(--sikds-ink)">{{ $log->user?->institution?->name ?? '&mdash;' }}</span>
                                 </div>
                             </td>
@@ -156,7 +160,7 @@
                             {{-- IP --}}
                             <td class="px-5 py-4">
                                 <div class="flex items-center gap-1.5">
-                                    <img src="/traceability.svg" alt="" class="h-3.5 w-3.5 opacity-40 flex-shrink-0">
+                                    <img src="/traceability-blue.svg" alt="" class="h-3.5 w-3.5 opacity-60">
                                     <span class="font-mono text-xs" style="color:var(--sikds-ink)">{{ $log->ip_address }}</span>
                                 </div>
                             </td>
@@ -166,16 +170,9 @@
                                 <div class="flex items-center gap-2">
                                     <a href="{{ route('watermark.show', $log->watermark_uuid) }}"
                                        class="h-8 w-8 rounded-[8px] flex items-center justify-center transition-colors hover:bg-gray-100"
-                                       title="Voir le d&eacute;tail"
+                                       title="Voir le détail"
                                        style="border:1px solid rgba(0,0,0,.1);">
                                         <img src="/audit-blue.svg" alt="Voir" class="h-4 w-4">
-                                    </a>
-                                    <a href="{{ route('watermark.show', $log->watermark_uuid) }}"
-                                       class="h-8 w-8 rounded-[8px] flex items-center justify-center transition-colors hover:bg-gray-100"
-                                       title="Ouvrir"
-                                       target="_blank"
-                                       style="border:1px solid rgba(0,0,0,.1);">
-                                        <img src="/distribution.svg" alt="Ouvrir" class="h-4 w-4 opacity-60">
                                     </a>
                                 </div>
                             </td>
@@ -194,13 +191,13 @@
         {{-- Pagination --}}
         <div class="px-5 py-4 border-t flex items-center justify-between" style="border-color:rgba(0,0,0,.1);">
             <p class="text-sm" style="color:var(--sikds-muted)">
-                Affichage de {{ $logs->firstItem() ?? 0 }}&ndash;{{ $logs->lastItem() ?? 0 }} sur {{ number_format($logs->total()) }} t&eacute;l&eacute;chargements
+                Affichage de {{ $logs->firstItem() ?? 0 }}&ndash;{{ $logs->lastItem() ?? 0 }} sur {{ number_format($logs->total()) }} téléchargements
             </p>
             <div class="flex items-center gap-2">
                 @if ($logs->onFirstPage())
-                    <span class="px-4 py-1.5 text-sm border rounded-[10px] opacity-40 cursor-not-allowed" style="border-color:rgba(0,0,0,.1);color:var(--sikds-muted)">Pr&eacute;c&eacute;dent</span>
+                    <span class="px-4 py-1.5 text-sm border rounded-[10px] opacity-40 cursor-not-allowed" style="border-color:rgba(0,0,0,.1);color:var(--sikds-muted)">Précédent</span>
                 @else
-                    <a href="{{ $logs->previousPageUrl() }}" class="px-4 py-1.5 text-sm border rounded-[10px] hover:bg-gray-50 transition-colors" style="border-color:rgba(0,0,0,.1);color:var(--sikds-ink)">Pr&eacute;c&eacute;dent</a>
+                    <a href="{{ $logs->previousPageUrl() }}" class="px-4 py-1.5 text-sm border rounded-[10px] hover:bg-gray-50 transition-colors" style="border-color:rgba(0,0,0,.1);color:var(--sikds-ink)">Précédent</a>
                 @endif
                 @if ($logs->hasMorePages())
                     <a href="{{ $logs->nextPageUrl() }}" class="px-4 py-1.5 text-sm border rounded-[10px] hover:bg-gray-50 transition-colors" style="border-color:rgba(0,0,0,.1);color:var(--sikds-ink)">Suivant</a>

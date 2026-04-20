@@ -47,10 +47,10 @@ class WatermarkTraceabilityController extends Controller
         }
 
         // User name/email filter
-        if ($user = $request->input('user')) {
+        if ($userFilter = $request->input('user')) {
             $query->whereHas('user', fn ($u) => $u
-                ->where('full_name', 'ilike', "%{$user}%")
-                ->orWhere('email', 'ilike', "%{$user}%"));
+                ->where('full_name', 'ilike', "%{$userFilter}%")
+                ->orWhere('email', 'ilike', "%{$userFilter}%"));
         }
 
         // Institution filter
