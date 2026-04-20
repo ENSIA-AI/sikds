@@ -8,6 +8,7 @@ use App\Domain\Audit\Models\AuditLog;
 use App\Domain\Documents\Models\Document;
 use App\Domain\Documents\Models\DownloadLog;
 use App\Domain\Institutions\Models\Institution;
+use App\Domain\Tags\Models\Tag;
 use App\Domain\Users\Models\User;
 use Carbon\Carbon;
 
@@ -148,6 +149,21 @@ class DashboardService
             ->all();
     }
 
+    public function getPopularTags(): array
+    {
+        return Tag::query()
+            ->withCount('documents')
+            ->orderByDesc('documents_count')
+            ->orderBy('name')
+            ->limit(5)
+            ->get(['id', 'name', 'color'])
+            ->map(fn (Tag $tag): array => [
+                'label' => (string) $tag->name,
+                'style' => $this->resolveTagStyle(is_string($tag->color) ? $tag->color : null),
+            ])
+            ->all();
+    }
+
     public function getChartData(): array
     {
         $days = collect(range(6, 0))->map(fn (int $d) => now()->subDays($d)->toDateString());
@@ -208,5 +224,48 @@ class DashboardService
         }
 
         return $log->resource_type ? ucfirst((string) $log->resource_type) : '—';
+    }
+
+    private function resolveTagStyle(?string $rawColor): string
+    {
+        $background = $this->normalizeHexColor($rawColor) ?? '#e5e7eb';
+        $textColor = $this->isLightColor($background) ? '#1f2937' : '#ffffff';
+
+        return "background-color: {$background}; color: {$textColor};";
+    }
+
+    private function normalizeHexColor(?string $rawColor): ?string
+    {
+        if (! is_string($rawColor)) {
+            return null;
+        }
+
+        $color = trim($rawColor);
+        if ($color === '') {
+            return null;
+        }
+
+        if (preg_match('/^#([0-9a-fA-F]{3})$/', $color, $matches) === 1) {
+            $short = strtolower($matches[1]);
+
+            return sprintf('#%s%s%s%s%s%s', $short[0], $short[0], $short[1], $short[1], $short[2], $short[2]);
+        }
+
+        if (preg_match('/^#([0-9a-fA-F]{6})$/', $color, $matches) === 1) {
+            return '#'.strtolower($matches[1]);
+        }
+
+        return null;
+    }
+
+    private function isLightColor(string $hexColor): bool
+    {
+        $red = hexdec(substr($hexColor, 1, 2));
+        $green = hexdec(substr($hexColor, 3, 2));
+        $blue = hexdec(substr($hexColor, 5, 2));
+
+        $luminance = (0.2126 * $red + 0.7152 * $green + 0.0722 * $blue) / 255;
+
+        return $luminance > 0.6;
     }
 }

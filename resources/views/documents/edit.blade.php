@@ -152,7 +152,8 @@
                         <button
                             type="button"
                             class="sikds-upload-tag-chip sikds-tag"
-                            :class="[tag.class, form.tag_ids.includes(tag.id) ? 'sikds-upload-tag-chip--selected' : '']"
+                            :class="form.tag_ids.includes(tag.id) ? 'sikds-upload-tag-chip--selected' : ''"
+                            :style="tag.style"
                             @click="toggleSelection('tag_ids', tag.id)"
                             x-text="tag.label"
                         ></button>

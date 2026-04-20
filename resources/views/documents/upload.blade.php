@@ -141,7 +141,8 @@
                     <button
                         type="button"
                         class="sikds-upload-tag-chip sikds-tag sikds-tag--table"
-                        :class="[tag.class, currentMeta().tag_ids.includes(tag.id) ? 'sikds-upload-tag-chip--selected' : '']"
+                        :class="currentMeta().tag_ids.includes(tag.id) ? 'sikds-upload-tag-chip--selected' : ''"
+                        :style="tag.style"
                         @click="toggleCurrentTag(tag.id)"
                         x-text="tag.label"
                     ></button>

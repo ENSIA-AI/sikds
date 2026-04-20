@@ -151,31 +151,6 @@
         @apply rounded-full px-3 py-1 text-xs font-medium;
     }
 
-    .sikds-tag--directive {
-        background-color: var(--sikds-tag-directive-bg);
-        color:            var(--sikds-tag-directive-text);
-    }
-
-    .sikds-tag--urgent {
-        background-color: var(--sikds-tag-urgent-bg);
-        color:            var(--sikds-tag-urgent-text);
-    }
-
-    .sikds-tag--reg {
-        background-color: var(--sikds-tag-reg-bg);
-        color:            var(--sikds-tag-reg-text);
-    }
-
-    .sikds-tag--rapport {
-        background-color: var(--sikds-tag-rapport-bg);
-        color:            var(--sikds-tag-rapport-text);
-    }
-
-    .sikds-tag--decision {
-        background-color: var(--sikds-tag-decision-bg);
-        color:            var(--sikds-tag-decision-text);
-    }
-
     .sikds-fab {
         @apply fixed bottom-6 right-6 z-30 grid place-items-center rounded-full text-white;
         height:           47px;

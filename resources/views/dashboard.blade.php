@@ -67,7 +67,7 @@
         <x-summary-card title="Tags Populaires">
             <div class="mt-4 flex flex-wrap gap-2">
                 @foreach ($popularTags as $tag)
-                    <span class="sikds-tag {{ $tag['class'] }}">{{ $tag['label'] }}</span>
+                    <span class="sikds-tag" style="{{ $tag['style'] }}">{{ $tag['label'] }}</span>
                 @endforeach
             </div>
         </x-summary-card>
