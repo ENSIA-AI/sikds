@@ -22,12 +22,12 @@ class UserFactory extends Factory
             'username' => fake()->unique()->userName(),
             'email' => $email,
             'full_name' => fake()->name(),
-            'institution_id' => fn () => DB::table('institutions')->where('code', 'MESRS')->value('id')
+            'institution_id' => fn () => DB::table('institutions')->value('id')
                 ?? DB::table('institutions')->insertGetId([
-                    'code' => 'TEST',
+                    'code' => strtoupper(fake()->unique()->bothify('INST###')),
                     'name' => 'Test Institution',
                     'type' => 'university',
-                    'domain' => 'test.dz',
+                    'domain' => fake()->unique()->domainName(),
                     'created_at' => now(),
                     'updated_at' => now(),
                 ]),
