@@ -36,7 +36,7 @@
         </div>
     </section>
 
-    {{-- Search --}}
+    {{-- Search bar intended --}}
     <section>
         <div class="relative">
             <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-black/50">

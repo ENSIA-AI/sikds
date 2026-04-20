@@ -33,7 +33,8 @@ final class RoleController extends Controller
         
         $roles = Role::query()
             ->with('permissions:id,name,code')
-            ->withCount(['users', 'permissions'])
+            ->withCount('users')
+            ->withCount('permissions')
             ->when($request->search, function ($query, $search) {
                 $query->where('name', 'ilike', "%{$search}%")
                     ->orWhere('description', 'ilike', "%{$search}%");
@@ -128,10 +129,19 @@ final class RoleController extends Controller
             'users:id,full_name,email,institution_id',
             'users.institution:id,name',
         ]);
+
+        $allPermissions = Permission::orderBy('category')
+        ->orderBy('name')
+        ->get()
+        ->groupBy('category');
+
         
         return view('roles.show', [
             'role' => $role,
+            'allPermissions' => $allPermissions, 
         ]);
+
+
     }
 
     // Show the form for editing the specified role.
