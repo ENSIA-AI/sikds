@@ -69,6 +69,49 @@ class User extends Authenticatable
         return $query->where('institution_id', $institutionId);
     }
 
+    // permossion helper methods
+
+    // get permissions that come from roles
+
+    public function getRoleBasedPermissions()
+    {
+        return $this->getPermissionsViaRoles();
+    }
+
+    // get permissions assigned directly to this user (not via roles)
+    public function getCustomPermissions()
+    {
+        return $this->getDirectPermissions();
+    }
+
+    // get all effective permissions (role-based + custom)
+    public function getEffectivePermissions()
+    {
+        return $this->getAllPermissions();
+    }
+
+    /* 
+    * sync customer permissions to this user.
+    * these permissions are in addition to role-based permissions.
+    */
+    public function syncCustomerPermissions(array $permissionIds): void
+    {
+        // get permission code by IDS
+        $permissions = \App\Domain\Users\Models\Permission::whereIn('id', $permissionIds)->get();
+
+        // Sync direct permissions (this replaces existing direct permissions)
+        $this->syncPermissions($permissions);
+    }
+
+    /* 
+    * check if user has custom (direct) permissions assigned.
+    */
+    public function hasCustomPermissions(): bool
+    {
+        return $this->getDirectPermissions()->isNotEmpty();
+    }
+    
+
     public function useSso(): bool
     {
         return $this->auth_type === 'sso';

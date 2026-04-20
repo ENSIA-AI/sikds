@@ -29,6 +29,7 @@ class PermissionsSeeder extends Seeder
             ['code' => 'user.manage', 'category' => 'users', 'description' => 'Gérer les utilisateurs.'],
             ['code' => 'user.deactivate', 'category' => 'users', 'description' => 'Désactiver des utilisateurs.'],
             ['code' => 'user.view.all', 'category' => 'users', 'description' => 'Voir tous les utilisateurs.'],
+            ['code' => 'user.create', 'category' => 'users', 'description' => 'Créer des utilisateurs.'],
             ['code' => 'user.assign.permissions', 'category' => 'users', 'description' => 'Assigner des permissions.'],
             ['code' => 'role.create', 'category' => 'roles', 'description' => 'Créer des rôles.'],
             ['code' => 'role.edit', 'category' => 'roles', 'description' => 'Modifier des rôles.'],

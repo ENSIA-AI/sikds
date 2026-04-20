@@ -28,7 +28,9 @@ final class UpdateRoleAction
             // Update basic info
             $role->update([
                 'name' => $data['name'],
-                'slug' => Str::slug($data['name']),
+                'slug' => $role->name !== $data['name']
+                    ? str::slug($data['name'])
+                    : $role->slug,
                 'description' => $data['description'] ?? null,
             ]);
             

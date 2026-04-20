@@ -16,7 +16,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\Response;
 
-class DocumentsApiController extends Controller
+final class DocumentsApiController extends Controller
 {
     public function __construct(
         private readonly DocumentApiQueryService $queryService,
@@ -101,4 +101,3 @@ class DocumentsApiController extends Controller
         return $user;
     }
 }
-
