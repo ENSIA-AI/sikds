@@ -25,21 +25,14 @@
 
     --sikds-danger-bg:      #fef2f2;
     --sikds-danger-border:  #ffc9c9;
+    --sikds-danger-ink:     #b91c1c;
     --sikds-warn-bg:        #fffbeb;
     --sikds-warn-border:    #fee685;
     --sikds-info-bg:        #eff6ff;
     --sikds-info-border:    #bedbff;
-
-    --sikds-tag-directive-bg:   #dbeafe;
-    --sikds-tag-directive-text: #1447e6;
-    --sikds-tag-urgent-bg:      #fec7c9;
-    --sikds-tag-urgent-text:    #e7000b;
-    --sikds-tag-reg-bg:         #f3e8ff;
-    --sikds-tag-reg-text:       #8200db;
-    --sikds-tag-rapport-bg:     #fce7f3;
-    --sikds-tag-rapport-text:   #c6005c;
-    --sikds-tag-decision-bg:    #ffedd4;
-    --sikds-tag-decision-text:  #ca3500;
+    --sikds-success-bg:     #f0fdf4;
+    --sikds-success-border: #bbf7d0;
+    --sikds-success-ink:    #15803d;
 
     --sikds-trend-color:    #00a63e;
     --sikds-fab-dot-color:  #e7000b;

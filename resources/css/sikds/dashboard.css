@@ -57,14 +57,23 @@
     }
 
     .sikds-alert {
+        position:      relative;
         border-radius: var(--sikds-radius-sm);
-        padding:       10px 12px;
+        padding:       11px 40px 11px 14px;
+        animation:     sikds-alert-in 0.22s ease-out both;
+    }
+
+    @keyframes sikds-alert-in {
+        from { opacity: 0; transform: translateY(-4px); }
+        to   { opacity: 1; transform: translateY(0); }
     }
 
     .sikds-alert--danger {
         background-color: var(--sikds-danger-bg);
         border:           1px solid var(--sikds-danger-border);
     }
+    .sikds-alert--danger .sikds-alert-message i { color: var(--sikds-danger-ink); }
+    .sikds-alert--danger .sikds-alert-message   { color: var(--sikds-danger-ink); }
 
     .sikds-alert--warn {
         background-color: var(--sikds-warn-bg);
@@ -76,6 +85,13 @@
         border:           1px solid var(--sikds-info-border);
     }
 
+    .sikds-alert--success {
+        background-color: var(--sikds-success-bg);
+        border:           1px solid var(--sikds-success-border);
+    }
+    .sikds-alert--success .sikds-alert-message i { color: var(--sikds-success-ink); }
+    .sikds-alert--success .sikds-alert-message   { color: var(--sikds-success-ink); }
+
     .sikds-alert-message {
         display:     flex;
         align-items: flex-start;
@@ -84,6 +100,28 @@
         font-weight: 500;
         line-height: 1.4;
         color:       var(--sikds-ink);
+    }
+
+    .sikds-alert-dismiss {
+        position:         absolute;
+        top:              8px;
+        right:            8px;
+        width:            24px;
+        height:           24px;
+        display:          inline-flex;
+        align-items:      center;
+        justify-content:  center;
+        border:           none;
+        background:       transparent;
+        color:            currentColor;
+        opacity:          0.55;
+        border-radius:    6px;
+        cursor:           pointer;
+        transition:       opacity 0.15s, background-color 0.15s;
+    }
+    .sikds-alert-dismiss:hover {
+        opacity:          1;
+        background-color: rgba(0, 0, 0, 0.05);
     }
 
     .sikds-alert-time {
@@ -111,31 +149,6 @@
 
     .sikds-tag {
         @apply rounded-full px-3 py-1 text-xs font-medium;
-    }
-
-    .sikds-tag--directive {
-        background-color: var(--sikds-tag-directive-bg);
-        color:            var(--sikds-tag-directive-text);
-    }
-
-    .sikds-tag--urgent {
-        background-color: var(--sikds-tag-urgent-bg);
-        color:            var(--sikds-tag-urgent-text);
-    }
-
-    .sikds-tag--reg {
-        background-color: var(--sikds-tag-reg-bg);
-        color:            var(--sikds-tag-reg-text);
-    }
-
-    .sikds-tag--rapport {
-        background-color: var(--sikds-tag-rapport-bg);
-        color:            var(--sikds-tag-rapport-text);
-    }
-
-    .sikds-tag--decision {
-        background-color: var(--sikds-tag-decision-bg);
-        color:            var(--sikds-tag-decision-text);
     }
 
     .sikds-fab {

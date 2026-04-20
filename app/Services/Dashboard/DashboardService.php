@@ -8,6 +8,7 @@ use App\Domain\Audit\Models\AuditLog;
 use App\Domain\Documents\Models\Document;
 use App\Domain\Documents\Models\DownloadLog;
 use App\Domain\Institutions\Models\Institution;
+use App\Domain\Tags\Models\Tag;
 use App\Domain\Users\Models\User;
 use Carbon\Carbon;
 
@@ -15,16 +16,20 @@ class DashboardService
 {
     public function getKpis(): array
     {
+        $docCounts = Document::withoutGlobalScopes()->toBase()
+            ->selectRaw('COUNT(*) as total, SUM(CASE WHEN created_at >= ? THEN 1 ELSE 0 END) as recent', [now()->subDays(30)])
+            ->first();
+
         return [
             [
                 'icon'  => '/document.svg',
-                'value' => number_format(Document::count()),
+                'value' => number_format((int) ($docCounts->total ?? 0)),
                 'label' => 'Total Documents',
                 'trend' => null,
             ],
             [
                 'icon'  => '/upload-blue.svg',
-                'value' => number_format(Document::where('created_at', '>=', now()->subDays(30))->count()),
+                'value' => number_format((int) ($docCounts->recent ?? 0)),
                 'label' => 'Téléversements Récents',
                 'trend' => null,
             ],
@@ -45,21 +50,31 @@ class DashboardService
 
     public function getStatusStats(): array
     {
+        $counts = Document::withTrashed()->toBase()
+            ->selectRaw('status, COUNT(*) as total')
+            ->groupBy('status')
+            ->pluck('total', 'status');
+
         return [
-            ['label' => 'Brouillon', 'value' => number_format(Document::where('status', 'draft')->count())],
-            ['label' => 'Actif',     'value' => number_format(Document::where('status', 'active')->count())],
-            ['label' => 'Archivé',   'value' => number_format(Document::where('status', 'archived')->count())],
-            ['label' => 'Supprimé',  'value' => number_format(Document::where('status', 'soft_deleted')->count())],
+            ['label' => 'Brouillon', 'value' => number_format((int) ($counts['draft'] ?? 0))],
+            ['label' => 'Actif',     'value' => number_format((int) ($counts['active'] ?? 0))],
+            ['label' => 'Archivé',   'value' => number_format((int) ($counts['archived'] ?? 0))],
+            ['label' => 'Supprimé',  'value' => number_format((int) ($counts['soft_deleted'] ?? 0))],
         ];
     }
 
     public function getIndexingStats(): array
     {
+        $counts = Document::withTrashed()->toBase()
+            ->selectRaw('indexing_status, COUNT(*) as total')
+            ->groupBy('indexing_status')
+            ->pluck('total', 'indexing_status');
+
         return [
-            'indexed'    => Document::where('indexing_status', 'indexed')->count(),
-            'processing' => Document::where('indexing_status', 'processing')->count(),
-            'failed'     => Document::where('indexing_status', 'failed')->count(),
-            'pending'    => Document::where('indexing_status', 'pending')->count(),
+            'indexed'    => (int) ($counts['indexed'] ?? 0),
+            'processing' => (int) ($counts['processing'] ?? 0),
+            'failed'     => (int) ($counts['failed'] ?? 0),
+            'pending'    => (int) ($counts['pending'] ?? 0),
         ];
     }
 
@@ -67,7 +82,12 @@ class DashboardService
     {
         $alerts = [];
 
-        $failedCount = Document::where('indexing_status', 'failed')->count();
+        $indexingCounts = Document::withTrashed()->toBase()
+            ->selectRaw('indexing_status, COUNT(*) as total')
+            ->groupBy('indexing_status')
+            ->pluck('total', 'indexing_status');
+
+        $failedCount = (int) ($indexingCounts['failed'] ?? 0);
         if ($failedCount > 0) {
             $alerts[] = [
                 'type'      => 'danger',
@@ -88,7 +108,7 @@ class DashboardService
             ];
         }
 
-        $processingCount = Document::where('indexing_status', 'processing')->count();
+        $processingCount = (int) ($indexingCounts['processing'] ?? 0);
         if ($processingCount > 0) {
             $alerts[] = [
                 'type'      => 'info',
@@ -125,6 +145,21 @@ class DashboardService
             ->map(fn (Institution $i) => [
                 'label' => $i->code ?? $i->name,
                 'value' => $i->users_count . ' utilisateur' . ($i->users_count !== 1 ? 's' : ''),
+            ])
+            ->all();
+    }
+
+    public function getPopularTags(): array
+    {
+        return Tag::query()
+            ->withCount('documents')
+            ->orderByDesc('documents_count')
+            ->orderBy('name')
+            ->limit(5)
+            ->get(['id', 'name', 'color'])
+            ->map(fn (Tag $tag): array => [
+                'label' => (string) $tag->name,
+                'style' => $this->resolveTagStyle(is_string($tag->color) ? $tag->color : null),
             ])
             ->all();
     }
@@ -189,5 +224,48 @@ class DashboardService
         }
 
         return $log->resource_type ? ucfirst((string) $log->resource_type) : '—';
+    }
+
+    private function resolveTagStyle(?string $rawColor): string
+    {
+        $background = $this->normalizeHexColor($rawColor) ?? '#e5e7eb';
+        $textColor = $this->isLightColor($background) ? '#1f2937' : '#ffffff';
+
+        return "background-color: {$background}; color: {$textColor};";
+    }
+
+    private function normalizeHexColor(?string $rawColor): ?string
+    {
+        if (! is_string($rawColor)) {
+            return null;
+        }
+
+        $color = trim($rawColor);
+        if ($color === '') {
+            return null;
+        }
+
+        if (preg_match('/^#([0-9a-fA-F]{3})$/', $color, $matches) === 1) {
+            $short = strtolower($matches[1]);
+
+            return sprintf('#%s%s%s%s%s%s', $short[0], $short[0], $short[1], $short[1], $short[2], $short[2]);
+        }
+
+        if (preg_match('/^#([0-9a-fA-F]{6})$/', $color, $matches) === 1) {
+            return '#'.strtolower($matches[1]);
+        }
+
+        return null;
+    }
+
+    private function isLightColor(string $hexColor): bool
+    {
+        $red = hexdec(substr($hexColor, 1, 2));
+        $green = hexdec(substr($hexColor, 3, 2));
+        $blue = hexdec(substr($hexColor, 5, 2));
+
+        $luminance = (0.2126 * $red + 0.7152 * $green + 0.0722 * $blue) / 255;
+
+        return $luminance > 0.6;
     }
 }

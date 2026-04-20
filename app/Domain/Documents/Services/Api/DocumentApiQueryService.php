@@ -110,42 +110,7 @@ class DocumentApiQueryService
 
     private function applyVisibilityScope(Builder $query, User $user): void
     {
-        if ($this->authorization->canUseViewAll($user)) {
-            return;
-        }
-
-        // Non-admin users only discover active docs assigned to all, their institution, or directly to them.
-        $institutionId = $user->institution_id;
-        $query->where(function (Builder $sub) use ($institutionId, $user): void {
-            $sub->where(function (Builder $s): void {
-                $s->where('status', 'active')->where('target_audience', 'all');
-            })
-                ->orWhere(function (Builder $s) use ($institutionId): void {
-                    if ($institutionId === null) {
-                        $s->whereRaw('1 = 0');
-
-                        return;
-                    }
-
-                    $s->where('status', 'active')
-                        ->where('target_audience', 'specific_institutions')
-                        ->whereExists(function ($q) use ($institutionId): void {
-                            $q->selectRaw('1')
-                                ->from('document_institution_targets')
-                                ->whereColumn('document_institution_targets.document_id', 'documents.id')
-                                ->where('document_institution_targets.institution_id', $institutionId);
-                        });
-                })
-                ->orWhere(function (Builder $s) use ($user): void {
-                    $s->where('status', 'active')
-                        ->whereExists(function ($q) use ($user): void {
-                            $q->selectRaw('1')
-                                ->from('document_user_targets')
-                                ->whereColumn('document_user_targets.document_id', 'documents.id')
-                                ->where('document_user_targets.user_id', $user->id);
-                        });
-                });
-        });
+        $query->visibleTo($user);
     }
 }
 

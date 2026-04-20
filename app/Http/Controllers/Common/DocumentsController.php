@@ -15,6 +15,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 class DocumentsController
@@ -76,6 +77,7 @@ class DocumentsController
         }
 
         $documents = $query
+            ->with(['tags', 'targetInstitutions', 'targetRoles'])
             ->orderByDesc('issue_date')
             ->paginate(15)
             ->withQueryString()
@@ -157,40 +159,20 @@ class DocumentsController
             return $query;
         }
 
-        return $query->where(function (Builder $sub) use ($user): void {
-            $sub->where('uploaded_by', $user->id)
-                ->orWhere(function (Builder $s): void {
-                $s->where('status', 'active')->where('target_audience', 'all');
-            })->orWhere(function (Builder $s) use ($user): void {
-                if ($user->institution_id === null) {
-                    $s->whereRaw('1 = 0');
-
-                    return;
-                }
-
-                $s->where('status', 'active')
-                    ->where('target_audience', 'specific_institutions')
-                    ->whereExists(function ($q) use ($user): void {
-                        $q->selectRaw('1')
-                            ->from('document_institution_targets')
-                            ->whereColumn('document_institution_targets.document_id', 'documents.id')
-                            ->where('document_institution_targets.institution_id', $user->institution_id);
-                    });
-            })->orWhere(function (Builder $s) use ($user): void {
-                $s->where('status', 'active')
-                    ->whereExists(function ($q) use ($user): void {
-                        $q->selectRaw('1')
-                            ->from('document_user_targets')
-                            ->whereColumn('document_user_targets.document_id', 'documents.id')
-                            ->where('document_user_targets.user_id', $user->id);
-                    });
-            });
-        });
+        return $query->visibleTo($user);
     }
 
     private function mapListDocument(Document $document, User $user): array
     {
-        $tags = $this->documentTags($document->id);
+        $tags = $document->relationLoaded('tags')
+            ? $document->tags->sortBy('name')->map(fn ($tag): array => [
+                'id' => (int) $tag->id,
+                'label' => (string) $tag->name,
+                'style' => $this->resolveTagStyle($tag->color ?? null),
+            ])->values()->all()
+            : $this->documentTags($document->id);
+
+        $uiStatus = $document->status === 'soft_deleted' ? 'deleted' : $document->status;
 
         $actions = ['download'];
         if ($document->status === 'draft' && $user->can('document.publish')) {
@@ -214,11 +196,28 @@ class DocumentsController
             'id' => $document->id,
             'title' => $document->title,
             'reference' => $document->reference_number,
-            'status' => $document->status === 'soft_deleted' ? 'deleted' : $document->status,
+            'status' => $uiStatus,
+            'status_label' => $this->statusLabel($document->status),
+            'status_badge_class' => match ($uiStatus) {
+                'active' => 'sikds-status--active',
+                'draft' => 'sikds-status--draft',
+                'archived' => 'sikds-status--archived',
+                'deleted' => 'sikds-status--deleted',
+                default => 'sikds-status--draft',
+            },
+            'status_icon' => match ($uiStatus) {
+                'active' => 'fa-regular fa-circle-check',
+                'draft' => 'fa-solid fa-gear',
+                'archived' => 'fa-solid fa-box-archive',
+                'deleted' => 'fa-regular fa-circle-xmark',
+                default => 'fa-solid fa-gear',
+            },
             'tags' => array_slice($tags, 0, 2),
+            'tags_full' => $tags,
             'extra_tags' => max(count($tags) - 2, 0),
             'target_audience' => $this->formatAudience($document),
             'issue_date' => $this->formatDate($document->issue_date),
+            'description_excerpt' => $this->excerptDescription($document->description),
             'actions' => $actions,
             'download_url' => route('documents.download', $document->id),
             'show_url' => route('documents.show', $document->id),
@@ -289,7 +288,7 @@ class DocumentsController
                     'title' => 'Version '.$version->version_number,
                     'status' => null,
                     'status_class' => null,
-                    'meta' => ($version->created_at?->format('d/m/Y') ?? '-') . ' • ' . $this->formatBytes((int) (DB::table('documents')->where('id', $version->document_id)->value('file_size') ?? 0)),
+                    'meta' => ($version->created_at?->format('d/m/Y') ?? '-').' • '.$this->formatBytes((int) (DB::table('documents')->where('id', $version->document_id)->value('file_size') ?? 0)),
                     'description' => (string) ($metadata['description'] ?? 'Version archivée'),
                 ];
             })
@@ -315,7 +314,6 @@ class DocumentsController
             'effective_date' => $this->formatDate($document->effective_date),
             'expiry_date' => $this->formatDate($document->expiration_date),
             'audience' => $this->formatAudience($document),
-            'views' => 0,
             'downloads' => count($downloadHistory),
             'version' => 'v'.$document->version_number,
             'file_name' => basename((string) $document->file_path),
@@ -363,11 +361,11 @@ class DocumentsController
     {
         return DB::table('tags')
             ->orderBy('name')
-            ->get(['id', 'name', 'slug'])
+            ->get(['id', 'name', 'slug', 'color'])
             ->map(fn ($tag): array => [
                 'id' => (int) $tag->id,
                 'label' => (string) $tag->name,
-                'class' => $this->tagClass((string) $tag->slug, (string) $tag->name),
+                'style' => $this->resolveTagStyle($tag->color ?? null),
             ])
             ->all();
     }
@@ -402,25 +400,56 @@ class DocumentsController
             ->join('tags', 'tags.id', '=', 'document_tags.tag_id')
             ->where('document_tags.document_id', $documentId)
             ->orderBy('tags.name')
-            ->get(['tags.id', 'tags.name', 'tags.slug'])
+            ->get(['tags.id', 'tags.name', 'tags.slug', 'tags.color'])
             ->map(fn ($tag): array => [
                 'id' => (int) $tag->id,
                 'label' => (string) $tag->name,
-                'class' => $this->tagClass((string) $tag->slug, (string) $tag->name),
+                'style' => $this->resolveTagStyle($tag->color ?? null),
             ])
             ->all();
     }
 
-    private function tagClass(string $slug, string $name): string
+    private function resolveTagStyle(?string $rawColor): string
     {
-        return match (strtolower($slug ?: $name)) {
-            'directive' => 'sikds-tag--directive',
-            'urgent' => 'sikds-tag--urgent',
-            'decision' => 'sikds-tag--decision',
-            'reglement' => 'sikds-tag--reg',
-            'rapport' => 'sikds-tag--rapport',
-            default => 'sikds-tag--directive',
-        };
+        $background = $this->normalizeHexColor($rawColor) ?? '#e5e7eb';
+        $textColor = $this->isLightColor($background) ? '#1f2937' : '#ffffff';
+
+        return "background-color: {$background}; color: {$textColor};";
+    }
+
+    private function normalizeHexColor(?string $rawColor): ?string
+    {
+        if (! is_string($rawColor)) {
+            return null;
+        }
+
+        $color = trim($rawColor);
+        if ($color === '') {
+            return null;
+        }
+
+        if (preg_match('/^#([0-9a-fA-F]{3})$/', $color, $matches) === 1) {
+            $short = strtolower($matches[1]);
+
+            return sprintf('#%s%s%s%s%s%s', $short[0], $short[0], $short[1], $short[1], $short[2], $short[2]);
+        }
+
+        if (preg_match('/^#([0-9a-fA-F]{6})$/', $color, $matches) === 1) {
+            return '#'.strtolower($matches[1]);
+        }
+
+        return null;
+    }
+
+    private function isLightColor(string $hexColor): bool
+    {
+        $red = hexdec(substr($hexColor, 1, 2));
+        $green = hexdec(substr($hexColor, 3, 2));
+        $blue = hexdec(substr($hexColor, 5, 2));
+
+        $luminance = (0.2126 * $red + 0.7152 * $green + 0.0722 * $blue) / 255;
+
+        return $luminance > 0.6;
     }
 
     private function formatAudience(Document $document): string
@@ -455,6 +484,17 @@ class DocumentsController
     private function canPreview(User $user): bool
     {
         return $user->can('document.view.all') && $user->hasRole('Super Administrateur');
+    }
+
+    private function excerptDescription(?string $html): string
+    {
+        if ($html === null || $html === '') {
+            return '';
+        }
+
+        $plain = trim(preg_replace('/\s+/', ' ', strip_tags($html)));
+
+        return $plain === '' ? '' : Str::limit($plain, 220, '…');
     }
 
     private function formatDate($date): string

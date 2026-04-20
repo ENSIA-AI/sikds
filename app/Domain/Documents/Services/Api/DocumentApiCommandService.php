@@ -112,6 +112,7 @@ class DocumentApiCommandService
             $fileUpdated = isset($validated['file']) && $validated['file'] instanceof UploadedFile;
 
             if ($fileUpdated) {
+                $this->purgeDocumentChunks($document->id);
                 DocumentVersion::query()->create([
                     'document_id' => $document->id,
                     'version_number' => $document->version_number,
@@ -214,7 +215,9 @@ class DocumentApiCommandService
         }
 
         $document->status = 'archived';
+        $document->indexing_status = 'failed';
         $document->save();
+        $this->purgeDocumentChunks($document->id);
 
         $this->audit($request, $user, 'document.archived', 'document', $document->id, [
             'reference_number' => $document->reference_number,
@@ -236,8 +239,10 @@ class DocumentApiCommandService
 
         $previousStatus = $document->status;
         $document->status = 'soft_deleted';
+        $document->indexing_status = 'failed';
         $document->save();
         $document->delete();
+        $this->purgeDocumentChunks($document->id);
 
         $this->audit($request, $user, 'document.soft_deleted', 'document', $document->id, [
             'reference_number' => $document->reference_number,
@@ -266,6 +271,7 @@ class DocumentApiCommandService
         $document->save();
 
         if ($restoredStatus === 'active') {
+            $this->purgeDocumentChunks($document->id);
             IndexDocumentJob::dispatch($document->id)->onQueue('indexing');
         }
 
@@ -440,6 +446,11 @@ class DocumentApiCommandService
         $status = $meta['previous_status'] ?? null;
 
         return is_string($status) ? $status : null;
+    }
+
+    private function purgeDocumentChunks(int $documentId): void
+    {
+        DB::table('document_chunks')->where('document_id', $documentId)->delete();
     }
 }
 

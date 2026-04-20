@@ -19,20 +19,27 @@ class DocumentChunker
         $overlapTokens = (int) config('rag.chunking.overlap_tokens');
         $minTokens = (int) config('rag.chunking.min_tokens');
 
-        [$fullText, $pageMap] = $this->joinPagesWithCharMap($pages);
-        $cleanText = $this->cleanText($fullText);
-
-        $segments = $this->splitIntoSegments($cleanText);
+        $blocks = $this->buildParagraphBlocks($pages);
 
         $chunks = [];
         $chunkIndex = 0;
         $prevTokens = [];
+        $prevPage = null;
 
-        foreach ($segments as $segment) {
-            $segment = trim($segment);
+        foreach ($blocks as $block) {
+            $page = (int) $block['page'];
+            $segment = trim($block['text']);
             if ($segment === '') {
                 continue;
             }
+
+            if ($prevPage !== null && $page !== $prevPage && $prevTokens !== []) {
+                $halfTokens = $maxTokens / 2;
+                if ($this->estimateTokenCount(implode(' ', $prevTokens)) >= $halfTokens) {
+                    $prevTokens = [];
+                }
+            }
+            $prevPage = $page;
 
             $subSegments = $this->enforceMaxTokens($segment, $maxTokens);
 
@@ -42,26 +49,19 @@ class DocumentChunker
                     continue;
                 }
 
-                $tokens = $this->tokenizeApprox($sub);
+                $subTokens = $this->tokenizeApprox($sub);
+                $windowTokens = $prevTokens === [] ? $subTokens : array_merge($prevTokens, $subTokens);
 
-                if ($prevTokens !== []) {
-                    $tokens = array_merge($prevTokens, $tokens);
-                }
-
-                $content = trim(implode(' ', $tokens));
+                $content = trim(implode(' ', $windowTokens));
                 $tokenCount = $this->estimateTokenCount($content);
 
                 if ($tokenCount >= $minTokens) {
-                    $charPos = $this->approxCharPositionInFullText($content, $cleanText);
-                    $page = $this->pageForCharPosition($charPos, $pageMap);
-                    $heading = $this->detectHeading($sub);
-
                     $chunks[] = [
                         'content' => $content,
                         'token_count' => $tokenCount,
                         'metadata' => [
                             'page' => $page,
-                            'section_heading' => $heading,
+                            'section_heading' => null,
                             'document_title' => $documentTitle,
                             'chunk_index' => $chunkIndex,
                         ],
@@ -70,7 +70,7 @@ class DocumentChunker
                     $chunkIndex++;
                 }
 
-                $prevTokens = array_slice($tokens, max(0, count($tokens) - $overlapTokens));
+                $prevTokens = array_slice($subTokens, max(0, count($subTokens) - $overlapTokens));
             }
         }
 
@@ -78,32 +78,36 @@ class DocumentChunker
     }
 
     /**
+     * One paragraph per block, tagged with its source page (PDF page signal preserved).
+     *
      * @param  array<int, array{page:int, text:string}>  $pages
-     * @return array{0:string, 1:array<int, array{start:int, end:int, page:int}>}
+     * @return array<int, array{page:int, text:string}>
      */
-    protected function joinPagesWithCharMap(array $pages): array
+    protected function buildParagraphBlocks(array $pages): array
     {
-        $text = '';
-        $map = [];
-        $offset = 0;
+        $blocks = [];
 
         foreach ($pages as $p) {
-            $pageText = (string) ($p['text'] ?? '');
-            $pageText .= "\n\n";
+            $pageNum = (int) ($p['page'] ?? 1);
+            $raw = (string) ($p['text'] ?? '');
+            $cleaned = $this->cleanText($raw);
+            if ($cleaned === '') {
+                continue;
+            }
 
-            $start = $offset;
-            $text .= $pageText;
-            $offset = strlen($text);
-            $end = $offset;
-
-            $map[] = [
-                'start' => $start,
-                'end' => $end,
-                'page' => (int) ($p['page'] ?? 1),
-            ];
+            $parts = preg_split('/\n\s*\n/', $cleaned) ?: [];
+            foreach ($parts as $part) {
+                $part = trim($part);
+                if ($part !== '') {
+                    $blocks[] = [
+                        'page' => $pageNum,
+                        'text' => $part,
+                    ];
+                }
+            }
         }
 
-        return [$text, $map];
+        return $blocks;
     }
 
     protected function cleanText(string $text): string
@@ -120,46 +124,6 @@ class DocumentChunker
         $text = preg_replace("/\n{3,}/", "\n\n", $text) ?? $text;
 
         return trim($text);
-    }
-
-    /**
-     * @return array<int, string>
-     */
-    protected function splitIntoSegments(string $text): array
-    {
-        $headingPattern = "/^(#{1,3}\\s|Article\\s+\\d+|CHAPITRE|TITRE|Section\\s+\\d+)/im";
-
-        $lines = preg_split("/\n/", $text) ?: [];
-        $segments = [];
-        $current = '';
-
-        foreach ($lines as $line) {
-            if (preg_match($headingPattern, $line) === 1) {
-                if (trim($current) !== '') {
-                    $segments[] = $current;
-                }
-                $current = $line . "\n";
-                continue;
-            }
-
-            $current .= $line . "\n";
-        }
-
-        if (trim($current) !== '') {
-            $segments[] = $current;
-        }
-
-        $final = [];
-        foreach ($segments as $seg) {
-            $parts = preg_split("/\n{2,}/", trim($seg)) ?: [];
-            foreach ($parts as $p) {
-                if (trim($p) !== '') {
-                    $final[] = $p;
-                }
-            }
-        }
-
-        return $final;
     }
 
     /**
@@ -200,7 +164,7 @@ class DocumentChunker
     protected function estimateTokenCount(string $text): int
     {
         // TODO: swap for a proper tokenizer (tiktoken-like) later.
-        return (int) ceil(strlen($text) / 4);
+        return (int) ceil(mb_strlen($text, 'UTF-8') / 4);
     }
 
     /**
@@ -215,41 +179,4 @@ class DocumentChunker
 
         return explode(' ', $text);
     }
-
-    protected function detectHeading(string $text): ?string
-    {
-        $lines = preg_split("/\n/", trim($text)) ?: [];
-        $first = trim((string) ($lines[0] ?? ''));
-        if ($first === '') {
-            return null;
-        }
-
-        if (preg_match("/^(#{1,3}\\s|Article\\s+\\d+|CHAPITRE|TITRE|Section\\s+\\d+)/i", $first) === 1) {
-            return mb_substr($first, 0, 200);
-        }
-
-        return null;
-    }
-
-    protected function approxCharPositionInFullText(string $needle, string $haystack): int
-    {
-        $pos = mb_stripos($haystack, mb_substr($needle, 0, 120));
-
-        return $pos === false ? 0 : (int) $pos;
-    }
-
-    /**
-     * @param  array<int, array{start:int, end:int, page:int}>  $pageMap
-     */
-    protected function pageForCharPosition(int $charPos, array $pageMap): int
-    {
-        foreach ($pageMap as $range) {
-            if ($charPos >= $range['start'] && $charPos < $range['end']) {
-                return (int) $range['page'];
-            }
-        }
-
-        return (int) ($pageMap[0]['page'] ?? 1);
-    }
 }
-

@@ -3,4 +3,111 @@
     .sikds-ink        { color: var(--sikds-ink);   }
     .sikds-muted-text { color: var(--sikds-muted); }
 
+    /* ── Unified banner (success / error / info / warning) ─── */
+    .sikds-toast {
+        display:           flex;
+        align-items:       flex-start;
+        gap:               12px;
+        padding:           14px 44px 14px 16px;
+        border-radius:     12px;
+        border:            1px solid transparent;
+        border-left-width: 4px;
+        background:        var(--sikds-surface);
+        box-shadow:        0 6px 18px rgba(0, 0, 0, 0.06);
+        position:          relative;
+        margin-bottom:     20px;
+    }
+
+    .sikds-toast--success {
+        background:        var(--sikds-success-bg);
+        border-color:      var(--sikds-success-border);
+        border-left-color: #15803d;
+    }
+
+    .sikds-toast--danger {
+        background:        var(--sikds-danger-bg);
+        border-color:      var(--sikds-danger-border);
+        border-left-color: #dc2626;
+    }
+
+    .sikds-toast--warn {
+        background:        var(--sikds-warn-bg);
+        border-color:      var(--sikds-warn-border);
+        border-left-color: #d97706;
+    }
+
+    .sikds-toast--info {
+        background:        var(--sikds-info-bg);
+        border-color:      var(--sikds-info-border);
+        border-left-color: #2563eb;
+    }
+
+    .sikds-toast-icon {
+        display:         inline-flex;
+        align-items:     center;
+        justify-content: center;
+        width:           34px;
+        height:          34px;
+        border-radius:   999px;
+        flex-shrink:     0;
+        font-size:       16px;
+    }
+
+    .sikds-toast--success .sikds-toast-icon { background: #dcfce7; color: #15803d; }
+    .sikds-toast--danger  .sikds-toast-icon { background: #fee2e2; color: #dc2626; }
+    .sikds-toast--warn    .sikds-toast-icon { background: #fef3c7; color: #d97706; }
+    .sikds-toast--info    .sikds-toast-icon { background: #dbeafe; color: #2563eb; }
+
+    .sikds-toast-body {
+        flex:        1;
+        min-width:   0;
+        padding-top: 1px;
+    }
+
+    .sikds-toast-title {
+        font-size:   13.5px;
+        font-weight: 600;
+        line-height: 1.3;
+        margin:      0;
+        color:       var(--sikds-ink);
+    }
+
+    .sikds-toast--success .sikds-toast-title { color: var(--sikds-success-ink); }
+    .sikds-toast--danger  .sikds-toast-title { color: var(--sikds-danger-ink);  }
+    .sikds-toast--warn    .sikds-toast-title { color: #92400e; }
+    .sikds-toast--info    .sikds-toast-title { color: #1e40af; }
+
+    .sikds-toast-message {
+        font-size:   13px;
+        line-height: 1.45;
+        margin:      2px 0 0;
+        color:       var(--sikds-ink);
+        opacity:     0.85;
+    }
+
+    .sikds-toast-dismiss {
+        position:        absolute;
+        top:             10px;
+        right:           10px;
+        width:           26px;
+        height:          26px;
+        display:         inline-flex;
+        align-items:     center;
+        justify-content: center;
+        border:          none;
+        background:      transparent;
+        color:           var(--sikds-muted);
+        opacity:         0.7;
+        border-radius:   6px;
+        cursor:          pointer;
+        font-size:       12px;
+        transition:      opacity 0.15s, background-color 0.15s, color 0.15s;
+    }
+
+    .sikds-toast-dismiss:hover {
+        opacity:          1;
+        background-color: rgba(0, 0, 0, 0.05);
+        color:            var(--sikds-ink);
+    }
+
 }

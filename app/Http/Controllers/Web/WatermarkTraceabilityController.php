@@ -47,10 +47,10 @@ class WatermarkTraceabilityController extends Controller
         }
 
         // User name/email filter
-        if ($user = $request->input('user')) {
+        if ($userFilter = $request->input('user')) {
             $query->whereHas('user', fn ($u) => $u
-                ->where('full_name', 'ilike', "%{$user}%")
-                ->orWhere('email', 'ilike', "%{$user}%"));
+                ->where('full_name', 'ilike', "%{$userFilter}%")
+                ->orWhere('email', 'ilike', "%{$userFilter}%"));
         }
 
         // Institution filter
@@ -80,7 +80,7 @@ class WatermarkTraceabilityController extends Controller
                 ->count('users.institution_id'),
         ];
 
-        return view('watermark.index', compact('logs', 'stats'));
+        return view('watermark.index', compact('logs', 'stats') + ['activeNav' => 'traceability']);
     }
 
     /**
@@ -107,7 +107,7 @@ class WatermarkTraceabilityController extends Controller
             ->where('event_type', 'document.download')
             ->first();
 
-        return view('watermark.show', compact('log', 'auditEntry'));
+        return view('watermark.show', compact('log', 'auditEntry') + ['activeNav' => 'traceability']);
     }
 }
 

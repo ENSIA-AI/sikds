@@ -4,8 +4,8 @@ beforeEach(function (): void {
     $this->withoutVite();
 });
 
-test('returns a successful response', function () {
+test('home page is reachable for guests', function () {
     $response = $this->get('/');
 
-    $response->assertRedirect('/login');
+    $response->assertOk();
 });

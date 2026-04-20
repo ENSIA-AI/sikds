@@ -7,12 +7,115 @@
         x-data="documentListPage({
             csrfToken: @js(csrf_token()),
         })"
-        @keydown.escape.window="filtersOpen = false"
+        @keydown.escape.window="handleEscape()"
         class="relative"
     >
 
-    <div x-show="banner.message" x-cloak class="sikds-alert" :class="banner.type === 'danger' ? 'sikds-alert--danger' : 'sikds-alert--info'">
-        <p class="sikds-alert-message" x-text="banner.message"></p>
+    <div x-show="banner.message"
+         x-cloak
+         class="sikds-toast"
+         :class="{
+            'sikds-toast--success': banner.type === 'success',
+            'sikds-toast--danger':  banner.type === 'danger',
+            'sikds-toast--info':    !['success','danger'].includes(banner.type),
+         }"
+         :role="banner.type === 'danger' ? 'alert' : 'status'">
+        <span class="sikds-toast-icon">
+            <i class="fa-solid"
+               :class="{
+                    'fa-circle-check':        banner.type === 'success',
+                    'fa-circle-exclamation':  banner.type === 'danger',
+                    'fa-circle-info':         !['success','danger'].includes(banner.type),
+               }"></i>
+        </span>
+        <div class="sikds-toast-body">
+            <p class="sikds-toast-title"
+               x-text="banner.type === 'danger' ? 'Action impossible' : (banner.type === 'success' ? 'Opération réussie' : 'Information')"></p>
+            <p class="sikds-toast-message" x-text="banner.message"></p>
+        </div>
+        <button type="button" @click="banner.message = ''" class="sikds-toast-dismiss" aria-label="Fermer">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+    </div>
+
+    {{-- Aperçu rapide avant la fiche document --}}
+    <div
+        x-show="previewOpen"
+        x-cloak
+        class="sikds-docs-preview-backdrop fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="sikds-doc-preview-title"
+    >
+        <div class="sikds-docs-preview-overlay absolute inset-0 bg-black/40" @click="closePreview()" aria-hidden="true"></div>
+        <div
+            class="sikds-docs-preview-panel relative z-10 flex max-h-[min(90vh,640px)] w-full max-w-lg flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl"
+            @click.stop
+        >
+            <div class="flex shrink-0 items-start justify-between gap-3 border-b border-slate-100 px-5 py-4">
+                <div class="min-w-0 flex-1">
+                    <p class="text-xs font-medium uppercase tracking-wide text-slate-500">Aperçu du document</p>
+                    <h2 id="sikds-doc-preview-title" class="mt-1 text-lg font-semibold leading-snug text-slate-900" x-text="previewDoc?.title"></h2>
+                    <p class="mt-0.5 text-sm text-slate-600" x-text="previewDoc?.reference"></p>
+                </div>
+                <button
+                    type="button"
+                    class="shrink-0 rounded-lg p-2 text-slate-500 transition hover:bg-slate-100 hover:text-slate-800"
+                    @click="closePreview()"
+                    aria-label="Fermer l'aperçu"
+                >
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+            <div class="min-h-0 flex-1 overflow-y-auto px-5 py-4">
+                <template x-if="previewDoc">
+                    <div class="space-y-4">
+                        <div class="flex flex-wrap items-center gap-2">
+                            <span class="sikds-status" :class="previewDoc.status_badge_class">
+                                <i class="sikds-status-icon" :class="previewDoc.status_icon"></i>
+                                <span x-text="previewDoc.status_label"></span>
+                            </span>
+                        </div>
+                        <div>
+                            <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Public cible</p>
+                            <p class="mt-1 text-sm text-slate-800" x-text="previewDoc.target_audience"></p>
+                        </div>
+                        <div>
+                            <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Date d'émission</p>
+                            <p class="mt-1 text-sm text-slate-800" x-text="previewDoc.issue_date"></p>
+                        </div>
+                        <div x-show="previewDoc.tags_full && previewDoc.tags_full.length">
+                            <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Tags</p>
+                            <div class="mt-2 flex flex-wrap gap-2">
+                                <template x-for="tag in previewDoc.tags_full" :key="tag.id">
+                                    <span class="sikds-tag sikds-tag--table" :style="tag.style" x-text="tag.label"></span>
+                                </template>
+                            </div>
+                        </div>
+                        <div x-show="previewDoc.description_excerpt">
+                            <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Description</p>
+                            <p class="mt-1 text-sm leading-relaxed text-slate-700" x-text="previewDoc.description_excerpt"></p>
+                        </div>
+                    </div>
+                </template>
+            </div>
+            <div class="flex shrink-0 flex-wrap items-center justify-end gap-2 border-t border-slate-100 bg-slate-50/80 px-5 py-3">
+                <button
+                    type="button"
+                    class="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-50"
+                    @click="closePreview()"
+                >
+                    Fermer
+                </button>
+                <a
+                    :href="previewDoc?.show_url"
+                    class="inline-flex items-center gap-2 rounded-lg bg-[var(--sikds-primary)] px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:opacity-95"
+                >
+                    <span>Ouvrir la fiche complète</span>
+                    <i class="fa-solid fa-arrow-right text-xs"></i>
+                </a>
+            </div>
+        </div>
     </div>
 
     <div class="flex justify-end mb-5">
@@ -96,7 +199,7 @@
                             @foreach ($availableTags as $tag)
                                 <label class="sikds-docs-filter-check">
                                     <input type="checkbox" name="tags[]" value="{{ $tag['label'] }}" {{ in_array($tag['label'], $selectedTags, true) ? 'checked' : '' }}>
-                                    <span class="sikds-tag sikds-tag--table {{ $tag['class'] }}">{{ $tag['label'] }}</span>
+                                    <span class="sikds-tag sikds-tag--table" style="{{ $tag['style'] }}">{{ $tag['label'] }}</span>
                                 </label>
                             @endforeach
                         </div>
@@ -164,7 +267,7 @@
                         <td>
                             <div class="sikds-docs-tags">
                                 @foreach ($doc['tags'] as $tag)
-                                    <span class="sikds-tag sikds-tag--table {{ $tag['class'] }}">{{ $tag['label'] }}</span>
+                                    <span class="sikds-tag sikds-tag--table" style="{{ $tag['style'] }}">{{ $tag['label'] }}</span>
                                 @endforeach
                                 @if ($doc['extra_tags'] > 0)
                                     <span class="sikds-docs-extra-tags">+{{ $doc['extra_tags'] }}</span>
@@ -178,9 +281,9 @@
                                 @foreach ($doc['actions'] as $action)
                                     @switch($action)
                                         @case('view')
-                                            <a href="{{ $doc['show_url'] }}" class="sikds-docs-action-btn" title="Consulter" aria-label="Consulter">
+                                            <button type="button" class="sikds-docs-action-btn" title="Consulter (aperçu)" aria-label="Consulter (aperçu)" @click.prevent="openPreview(@js($doc))">
                                                 <i class="fa-regular fa-eye"></i>
-                                            </a>
+                                            </button>
                                             @break
                                         @case('edit')
                                             <a href="{{ $doc['edit_url'] }}" class="sikds-docs-action-btn" title="Modifier" aria-label="Modifier">
@@ -248,14 +351,33 @@
         function documentListPage(config) {
             return {
                 filtersOpen: false,
+                previewOpen: false,
+                previewDoc: null,
                 loading: false,
                 banner: { message: '', type: 'info' },
                 init() {
                     const message = window.sessionStorage.getItem('documents-success-message');
                     if (message) {
-                        this.banner = { message, type: 'info' };
+                        this.banner = { message, type: 'success' };
                         window.sessionStorage.removeItem('documents-success-message');
                     }
+                },
+                handleEscape() {
+                    if (this.previewOpen) {
+                        this.closePreview();
+                        return;
+                    }
+                    this.filtersOpen = false;
+                },
+                openPreview(doc) {
+                    this.previewDoc = doc;
+                    this.previewOpen = true;
+                    document.documentElement.classList.add('overflow-hidden');
+                },
+                closePreview() {
+                    this.previewOpen = false;
+                    this.previewDoc = null;
+                    document.documentElement.classList.remove('overflow-hidden');
                 },
                 async performAction(url, method, successMessage) {
                     if (this.loading) return;
@@ -284,7 +406,7 @@
                             throw new Error(payload.message || 'Une erreur est survenue.');
                         }
 
-                        this.banner = { message: successMessage, type: 'info' };
+                        this.banner = { message: successMessage, type: 'success' };
                         window.location.reload();
                     } catch (error) {
                         this.banner = { message: error.message || 'Action impossible.', type: 'danger' };

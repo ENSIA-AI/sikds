@@ -11,33 +11,35 @@ class TagsSeeder extends Seeder
 {
     public function run(): void
     {
+        // Clear predefined tags and re-seed with correct Figma colours
+        DB::table('tags')->where('is_predefined', true)->delete();
+
         $now = now();
+
         $tags = [
-            ['name' => 'Directive', 'slug' => 'directive', 'category' => 'type', 'color' => '#3B82F6'],
-            ['name' => 'Décision', 'slug' => 'decision', 'category' => 'type', 'color' => '#8B5CF6'],
-            ['name' => 'Règlement', 'slug' => 'reglement', 'category' => 'type', 'color' => '#06B6D4'],
-            ['name' => 'Rapport', 'slug' => 'rapport', 'category' => 'type', 'color' => '#10B981'],
-            ['name' => 'Urgent', 'slug' => 'urgent', 'category' => 'priority', 'color' => '#EF4444'],
-            ['name' => 'High', 'slug' => 'high', 'category' => 'priority', 'color' => '#F97316'],
-            ['name' => 'Normal', 'slug' => 'normal', 'category' => 'priority', 'color' => '#6B7280'],
-            ['name' => 'Low', 'slug' => 'low', 'category' => 'priority', 'color' => '#D1D5DB'],
+            ['name' => 'Directive',  'slug' => 'directive',  'category' => 'type_document', 'color' => '#dbeafe'],
+            ['name' => 'Décision',   'slug' => 'decision',   'category' => 'type_document', 'color' => '#f3e8ff'],
+            ['name' => 'Régulation', 'slug' => 'regulation', 'category' => 'type_document', 'color' => '#e0e7ff'],
+            ['name' => 'Rapport',    'slug' => 'rapport',    'category' => 'type_document', 'color' => '#dcfce7'],
+            ['name' => 'Urgente', 'slug' => 'urgente', 'category' => 'priority', 'color' => '#fce8e8'],
+            ['name' => 'Haute',   'slug' => 'haute',   'category' => 'priority', 'color' => '#fef2de'],
+            ['name' => 'Normale', 'slug' => 'normale', 'category' => 'priority', 'color' => '#e5effd'],
+            ['name' => 'Basse',   'slug' => 'basse',   'category' => 'priority', 'color' => '#eaebec'],
         ];
 
-        foreach ($tags as $t) {
-            DB::table('tags')->updateOrInsert(
-                ['slug' => $t['slug']],
-                [
-                    'name' => $t['name'],
-                    'description' => null,
-                    'color' => $t['color'],
-                    'category' => $t['category'],
-                    'parent_id' => null,
-                    'is_predefined' => true,
-                    'created_at' => $now,
-                    'updated_at' => $now,
-                    'created_by' => null,
-                ]
-            );
+        foreach ($tags as $tag) {
+            DB::table('tags')->insert([
+                'name'          => $tag['name'],
+                'slug'          => $tag['slug'],
+                'description'   => null,
+                'color'         => $tag['color'],
+                'category'      => $tag['category'],
+                'parent_id'     => null,
+                'is_predefined' => true,
+                'created_at'    => $now,
+                'updated_at'    => $now,
+                'created_by'    => null,
+            ]);
         }
     }
 }
