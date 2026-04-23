@@ -290,6 +290,11 @@
                                                 <i class="fa-regular fa-pen-to-square"></i>
                                             </a>
                                             @break
+                                        @case('archive')
+                                            <button type="button" class="sikds-docs-action-btn" title="Archiver" aria-label="Archiver" @click="performAction(@js($doc['archive_url']), 'POST', 'Document archivé.')">
+                                                <i :class="loading ? 'fa-solid fa-spinner fa-spin' : 'fa-solid fa-box-archive'"></i>
+                                            </button>
+                                            @break
                                         @case('download')
                                             <a href="{{ $doc['download_url'] }}" class="sikds-docs-action-btn" title="Télécharger" aria-label="Télécharger">
                                                 <i class="fa-solid fa-download"></i>

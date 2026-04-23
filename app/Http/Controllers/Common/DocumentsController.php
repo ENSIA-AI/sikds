@@ -184,6 +184,9 @@ class DocumentsController
         if ($user->can('document.edit')) {
             $actions[] = 'edit';
         }
+        if ($document->status === 'active' && $user->can('document.publish')) {
+            $actions[] = 'archive';
+        }
         if ($document->status === 'soft_deleted') {
             if ($user->can('document.restore') && $user->hasRole('Super Administrateur')) {
                 $actions[] = 'restore';
@@ -225,6 +228,7 @@ class DocumentsController
             'delete_url' => route('api.documents.destroy', $document->id),
             'restore_url' => route('api.documents.restore', $document->id),
             'publish_url' => route('api.documents.publish', $document->id),
+            'archive_url' => route('api.documents.archive', $document->id),
         ];
     }
 
