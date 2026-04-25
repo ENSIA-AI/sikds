@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Domain\Audit\Models\AuditLog;
 use App\Domain\Users\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
@@ -33,6 +34,22 @@ class LocalLoginController extends Controller
             ->first();
 
         if (! $user || ! Hash::check($request->password, $user->password)) {
+            AuditLog::query()->create([
+                'event_type' => 'auth.login.failed',
+                'user_id' => null,
+                'user_email' => (string) $request->email,
+                'resource_type' => 'user',
+                'resource_id' => null,
+                'metadata' => [
+                    'auth_type' => 'local',
+                    'reason' => 'invalid_credentials_or_inactive',
+                ],
+                'result' => 'failed',
+                'ip_address' => $request->ip(),
+                'user_agent' => $request->userAgent(),
+                'created_at' => now(),
+            ]);
+
             throw ValidationException::withMessages([
                 'email' => 'Ces identifiants ne correspondent pas à nos enregistrements.',
             ]);
@@ -40,6 +57,21 @@ class LocalLoginController extends Controller
 
         Auth::login($user);
         $request->session()->regenerate();
+
+        AuditLog::query()->create([
+            'event_type' => 'auth.login.success',
+            'user_id' => $user->id,
+            'user_email' => $user->email,
+            'resource_type' => 'user',
+            'resource_id' => $user->id,
+            'metadata' => [
+                'auth_type' => 'local',
+            ],
+            'result' => 'success',
+            'ip_address' => $request->ip(),
+            'user_agent' => $request->userAgent(),
+            'created_at' => now(),
+        ]);
 
         return redirect()->intended('/dashboard');
     }
