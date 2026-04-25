@@ -5,6 +5,7 @@
         'danger'  => ['class' => 'sikds-alert--danger',  'icon' => '/danger.svg'],
         'warning' => ['class' => 'sikds-alert--warn',    'icon' => '/danger-orange.svg'],
         'info'    => ['class' => 'sikds-alert--info',    'icon' => '/time-blue.svg'],
+        'success' => ['class' => 'sikds-alert--success', 'icon' => '/up.svg'],
     ];
     $style = $map[$type] ?? $map['info'];
 @endphp

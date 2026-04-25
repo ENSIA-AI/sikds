@@ -12,14 +12,22 @@ Route::post('logout', function () {
     Session::invalidate();
     Session::regenerateToken();
 
-    return redirect('/');
+    return redirect()->route('login')->with('success', 'Déconnexion réussie.');
 })->name('logout');
 
 Route::get('/login', function () {
+    if (Auth::check()) {
+        return redirect()->route('dashboard');
+    }
+
     return view('auth.login-minimal');
 })->name('login');
 
 Route::get('/auth/redirect', function (SsoService $ssoService) {
+    if (Auth::check()) {
+        return redirect()->route('dashboard');
+    }
+
     return $ssoService->redirectToProvider(request());
 })->name('sso.redirect');
 

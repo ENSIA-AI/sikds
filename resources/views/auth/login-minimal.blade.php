@@ -36,10 +36,24 @@
 
         <div class="border-t border-gray-100 mb-6"></div>
 
+        @if(session('success'))
+            <div class="mb-4">
+                <x-alert-item
+                    type="success"
+                    :message="session('success')"
+                    :timestamp="now()->format('H:i')"
+                />
+            </div>
+        @endif
+
         @if(session('error'))
-        <div class="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-            {{ session('error') }}
-        </div>
+            <div class="mb-4">
+                <x-alert-item
+                    type="danger"
+                    :message="session('error')"
+                    :timestamp="now()->format('H:i')"
+                />
+            </div>
         @endif
 
         <div>
