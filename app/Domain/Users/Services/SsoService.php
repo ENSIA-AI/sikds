@@ -6,6 +6,7 @@ namespace App\Domain\Users\Services;
 
 use App\Domain\Users\Exceptions\SsoAuthenticationException;
 use App\Domain\Users\Models\User;
+use App\Models\Role;
 use Illuminate\Http\Client\Response;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -62,7 +63,7 @@ class SsoService
 
         $normalized = $this->normalizeProfile($profileResponse->json());
 
-        return DB::transaction(function () use ($normalized): User {
+        return DB::transaction(function () use ($normalized, $profileResponse): User {
             $user = User::query()
                 ->when($normalized['sso_user_id'] !== null, function ($query) use ($normalized) {
                     $query->where('sso_user_id', $normalized['sso_user_id']);
@@ -85,6 +86,7 @@ class SsoService
                     'institution_id' => $institutionId,
                     'auth_type' => 'sso',
                     'auth_domain' => $normalized['auth_domain'],
+                    'sso_profile' => $profileResponse->json(),
                     'password' => null,
                     'is_active' => true,
                     'last_login_at' => now(),
@@ -96,6 +98,7 @@ class SsoService
                     'email' => $normalized['email'],
                     'full_name' => $normalized['full_name'],
                     'auth_domain' => $normalized['auth_domain'],
+                    'sso_profile' => $profileResponse->json(),
                     'last_login_at' => now(),
                 ])->save();
             }
@@ -104,6 +107,7 @@ class SsoService
                 throw new SsoAuthenticationException('Your account is deactivated. Contact an administrator.');
             }
 
+            $this->assignDefaultRoleIfMissing($user);
             Auth::guard('web')->login($user);
 
             return $user;
@@ -185,15 +189,36 @@ class SsoService
         $username = (string) (data_get($profile, 'username')
             ?? data_get($profile, 'preferred_username')
             ?? data_get($profile, 'nom_utilisateur')
+            ?? data_get($profile, 'userName')
             ?? data_get($profile, 'login')
             ?? '');
 
-        $email = (string) (data_get($profile, 'email') ?? '');
+        $email = (string) (data_get($profile, 'email')
+            ?? data_get($profile, 'mail')
+            ?? data_get($profile, 'email_address')
+            ?? data_get($profile, 'emailAddress')
+            ?? data_get($profile, 'upn')
+            ?? data_get($profile, 'user_principal_name')
+            ?? data_get($profile, 'principalName')
+            ?? data_get($profile, 'courriel')
+            ?? data_get($profile, 'adresse_email')
+            ?? '');
+
+        if ($email === '') {
+            $nomUtilisateur = trim((string) data_get($profile, 'nom_utilisateur', ''));
+            if ($nomUtilisateur !== '') {
+                $email = Str::lower($nomUtilisateur) . '@mesrs.dz';
+            }
+        }
 
         $fullName = (string) (data_get($profile, 'full_name')
             ?? data_get($profile, 'name')
             ?? data_get($profile, 'display_name')
-            ?? $username);
+            ?? trim((string) (data_get($profile, 'prenom', '') . ' ' . data_get($profile, 'nom', ''))));
+
+        if (trim($fullName) === '') {
+            $fullName = $username;
+        }
 
         if ($username === '' || $email === '') {
             throw new SsoAuthenticationException('SSO profile is missing mandatory username or email.');
@@ -228,6 +253,22 @@ class SsoService
         $emailDomain = strtolower((string) Str::after($email, '@'));
         if ($emailDomain === '' || !in_array($emailDomain, $allowedDomains, true)) {
             throw new SsoAuthenticationException('Your email domain is not authorized for SSO access.');
+        }
+    }
+
+    private function assignDefaultRoleIfMissing(User $user): void
+    {
+        if ($user->roles()->exists()) {
+            return;
+        }
+
+        $defaultRole = Role::query()
+            ->where('name', 'User')
+            ->where('guard_name', 'web')
+            ->first();
+
+        if ($defaultRole) {
+            $user->assignRole($defaultRole);
         }
     }
 }

@@ -26,6 +26,7 @@ class User extends Authenticatable
         'institution_id',
         'auth_type',
         'auth_domain',
+        'sso_profile',
         'password',
         'is_active',
         'last_login_at',
@@ -40,6 +41,7 @@ class User extends Authenticatable
     protected $casts = [
         'is_active' => 'boolean',
         'last_login_at' => 'datetime',
+        'sso_profile' => 'array',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];
