@@ -55,7 +55,7 @@
                         <p class="sikds-user-role">{{ $userRole }}</p>
                         <p class="sikds-user-name">{{ $userName }}</p>
                     </div>
-                    <a href="#" class="sikds-header-notif" aria-label="Notifications">
+                    <a href="{{ \Illuminate\Support\Facades\Route::has('notifications.index') ? route('notifications.index') : '#' }}" class="sikds-header-notif" aria-label="Notifications">
                         <span class="relative inline-flex">
                             <img src="/bell.svg" alt="" class="h-5 w-5">
                             <span class="sikds-header-notif-dot" aria-hidden="true"></span>

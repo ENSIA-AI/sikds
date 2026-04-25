@@ -35,6 +35,7 @@ class UpdateDocumentRequest extends FormRequest
             'tag_ids' => ['nullable', 'array'],
             'tag_ids.*' => ['integer', 'exists:tags,id'],
             'file' => ['nullable', 'file', 'mimes:pdf', 'max:51200'],
+            'change_summary' => ['sometimes', 'nullable', 'string', 'max:2000'],
         ];
     }
 

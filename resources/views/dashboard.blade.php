@@ -31,7 +31,11 @@
                     <p class="px-4 py-6 text-sm sikds-muted-text">Aucune activité récente.</p>
                 @endforelse
             </div>
-            <x-slot:footer>Voir toute l'activité →</x-slot:footer>
+            <x-slot:footer>
+                <a href="{{ route('audits.index') }}" class="inline-flex items-center hover:underline">
+                    Voir toute l'activité →
+                </a>
+            </x-slot:footer>
         </x-dashboard-panel>
 
         <x-dashboard-panel
@@ -45,7 +49,11 @@
                     <p class="text-sm sikds-muted-text">Aucune alerte active.</p>
                 @endforelse
             </div>
-            <x-slot:footer>Voir toutes les alertes →</x-slot:footer>
+            <x-slot:footer>
+                <a href="{{ route('indexing.index') }}" class="inline-flex items-center hover:underline">
+                    Voir toutes les alertes →
+                </a>
+            </x-slot:footer>
         </x-dashboard-panel>
 
     </section>

@@ -132,6 +132,26 @@ services:
     networks:
       - sikds
 
+  worker:
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+    container_name: sikds-worker
+    restart: unless-stopped
+    working_dir: /var/www/html
+    volumes:
+      - .:/var/www/html
+    environment:
+      APP_ENV: ${APP_ENV:-local}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: php artisan queue:work redis --queue=notifications,default --sleep=3 --tries=3 --timeout=90
+    networks:
+      - sikds
+
 volumes:
   sikds_postgres:
   sikds_redis:

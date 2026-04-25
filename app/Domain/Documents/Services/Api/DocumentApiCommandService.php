@@ -11,6 +11,7 @@ use App\Domain\Users\Models\User;
 use App\Http\Requests\Api\Documents\StoreDocumentsRequest;
 use App\Http\Requests\Api\Documents\UpdateDocumentRequest;
 use App\Jobs\IndexDocumentJob;
+use App\Services\Notifications\DocumentNotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Carbon;
@@ -23,6 +24,7 @@ class DocumentApiCommandService
 {
     public function __construct(
         private readonly DocumentApiAuthorizationService $authorization,
+        private readonly DocumentNotificationService $notifications,
     ) {}
 
     /**
@@ -110,6 +112,7 @@ class DocumentApiCommandService
         return DB::transaction(function () use ($validated, $document, $request, $user): Document {
             $oldStatus = $document->status;
             $fileUpdated = isset($validated['file']) && $validated['file'] instanceof UploadedFile;
+            $previousVersion = (int) $document->version_number;
 
             if ($fileUpdated) {
                 $this->purgeDocumentChunks($document->id);
@@ -176,6 +179,19 @@ class DocumentApiCommandService
                 IndexDocumentJob::dispatch($document->id)->onQueue('indexing');
             }
 
+            //  notify recipients when a new version is published (update with file).
+            if ($document->status === 'active' && $fileUpdated) {
+                $changeSummary = isset($validated['change_summary']) && is_string($validated['change_summary'])
+                    ? trim($validated['change_summary'])
+                    : null;
+                $this->notifications->notifyDocumentUpdated(
+                    $document,
+                    $document->version_number,
+                    $previousVersion,
+                    $changeSummary !== '' ? $changeSummary : null,
+                );
+            }
+
             return $document;
         });
     }
@@ -201,6 +217,9 @@ class DocumentApiCommandService
             'status_before' => 'draft',
             'status_after' => 'active',
         ]);
+
+        // notify all users in target audience when published.
+        $this->notifications->notifyDocumentPublished($document);
 
         return $document;
     }
