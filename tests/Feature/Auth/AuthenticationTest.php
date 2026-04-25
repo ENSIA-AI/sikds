@@ -30,7 +30,8 @@ test('users can logout', function () {
 
     $response = $this->actingAs($user)->post('/logout');
 
-    $response->assertRedirect('/');
+    $response->assertRedirect('/login');
+    $response->assertSessionHas('success', 'Déconnexion réussie.');
 
     $this->assertGuest();
 });

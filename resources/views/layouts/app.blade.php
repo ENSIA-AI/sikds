@@ -61,8 +61,38 @@
                             <span class="sikds-header-notif-dot" aria-hidden="true"></span>
                         </span>
                     </a>
-                    <div class="sikds-avatar">
-                        <img src="/person.svg" alt="Profil" class="h-5 w-5">
+                    <div class="relative">
+                        <button
+                            type="button"
+                            id="sikds-user-menu-toggle"
+                            class="sikds-avatar transition-shadow hover:ring-2 hover:ring-[#1E3A8A]/35 hover:ring-offset-2 hover:ring-offset-white focus:outline-none focus:ring-2 focus:ring-[#1E3A8A]/45 focus:ring-offset-2 focus:ring-offset-white"
+                            aria-haspopup="menu"
+                            aria-expanded="false"
+                            aria-controls="sikds-user-menu"
+                            aria-label="Ouvrir le menu utilisateur"
+                        >
+                            <img src="/person.svg" alt="Profil" class="h-5 w-5">
+                        </button>
+                        <div
+                            id="sikds-user-menu"
+                            class="hidden absolute right-0 mt-2 w-52 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-xl py-1 z-50"
+                            role="menu"
+                            aria-labelledby="sikds-user-menu-toggle"
+                        >
+                            <form method="POST" action="{{ route('logout') }}">
+                                @csrf
+                                <button
+                                    type="submit"
+                                    class="w-full text-left px-4 py-2.5 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-100 hover:text-slate-900"
+                                    role="menuitem"
+                                >
+                                    <span class="inline-flex items-center gap-2">
+                                        <i class="fa-solid fa-right-from-bracket text-xs"></i>
+                                        Se déconnecter
+                                    </span>
+                                </button>
+                            </form>
+                        </div>
                     </div>
                 </div>
 
@@ -82,6 +112,39 @@
         id="sikds-sidebar-overlay"
         aria-label="Fermer le menu latéral"
     ></button>
+
+    <script>
+        (function () {
+            const toggle = document.getElementById('sikds-user-menu-toggle');
+            const menu = document.getElementById('sikds-user-menu');
+
+            if (!toggle || !menu) {
+                return;
+            }
+
+            function setOpen(open) {
+                menu.classList.toggle('hidden', !open);
+                toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+            }
+
+            toggle.addEventListener('click', function (event) {
+                event.stopPropagation();
+                setOpen(menu.classList.contains('hidden'));
+            });
+
+            document.addEventListener('click', function (event) {
+                if (!menu.contains(event.target) && !toggle.contains(event.target)) {
+                    setOpen(false);
+                }
+            });
+
+            document.addEventListener('keydown', function (event) {
+                if (event.key === 'Escape') {
+                    setOpen(false);
+                }
+            });
+        })();
+    </script>
 
     @if ($canUseRagAssistant)
         <div id="sikds-chatbot-widget" class="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50 flex flex-col items-end">
