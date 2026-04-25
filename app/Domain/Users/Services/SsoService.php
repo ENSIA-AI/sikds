@@ -180,41 +180,18 @@ class SsoService
 
     private function normalizeProfile(array $profile): array
     {
-        $ssoUserId = data_get($profile, 'nom_utilisateur')
-            ?? data_get($profile, 'sub')
-            ?? data_get($profile, 'id')
-            ?? data_get($profile, 'user_id')
-            ?? data_get($profile, 'unique_id');
+        $nomUtilisateur = trim((string) data_get($profile, 'nom_utilisateur', ''));
+        $ssoUserId = $nomUtilisateur !== '' ? $nomUtilisateur : null;
+        $username = $nomUtilisateur;
 
-        $username = (string) (data_get($profile, 'username')
-            ?? data_get($profile, 'preferred_username')
-            ?? data_get($profile, 'nom_utilisateur')
-            ?? data_get($profile, 'userName')
-            ?? data_get($profile, 'login')
-            ?? '');
-
-        $email = (string) (data_get($profile, 'email')
-            ?? data_get($profile, 'mail')
-            ?? data_get($profile, 'email_address')
-            ?? data_get($profile, 'emailAddress')
-            ?? data_get($profile, 'upn')
-            ?? data_get($profile, 'user_principal_name')
-            ?? data_get($profile, 'principalName')
-            ?? data_get($profile, 'courriel')
-            ?? data_get($profile, 'adresse_email')
-            ?? '');
-
-        if ($email === '') {
-            $nomUtilisateur = trim((string) data_get($profile, 'nom_utilisateur', ''));
-            if ($nomUtilisateur !== '') {
-                $email = Str::lower($nomUtilisateur) . '@mesrs.dz';
-            }
+        $email = trim((string) data_get($profile, 'email', ''));
+        if ($email === '' && $nomUtilisateur !== '') {
+            $email = Str::lower($nomUtilisateur) . '@mesrs.dz';
         }
 
-        $fullName = (string) (data_get($profile, 'full_name')
-            ?? data_get($profile, 'name')
-            ?? data_get($profile, 'display_name')
-            ?? trim((string) (data_get($profile, 'prenom', '') . ' ' . data_get($profile, 'nom', ''))));
+        $fullName = trim((string) (
+            data_get($profile, 'individu.prenom_latin', '') . ' ' . data_get($profile, 'individu.nom_latin', '')
+        ));
 
         if (trim($fullName) === '') {
             $fullName = $username;
