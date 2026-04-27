@@ -238,6 +238,7 @@ test('document upload enforces pdf only and batch max five', function () {
 test('document upload creates draft document and stores file', function () {
     $user = User::factory()->create();
     grantPermission($user, 'document.create');
+    grantPermission($user, 'tag.assign');
     $this->actingAs($user);
     $tagId = seedDocumentsTestTag();
 
