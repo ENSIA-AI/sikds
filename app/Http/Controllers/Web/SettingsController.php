@@ -53,9 +53,15 @@ class SettingsController extends Controller
             ]),
             'watermark' => $request->validate([
                 'visible_fields' => ['required', 'array', 'min:1'],
-                'visible_fields.*' => ['string', 'in:full_name,institution,timestamp,uuid'],
+                'visible_fields.*' => [
+                    'string',
+                    'in:full_name,institution,timestamp,uuid,recipient_name,recipient_institution,recipient_email,downloaded_at,download_uuid,document_title,document_reference',
+                ],
                 'metadata_fields' => ['required', 'array', 'min:1'],
-                'metadata_fields.*' => ['string', 'in:full_name,institution,email,timestamp,uuid'],
+                'metadata_fields.*' => [
+                    'string',
+                    'in:full_name,institution,email,timestamp,uuid,recipient_name,recipient_institution,recipient_email,downloaded_at,download_uuid,document_title,document_reference',
+                ],
             ]),
             default => [],
         };
