@@ -148,7 +148,7 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
-    command: php artisan queue:work redis --queue=notifications,default --sleep=3 --tries=3 --timeout=90
+    command: php artisan queue:work redis --queue=indexing,notifications,default --sleep=3 --tries=3 --timeout=300
     networks:
       - sikds
 
