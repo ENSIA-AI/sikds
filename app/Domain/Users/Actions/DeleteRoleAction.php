@@ -1,38 +1,78 @@
 <?php
 
-    /** delete a role
-     * prevent deleting system roles
-     * prevent deleting roles if are assigned to users
-     * uses transaction to ensure data consistency
-     */
 declare(strict_types=1);
 
 namespace App\Domain\Users\Actions;
 
+use App\Domain\Audit\Services\AuditService;
 use App\Domain\Users\Models\Role;
 use Illuminate\Support\Facades\DB;
 
+/**
+ * Delete a role.
+ * - Block deletion of system roles
+ * - Block deletion if any users are still assigned to the role
+ */
 final class DeleteRoleAction
 {
-    
+    public function __construct(
+        private readonly AuditService $audit,
+    ) {}
+
     public function execute(Role $role): bool
     {
-        // Prevent deleting system roles
         if ($role->is_system_role) {
-            throw new \Exception('System roles cannot be deleted.');
+            $this->audit->record(
+                eventType: 'role.deleted',
+                result: 'failed',
+                resourceType: 'role',
+                resourceId: $role->id,
+                metadata: [
+                    'role_id'   => $role->id,
+                    'role_name' => $role->name,
+                    'reason'    => 'system_role',
+                ],
+            );
+            throw new \Exception('Les rôles système ne peuvent pas être supprimés.');
         }
-        
-        // Check if role is assigned to any users
-        if ($role->users()->count() > 0) {
-            throw new \Exception('Cannot delete role that is assigned to users. Please remove all user assignments first.');
+
+        $assignedUsers = $role->users()->count();
+        if ($assignedUsers > 0) {
+            $this->audit->record(
+                eventType: 'role.deleted',
+                result: 'failed',
+                resourceType: 'role',
+                resourceId: $role->id,
+                metadata: [
+                    'role_id'        => $role->id,
+                    'role_name'      => $role->name,
+                    'reason'         => 'role_in_use',
+                    'assigned_users' => $assignedUsers,
+                ],
+            );
+            throw new \Exception("Impossible de supprimer ce rôle : il est attribué à {$assignedUsers} utilisateur(s). Retirez d'abord toutes les attributions.");
         }
-        
-        return DB::transaction(function () use ($role) {
-            // Detach all permissions first
+
+        $snapshot = [
+            'role_id'   => $role->id,
+            'role_name' => $role->name,
+            'role_slug' => $role->slug,
+        ];
+        $roleId = $role->id;
+
+        $deleted = DB::transaction(function () use ($role) {
             $role->permissions()->detach();
-            
-            // Delete the role
+
             return $role->delete();
         });
+
+        $this->audit->record(
+            eventType: 'role.deleted',
+            resourceType: 'role',
+            resourceId: $roleId,
+            metadata: $snapshot,
+        );
+
+        return (bool) $deleted;
     }
 }
