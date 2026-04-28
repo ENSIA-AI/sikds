@@ -124,7 +124,20 @@ test('documents list includes document action links', function () {
     $response->assertOk();
     $response->assertSee(route('documents.show', $document->id), false);
     $response->assertSee(route('documents.edit', $document->id), false);
-    $response->assertSee(route('documents.download', $document->id), false);
+    $response->assertSee('open-download-modal', false);
+});
+
+test('documents list page includes download traceability warning modal', function () {
+    $user = User::factory()->create();
+    $this->actingAs($user);
+    $document = webCreateDocument($user, ['status' => 'active']);
+
+    $response = $this->get(route('documents.index'));
+
+    $response->assertOk();
+    $response->assertSee('Avertissement de traçabilité du document', false);
+    $response->assertSee('open-download-modal', false);
+    $response->assertSee($document->reference_number, false);
 });
 
 test('authenticated non-super-admin users cannot access the document show page', function () {
@@ -167,6 +180,20 @@ test('super-admin document show page includes archive and delete confirmation al
     $response->assertSee("Confirmer l'archivage", false);
     $response->assertSee('Supprimer le Document', false);
     $response->assertSee('Action irréversible', false);
+});
+
+test('super-admin document show page includes download traceability warning modal', function () {
+    $user = User::factory()->create();
+    webEnsureSuperAdmin($user);
+    $this->actingAs($user);
+    $document = webCreateDocument($user, ['status' => 'active']);
+
+    $response = $this->get(route('documents.show', $document->id));
+
+    $response->assertOk();
+    $response->assertSee('Avertissement de traçabilité du document', false);
+    $response->assertSee('En poursuivant ce téléchargement, ce document officiel sera filigrané de manière permanente', false);
+    $response->assertSee("J\\'accepte, télécharger", false);
 });
 
 test('users with edit permission can access the document edit page', function () {

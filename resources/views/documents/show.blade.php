@@ -306,9 +306,9 @@
                             </div>
                         </div>
                         <div class="sikds-doc-history-tools">
-                            <a href="{{ $document['download_url'] }}" class="sikds-doc-tool-btn" aria-label="Télécharger version">
+                            <button type="button" class="sikds-doc-tool-btn" aria-label="Télécharger version" @click="$dispatch('open-download-modal', { downloadUrl: @js($document['download_url']) })">
                                 <i class="fa-solid fa-download"></i>
-                            </a>
+                            </button>
                         </div>
                     </div>
                 @empty
@@ -342,9 +342,9 @@
                             </div>
                         </div>
                         <div class="sikds-doc-history-tools">
-                            <a href="{{ $document['download_url'] }}" class="sikds-doc-tool-btn" aria-label="Télécharger copie">
+                            <button type="button" class="sikds-doc-tool-btn" aria-label="Télécharger copie" @click="$dispatch('open-download-modal', { downloadUrl: @js($document['download_url']) })">
                                 <i class="fa-solid fa-download"></i>
-                            </a>
+                            </button>
                         </div>
                     </div>
                 @empty

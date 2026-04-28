@@ -6,6 +6,7 @@ use App\Domain\Institutions\Models\Institution;
 use App\Domain\Users\Models\User;
 use App\Models\Permission;
 use App\Models\Role;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Spatie\Permission\PermissionRegistrar;
 
@@ -76,6 +77,40 @@ test('users cannot download a draft document they do not own', function () {
     // create a *different* user who has no rights
     $other = User::factory()->create();
     $this->actingAs($other);
+
+    $this->get(route('documents.download', $document->id))->assertForbidden();
+});
+
+test('users cannot download documents restricted to roles they do not have', function () {
+    $uploader = User::factory()->create();
+    $document = dlCreateDocument($uploader, [
+        'status'          => 'active',
+        'target_audience' => 'specific_roles',
+    ]);
+
+    $allowedRole = Role::query()->firstOrCreate(
+        ['name' => 'Document Restricted Role', 'guard_name' => 'web'],
+        ['slug' => 'document-restricted-role', 'is_system_role' => false]
+    );
+
+    DB::table('document_role_targets')->insert([
+        'document_id' => $document->id,
+        'role_id'     => $allowedRole->id,
+        'created_at'  => now(),
+    ]);
+
+    $unauthorized = User::factory()->create();
+    $this->actingAs($unauthorized);
+
+    $this->get(route('documents.download', $document->id))->assertForbidden();
+});
+
+test('users cannot download a deleted document they do not own', function () {
+    $uploader = User::factory()->create();
+    $document = dlCreateDocument($uploader, ['status' => 'deleted']);
+
+    $otherUser = User::factory()->create();
+    $this->actingAs($otherUser);
 
     $this->get(route('documents.download', $document->id))->assertForbidden();
 });

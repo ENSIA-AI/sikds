@@ -1,24 +1,6 @@
 <div
-    x-data="{
-        open: false,
-        downloadUrl: '',
-        confirmDownload() {
-            if (!this.downloadUrl) {
-                this.open = false;
-                return;
-            }
-            const a = document.createElement('a');
-            a.href = this.downloadUrl;
-            a.setAttribute('download', '');
-            a.rel = 'noopener';
-            a.style.display = 'none';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            this.open = false;
-        },
-    }"
-    @open-download-modal.window="open = true; downloadUrl = $event.detail.downloadUrl || ''"
+    x-data="downloadWarningModal()"
+    @open-download-modal.window="open = true; downloadUrl = $event.detail.downloadUrl || ''; errorMessage = ''; downloading = false"
 >
     <div
         x-show="open"
@@ -52,7 +34,7 @@
                 x-transition:leave="ease-in duration-200"
                 x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
                 x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-                class="inline-block transform overflow-hidden rounded-lg bg-white text-left align-bottom shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:align-middle"
+                class="relative z-10 inline-block transform overflow-hidden rounded-lg bg-white text-left align-bottom shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:align-middle"
                 @click.stop
             >
                 <div class="bg-white px-4 pb-4 pt-5 sm:p-6 sm:pb-4">
@@ -64,15 +46,16 @@
                         </div>
                         <div class="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left">
                             <h3 class="text-lg font-medium leading-6 text-gray-900" id="modal-title">
-                                Official Document Traceability Warning
+                                Avertissement de traçabilité du document
                             </h3>
                             <div class="mt-2">
                                 <p class="text-sm text-gray-500">
-                                    By proceeding with this download, this official document will be permanently watermarked with your full identity, your institution, and the exact timestamp.
+                                    En poursuivant ce téléchargement, ce document officiel sera filigrané de manière permanente avec votre identité complète, votre institution et l'horodatage exact.
                                 </p>
                                 <p class="mt-2 text-sm font-semibold text-gray-500">
-                                    You are strictly accountable for maintaining the security of this document. Unauthorized distribution is prohibited.
+                                    Vous êtes pleinement responsable de la conservation sécurisée de ce document. Toute diffusion non autorisée est strictement interdite.
                                 </p>
+                                <p x-show="errorMessage" x-text="errorMessage" class="mt-2 text-sm font-semibold text-red-600"></p>
                             </div>
                         </div>
                     </div>
@@ -82,18 +65,96 @@
                         type="button"
                         class="inline-flex w-full justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 sm:ml-3 sm:w-auto sm:text-sm"
                         @click="confirmDownload()"
+                        :disabled="downloading"
                     >
-                        I Agree, Download
+                        <span x-text="downloading ? 'Téléchargement…' : 'J\'accepte, télécharger'"></span>
                     </button>
                     <button
                         type="button"
                         class="mt-3 inline-flex w-full justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-base font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
                         @click="open = false"
+                        :disabled="downloading"
                     >
-                        Cancel
+                        Annuler
                     </button>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<script>
+    function downloadWarningModal() {
+        return {
+            open: false,
+            downloadUrl: '',
+            downloading: false,
+            errorMessage: '',
+            extractFilename(disposition) {
+                const utf8FilenameMatch = disposition.match(/filename\*=UTF-8''([^;]+)/i);
+                if (utf8FilenameMatch) {
+                    return decodeURIComponent(utf8FilenameMatch[1]);
+                }
+
+                const plainFilenameMatch = disposition.match(/filename=\s*(?:"([^"]+)"|([^;]+))/i);
+                const plainFilename = plainFilenameMatch?.[1] || plainFilenameMatch?.[2];
+
+                return (plainFilename || 'document.pdf').trim();
+            },
+            async confirmDownload() {
+                if (!this.downloadUrl || this.downloading) {
+                    if (!this.downloadUrl) {
+                        this.open = false;
+                    }
+
+                    return;
+                }
+
+                this.downloading = true;
+                this.errorMessage = '';
+
+                try {
+                    const response = await fetch(this.downloadUrl, {
+                        credentials: 'same-origin',
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'Accept': 'application/pdf, application/octet-stream',
+                        },
+                    });
+
+                    if (response.redirected) {
+                        window.location.href = response.url;
+
+                        return;
+                    }
+
+                    if (!response.ok) {
+                        throw new Error('Impossible de télécharger le document.');
+                    }
+
+                    const blob = await response.blob();
+                    const disposition = response.headers.get('Content-Disposition') || '';
+                    const filename = this.extractFilename(disposition);
+                    const objectUrl = window.URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+
+                    link.href = objectUrl;
+                    link.setAttribute('download', filename);
+                    link.rel = 'noopener';
+                    link.style.display = 'none';
+
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    window.URL.revokeObjectURL(objectUrl);
+
+                    this.open = false;
+                } catch (error) {
+                    this.errorMessage = error?.message || 'Impossible de télécharger le document.';
+                } finally {
+                    this.downloading = false;
+                }
+            },
+        };
+    }
+</script>

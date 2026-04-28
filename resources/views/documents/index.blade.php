@@ -291,9 +291,9 @@
                                             </a>
                                             @break
                                         @case('download')
-                                            <a href="{{ $doc['download_url'] }}" class="sikds-docs-action-btn" title="Télécharger" aria-label="Télécharger">
+                                            <button type="button" class="sikds-docs-action-btn" title="Télécharger" aria-label="Télécharger" @click="$dispatch('open-download-modal', { downloadUrl: @js($doc['download_url']) })">
                                                 <i class="fa-solid fa-download"></i>
-                                            </a>
+                                            </button>
                                             @break
                                         @case('publish')
                                             <button type="button" class="sikds-docs-action-btn" title="Publier" aria-label="Publier" @click="performAction(@js($doc['publish_url']), 'POST', 'Document publié.')">
@@ -417,5 +417,7 @@
             };
         }
     </script>
+
+    @include('documents.partials.download_modal')
 
 @endsection
