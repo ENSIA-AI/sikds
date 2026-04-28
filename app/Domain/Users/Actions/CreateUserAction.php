@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Users\Actions;
 
+use App\Domain\Audit\Services\AuditService;
 use App\Domain\Users\Models\Institution;
 use App\Domain\Users\Models\Permission;
 use App\Domain\Users\Models\Role;
@@ -13,6 +14,10 @@ use Illuminate\Support\Facades\Hash;
 
 final class CreateUserAction
 {
+    public function __construct(
+        private readonly AuditService $audit,
+    ) {}
+
     /**
      * Create a new user account with roles and optional custom permissions.
      */
@@ -44,7 +49,7 @@ final class CreateUserAction
             }
         }
 
-        return DB::transaction(function () use ($data, $createdById, $customPermissions) {
+        $user = DB::transaction(function () use ($data, $createdById, $customPermissions) {
             // Generate username from email
             $username = explode('@', $data['email'])[0];
 
@@ -80,6 +85,25 @@ final class CreateUserAction
 
             return $user->fresh('institution', 'roles.permissions');
         });
+
+        $this->audit->record(
+            eventType: 'user.created',
+            resourceType: 'user',
+            resourceId: $user->id,
+            metadata: [
+                'target_user_id'   => $user->id,
+                'target_user_name' => $user->full_name,
+                'target_email'     => $user->email,
+                'institution_id'   => $user->institution_id,
+                'auth_type'        => $user->auth_type,
+                'role_ids'         => array_values(array_map('intval', $data['role_ids'])),
+                'role_names'       => $roles->pluck('name')->all(),
+                'permission_ids'   => array_values(array_map('intval', $data['permission_ids'] ?? [])),
+                'is_active'        => (bool) $user->is_active,
+            ],
+        );
+
+        return $user;
     }
 
     private function extractDomain(string $email): string

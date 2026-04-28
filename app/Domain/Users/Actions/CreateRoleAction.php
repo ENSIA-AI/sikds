@@ -1,23 +1,31 @@
 <?php
 
+declare(strict_types=1);
+
+namespace App\Domain\Users\Actions;
+
+use App\Domain\Audit\Services\AuditService;
+use App\Domain\Users\Models\Permission;
+use App\Domain\Users\Models\Role;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
+
 /**
  * Create a new role with the given permissions.
  * - Auto-generate slug from name
  * - Associate permissions with role
  */
-declare(strict_types=1);
-
-namespace App\Domain\Users\Actions;
-
-use App\Domain\Users\Models\Role;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
-
 final class CreateRoleAction
 {
+    public function __construct(
+        private readonly AuditService $audit,
+    ) {}
+
     public function execute(array $data, int $createdById): Role
     {
-        return DB::transaction(function () use ($data, $createdById) {
+        $permissionIds = array_values(array_unique(array_map('intval', $data['permission_ids'] ?? [])));
+
+        $role = DB::transaction(function () use ($data, $createdById, $permissionIds) {
             $slug = Str::slug($data['name']);
 
             $role = Role::create([
@@ -28,12 +36,31 @@ final class CreateRoleAction
                 'created_by' => $createdById,
             ]);
 
-            if (!empty($data['permission_ids'])) {
-                $role->permissions()->attach($data['permission_ids']);
+            if ($permissionIds !== []) {
+                $role->permissions()->attach($permissionIds);
             }
 
             return $role->load('permissions');
         });
+
+        $permissionCodes = $permissionIds === []
+            ? []
+            : Permission::query()->whereIn('id', $permissionIds)->pluck('code')->all();
+
+        $this->audit->record(
+            eventType: 'role.created',
+            resourceType: 'role',
+            resourceId: $role->id,
+            metadata: [
+                'role_id'          => $role->id,
+                'role_name'        => $role->name,
+                'role_slug'        => $role->slug,
+                'description'      => $role->description,
+                'permission_ids'   => $permissionIds,
+                'permission_codes' => $permissionCodes,
+            ],
+        );
+
+        return $role;
     }
 }
-

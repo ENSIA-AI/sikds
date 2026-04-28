@@ -168,7 +168,7 @@ class DocumentsController
             ? $document->tags->sortBy('name')->map(fn ($tag): array => [
                 'id' => (int) $tag->id,
                 'label' => (string) $tag->name,
-                'class' => $this->tagClass((string) $tag->slug, (string) $tag->name),
+                'style' => $this->resolveTagStyle($tag->color ?? null),
             ])->values()->all()
             : $this->documentTags($document->id);
 
@@ -183,6 +183,9 @@ class DocumentsController
         }
         if ($user->can('document.edit')) {
             $actions[] = 'edit';
+        }
+        if ($document->status === 'active' && $user->can('document.publish')) {
+            $actions[] = 'archive';
         }
         if ($document->status === 'soft_deleted') {
             if ($user->can('document.restore') && $user->hasRole('Super Administrateur')) {
@@ -225,6 +228,7 @@ class DocumentsController
             'delete_url' => route('api.documents.destroy', $document->id),
             'restore_url' => route('api.documents.restore', $document->id),
             'publish_url' => route('api.documents.publish', $document->id),
+            'archive_url' => route('api.documents.archive', $document->id),
         ];
     }
 
@@ -361,11 +365,11 @@ class DocumentsController
     {
         return DB::table('tags')
             ->orderBy('name')
-            ->get(['id', 'name', 'slug'])
+            ->get(['id', 'name', 'slug', 'color'])
             ->map(fn ($tag): array => [
                 'id' => (int) $tag->id,
                 'label' => (string) $tag->name,
-                'class' => $this->tagClass((string) $tag->slug, (string) $tag->name),
+                'style' => $this->resolveTagStyle($tag->color ?? null),
             ])
             ->all();
     }
@@ -400,25 +404,56 @@ class DocumentsController
             ->join('tags', 'tags.id', '=', 'document_tags.tag_id')
             ->where('document_tags.document_id', $documentId)
             ->orderBy('tags.name')
-            ->get(['tags.id', 'tags.name', 'tags.slug'])
+            ->get(['tags.id', 'tags.name', 'tags.slug', 'tags.color'])
             ->map(fn ($tag): array => [
                 'id' => (int) $tag->id,
                 'label' => (string) $tag->name,
-                'class' => $this->tagClass((string) $tag->slug, (string) $tag->name),
+                'style' => $this->resolveTagStyle($tag->color ?? null),
             ])
             ->all();
     }
 
-    private function tagClass(string $slug, string $name): string
+    private function resolveTagStyle(?string $rawColor): string
     {
-        return match (strtolower($slug ?: $name)) {
-            'directive' => 'sikds-tag--directive',
-            'urgent' => 'sikds-tag--urgent',
-            'decision' => 'sikds-tag--decision',
-            'reglement' => 'sikds-tag--reg',
-            'rapport' => 'sikds-tag--rapport',
-            default => 'sikds-tag--directive',
-        };
+        $background = $this->normalizeHexColor($rawColor) ?? '#e5e7eb';
+        $textColor = $this->isLightColor($background) ? '#1f2937' : '#ffffff';
+
+        return "background-color: {$background}; color: {$textColor};";
+    }
+
+    private function normalizeHexColor(?string $rawColor): ?string
+    {
+        if (! is_string($rawColor)) {
+            return null;
+        }
+
+        $color = trim($rawColor);
+        if ($color === '') {
+            return null;
+        }
+
+        if (preg_match('/^#([0-9a-fA-F]{3})$/', $color, $matches) === 1) {
+            $short = strtolower($matches[1]);
+
+            return sprintf('#%s%s%s%s%s%s', $short[0], $short[0], $short[1], $short[1], $short[2], $short[2]);
+        }
+
+        if (preg_match('/^#([0-9a-fA-F]{6})$/', $color, $matches) === 1) {
+            return '#'.strtolower($matches[1]);
+        }
+
+        return null;
+    }
+
+    private function isLightColor(string $hexColor): bool
+    {
+        $red = hexdec(substr($hexColor, 1, 2));
+        $green = hexdec(substr($hexColor, 3, 2));
+        $blue = hexdec(substr($hexColor, 5, 2));
+
+        $luminance = (0.2126 * $red + 0.7152 * $green + 0.0722 * $blue) / 255;
+
+        return $luminance > 0.6;
     }
 
     private function formatAudience(Document $document): string

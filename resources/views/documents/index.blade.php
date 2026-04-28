@@ -88,7 +88,7 @@
                             <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Tags</p>
                             <div class="mt-2 flex flex-wrap gap-2">
                                 <template x-for="tag in previewDoc.tags_full" :key="tag.id">
-                                    <span class="sikds-tag sikds-tag--table" :class="tag.class" x-text="tag.label"></span>
+                                    <span class="sikds-tag sikds-tag--table" :style="tag.style" x-text="tag.label"></span>
                                 </template>
                             </div>
                         </div>
@@ -199,7 +199,7 @@
                             @foreach ($availableTags as $tag)
                                 <label class="sikds-docs-filter-check">
                                     <input type="checkbox" name="tags[]" value="{{ $tag['label'] }}" {{ in_array($tag['label'], $selectedTags, true) ? 'checked' : '' }}>
-                                    <span class="sikds-tag sikds-tag--table {{ $tag['class'] }}">{{ $tag['label'] }}</span>
+                                    <span class="sikds-tag sikds-tag--table" style="{{ $tag['style'] }}">{{ $tag['label'] }}</span>
                                 </label>
                             @endforeach
                         </div>
@@ -267,7 +267,7 @@
                         <td>
                             <div class="sikds-docs-tags">
                                 @foreach ($doc['tags'] as $tag)
-                                    <span class="sikds-tag sikds-tag--table {{ $tag['class'] }}">{{ $tag['label'] }}</span>
+                                    <span class="sikds-tag sikds-tag--table" style="{{ $tag['style'] }}">{{ $tag['label'] }}</span>
                                 @endforeach
                                 @if ($doc['extra_tags'] > 0)
                                     <span class="sikds-docs-extra-tags">+{{ $doc['extra_tags'] }}</span>
@@ -289,6 +289,11 @@
                                             <a href="{{ $doc['edit_url'] }}" class="sikds-docs-action-btn" title="Modifier" aria-label="Modifier">
                                                 <i class="fa-regular fa-pen-to-square"></i>
                                             </a>
+                                            @break
+                                        @case('archive')
+                                            <button type="button" class="sikds-docs-action-btn" title="Archiver" aria-label="Archiver" @click="performAction(@js($doc['archive_url']), 'POST', 'Document archivé.')">
+                                                <i :class="loading ? 'fa-solid fa-spinner fa-spin' : 'fa-solid fa-box-archive'"></i>
+                                            </button>
                                             @break
                                         @case('download')
                                             <button type="button" class="sikds-docs-action-btn" title="Télécharger" aria-label="Télécharger" @click="$dispatch('open-download-modal', { downloadUrl: @js($doc['download_url']) })">

@@ -232,7 +232,7 @@
                     </h3>
                     <div class="sikds-doc-tags-wrap">
                         @foreach ($document['tags'] as $tag)
-                            <span class="sikds-tag {{ $tag['class'] }}">{{ $tag['label'] }}</span>
+                            <span class="sikds-tag" style="{{ $tag['style'] }}">{{ $tag['label'] }}</span>
                         @endforeach
                     </div>
                 </div>

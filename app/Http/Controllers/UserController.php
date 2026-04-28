@@ -19,6 +19,7 @@ use App\Http\Requests\UpdateUserRequest;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
 final class UserController extends Controller
@@ -53,13 +54,27 @@ final class UserController extends Controller
                 });
             })
             ->when($request->search, function ($query, $search) {
-                $query->where(function ($q) use ($search) {
-                    $q->where('full_name', 'ilike', "%{$search}%")
-                      ->orWhere('email', 'ilike', "%{$search}%")
-                      ->orWhereHas('institution', function ($iq) use ($search) {
-                          $iq->where('name', 'ilike', "%{$search}%")
-                             ->orWhere('code', 'ilike', "%{$search}%");
-                      });
+                $driver = DB::getDriverName();
+                $searchLower = mb_strtolower((string) $search);
+
+                $query->where(function ($q) use ($driver, $search, $searchLower) {
+                    if ($driver === 'pgsql') {
+                        $q->where('full_name', 'ilike', "%{$search}%")
+                            ->orWhere('email', 'ilike', "%{$search}%")
+                            ->orWhereHas('institution', function ($iq) use ($search) {
+                                $iq->where('name', 'ilike', "%{$search}%")
+                                    ->orWhere('code', 'ilike', "%{$search}%");
+                            });
+
+                        return;
+                    }
+
+                    $q->whereRaw('LOWER(full_name) LIKE ?', ["%{$searchLower}%"])
+                        ->orWhereRaw('LOWER(email) LIKE ?', ["%{$searchLower}%"])
+                        ->orWhereHas('institution', function ($iq) use ($searchLower) {
+                            $iq->whereRaw('LOWER(name) LIKE ?', ["%{$searchLower}%"])
+                                ->orWhereRaw('LOWER(code) LIKE ?', ["%{$searchLower}%"]);
+                        });
                 });
             });
 

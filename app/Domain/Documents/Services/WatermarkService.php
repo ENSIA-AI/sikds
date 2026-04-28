@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace App\Domain\Documents\Services;
 
-use setasign\Fpdi\Fpdi;
 use App\Domain\Documents\Models\Document;
 use App\Domain\Documents\Models\DownloadLog;
+use App\Services\Settings\SystemSettingsService;
 use Illuminate\Support\Facades\Storage;
+use setasign\Fpdi\Fpdi;
 
 /**
  * FPDI subclass that adds diagonal-text rotation and PDF transparency (alpha)
@@ -118,6 +119,50 @@ class RotatableFpdi extends Fpdi
 class WatermarkService
 {
     /**
+     * Canonical watermark field names. Settings stored under
+     * legacy keys (full_name, institution, email, timestamp, uuid) are
+     * accepted as aliases so existing config keeps working.
+     */
+    public const VISIBLE_DEFAULTS = [
+        'recipient_name',
+        'recipient_institution',
+        'downloaded_at',
+        'download_uuid',
+    ];
+
+    public const METADATA_DEFAULTS = [
+        'recipient_name',
+        'recipient_institution',
+        'recipient_email',
+        'downloaded_at',
+        'download_uuid',
+        'document_title',
+        'document_reference',
+    ];
+
+    private const ALIASES = [
+        'full_name'    => 'recipient_name',
+        'institution'  => 'recipient_institution',
+        'email'        => 'recipient_email',
+        'timestamp'    => 'downloaded_at',
+        'uuid'         => 'download_uuid',
+    ];
+
+    private const KNOWN_FIELDS = [
+        'recipient_name',
+        'recipient_institution',
+        'recipient_email',
+        'downloaded_at',
+        'download_uuid',
+        'document_title',
+        'document_reference',
+    ];
+
+    public function __construct(
+        private readonly ?SystemSettingsService $settings = null,
+    ) {}
+
+    /**
      * Applies a large diagonal watermark on every page plus a small footer strip,
      * and embeds PDF info-dictionary metadata for forensic traceability.
      *
@@ -168,31 +213,108 @@ class WatermarkService
         $uuid            = $downloadLog->watermark_uuid;
         $shortUuid       = 'WM-' . strtoupper(substr(str_replace('-', '', $uuid), 0, 8));
 
+        $visibleFields  = $this->resolveFields('watermark.visible_fields', self::VISIBLE_DEFAULTS);
+        $metadataFields = $this->resolveFields('watermark.metadata_fields', self::METADATA_DEFAULTS);
+
         // FPDF uses ISO-8859-1. Convert UTF-8 for standard Latin characters.
         $encode = fn (string $s): string => (string) iconv('UTF-8', 'ISO-8859-1//TRANSLIT', $s);
 
-        $diagonalLine1 = $encode("UUID: {$shortUuid} | {$downloadedAt->format('Y-m-d')} {$downloadedAt->format('H:i')}");
-        $diagonalLine2 = $encode("{$userName} | {$institutionName}");
+        // ----- Build visible (overlay) text segments based on the toggle -----
+        $line1Parts = [];
+        if (in_array('download_uuid', $visibleFields, true)) {
+            $line1Parts[] = "UUID: {$shortUuid}";
+        }
+        if (in_array('downloaded_at', $visibleFields, true)) {
+            $line1Parts[] = "{$downloadedAt->format('Y-m-d')} {$downloadedAt->format('H:i')}";
+        }
+        if (in_array('document_reference', $visibleFields, true)) {
+            $line1Parts[] = "Réf: {$document->reference_number}";
+        }
+
+        $line2Parts = [];
+        if (in_array('recipient_name', $visibleFields, true)) {
+            $line2Parts[] = $userName;
+        }
+        if (in_array('recipient_institution', $visibleFields, true)) {
+            $line2Parts[] = $institutionName;
+        }
+        if (in_array('recipient_email', $visibleFields, true) && ! empty($user->email)) {
+            $line2Parts[] = (string) $user->email;
+        }
+        if (in_array('document_title', $visibleFields, true)) {
+            $line2Parts[] = (string) $document->title;
+        }
+
+        $diagonalLine1 = $encode(implode(' | ', $line1Parts));
+        $diagonalLine2 = $encode(implode(' | ', $line2Parts));
+
+        $footerParts = [];
+        if (in_array('download_uuid', $visibleFields, true)) {
+            $footerParts[] = $shortUuid;
+        }
+        if (in_array('recipient_name', $visibleFields, true)) {
+            $footerParts[] = $userName;
+        }
+        if (in_array('recipient_institution', $visibleFields, true)) {
+            $footerParts[] = $institutionName;
+        }
+        if (in_array('downloaded_at', $visibleFields, true)) {
+            $footerParts[] = $downloadedAt->format('Y-m-d H:i');
+        }
+        $footerText = $encode(implode(' | ', $footerParts));
 
         // --- PDF Info Dictionary Metadata (readable with pdfinfo / exiftool) ---
-        $metadataPayload = json_encode([
-            'userId'            => 'USR-' . str_pad((string) $user->id, 7, '0', STR_PAD_LEFT),
-            'userName'          => $userName,
-            'userEmail'         => $user->email ?? '',
-            'institutionCode'   => $institutionCode,
-            'institutionName'   => $institutionName,
-            'documentId'        => 'DOC-' . str_pad((string) $document->id, 7, '0', STR_PAD_LEFT),
-            'documentVersion'   => $document->version_number,
-            'downloadId'        => 'DL-' . str_pad((string) $downloadLog->id, 7, '0', STR_PAD_LEFT),
-            'downloadTimestamp' => $downloadedAt->toIso8601String(),
-            'watermarkUUID'     => $uuid,
-            'ipAddress'         => $downloadLog->ip_address ?? '',
-        ]);
+        $payload = [];
+        if (in_array('recipient_name', $metadataFields, true)) {
+            $payload['userId']   = 'USR-' . str_pad((string) $user->id, 7, '0', STR_PAD_LEFT);
+            $payload['userName'] = $userName;
+        }
+        if (in_array('recipient_email', $metadataFields, true)) {
+            $payload['userEmail'] = (string) ($user->email ?? '');
+        }
+        if (in_array('recipient_institution', $metadataFields, true)) {
+            $payload['institutionCode'] = $institutionCode;
+            $payload['institutionName'] = $institutionName;
+        }
+        if (in_array('document_title', $metadataFields, true)) {
+            $payload['documentTitle'] = (string) $document->title;
+        }
+        if (in_array('document_reference', $metadataFields, true)) {
+            $payload['documentReference'] = (string) $document->reference_number;
+            $payload['documentVersion']   = $document->version_number;
+        }
+        $payload['documentId'] = 'DOC-' . str_pad((string) $document->id, 7, '0', STR_PAD_LEFT);
+        $payload['downloadId'] = 'DL-' . str_pad((string) $downloadLog->id, 7, '0', STR_PAD_LEFT);
+        if (in_array('downloaded_at', $metadataFields, true)) {
+            $payload['downloadTimestamp'] = $downloadedAt->toIso8601String();
+        }
+        if (in_array('download_uuid', $metadataFields, true)) {
+            $payload['watermarkUUID'] = $uuid;
+        }
+        $payload['ipAddress'] = (string) ($downloadLog->ip_address ?? '');
 
-        $fpdi->SetTitle($document->title . ' [SIKDS-SECURED]');
-        $fpdi->SetAuthor($userName . ' | ' . $institutionName);
+        $metadataPayload = json_encode($payload);
+
+        $titleSuffix = in_array('document_title', $metadataFields, true)
+            ? $document->title . ' [SIKDS-SECURED]'
+            : '[SIKDS-SECURED]';
+        $fpdi->SetTitle($titleSuffix);
+
+        $authorParts = [];
+        if (in_array('recipient_name', $metadataFields, true)) {
+            $authorParts[] = $userName;
+        }
+        if (in_array('recipient_institution', $metadataFields, true)) {
+            $authorParts[] = $institutionName;
+        }
+        if ($authorParts !== []) {
+            $fpdi->SetAuthor(implode(' | ', $authorParts));
+        }
+
         $fpdi->SetCreator('SIKDS v1.0');
-        $fpdi->SetSubject('SIKDS-UUID:' . $uuid);
+        if (in_array('download_uuid', $metadataFields, true)) {
+            $fpdi->SetSubject('SIKDS-UUID:' . $uuid);
+        }
         $fpdi->SetKeywords((string) $metadataPayload);
 
         // Helper: compute the largest font size that fits inside maxWidth.
@@ -207,9 +329,6 @@ class WatermarkService
             }
             return max($size, 6);
         };
-
-        // The diagonal of a page is the maximum text width we can use.
-        // We'll compute it per-page (in case pages differ in size).
 
         // --- Apply watermarks on every page ---
         for ($pageNo = 1; $pageNo <= $pageCount; $pageNo++) {
@@ -234,37 +353,44 @@ class WatermarkService
             // Alpha 0.40 — clearly visible for traceability but still allows
             // the underlying content to be read.
             // ---------------------------------------------------------------
-            $fpdi->setAlpha(0.40);
-            $fpdi->SetTextColor(100, 100, 100);
+            if ($diagonalLine1 !== '' || $diagonalLine2 !== '') {
+                $fpdi->setAlpha(0.40);
+                $fpdi->SetTextColor(100, 100, 100);
 
-            // Line 1 — UUID (primary identifier for leak tracing)
-            $fontSize1 = $fitFontSize($fpdi, $diagonalLine1, 'Arial', 'B', 42, $w);
-            $fpdi->SetFont('Arial', 'B', $fontSize1);
-            $fpdi->rotate(-45.0, $cx, $cy);
-            $fpdi->SetXY(0, $cy - 14);
-            $fpdi->Cell($w, 14, $diagonalLine1, 0, 0, 'C');
+                if ($diagonalLine1 !== '') {
+                    $fontSize1 = $fitFontSize($fpdi, $diagonalLine1, 'Arial', 'B', 42, $w);
+                    $fpdi->SetFont('Arial', 'B', $fontSize1);
+                    $fpdi->rotate(-45.0, $cx, $cy);
+                    $fpdi->SetXY(0, $cy - 14);
+                    $fpdi->Cell($w, 14, $diagonalLine1, 0, 0, 'C');
+                } else {
+                    $fpdi->rotate(-45.0, $cx, $cy);
+                }
 
-            // Line 2 — downloader name + institution + date
-            $fontSize2 = $fitFontSize($fpdi, $diagonalLine2, 'Arial', 'B', 22, $w);
-            $fpdi->SetFont('Arial', 'B', $fontSize2);
-            $fpdi->SetXY(0, $cy + 2);
-            $fpdi->Cell($w, 10, $diagonalLine2, 0, 0, 'C');
+                if ($diagonalLine2 !== '') {
+                    $fontSize2 = $fitFontSize($fpdi, $diagonalLine2, 'Arial', 'B', 22, $w);
+                    $fpdi->SetFont('Arial', 'B', $fontSize2);
+                    $fpdi->SetXY(0, $cy + 2);
+                    $fpdi->Cell($w, 10, $diagonalLine2, 0, 0, 'C');
+                }
 
-            $fpdi->endRotate();
-            $fpdi->setAlpha(1.0);
+                $fpdi->endRotate();
+                $fpdi->setAlpha(1.0);
+            }
 
             // ---------------------------------------------------------------
             // Small footer strip — plain-text trace data at the very bottom.
             // Written with SetXY (no Ln/Cell newline) so it never triggers
             // a page break.
             // ---------------------------------------------------------------
-            $fpdi->setAlpha(0.40);
-            $fpdi->SetFont('Arial', '', 7);
-            $fpdi->SetTextColor(80, 80, 80);
-            $fpdi->SetXY(5, $h - 8);
-            $footerText = $encode("{$shortUuid} | {$userName} | {$institutionName} | {$downloadedAt->format('Y-m-d H:i')}");
-            $fpdi->Cell($w - 10, 4, $footerText, 0, 0, 'C');
-            $fpdi->setAlpha(1.0);
+            if ($footerText !== '') {
+                $fpdi->setAlpha(0.40);
+                $fpdi->SetFont('Arial', '', 7);
+                $fpdi->SetTextColor(80, 80, 80);
+                $fpdi->SetXY(5, $h - 8);
+                $fpdi->Cell($w - 10, 4, $footerText, 0, 0, 'C');
+                $fpdi->setAlpha(1.0);
+            }
         }
 
         $outputFile = tempnam(sys_get_temp_dir(), 'sikds_out_') . '.pdf';
@@ -274,5 +400,37 @@ class WatermarkService
 
         return $outputFile;
     }
-}
 
+    /**
+     * Read a watermark field list from settings, normalize aliases,
+     * drop unknowns, and fall back to defaults if nothing usable is set.
+     *
+     * @param  array<int, string>  $defaults
+     * @return array<int, string>
+     */
+    private function resolveFields(string $key, array $defaults): array
+    {
+        $settings = $this->settings ?? app(SystemSettingsService::class);
+        $raw = $settings->get($key, $defaults);
+
+        if (! is_array($raw)) {
+            $raw = $defaults;
+        }
+
+        $resolved = [];
+        foreach ($raw as $field) {
+            if (! is_string($field) || $field === '') {
+                continue;
+            }
+            $canonical = self::ALIASES[$field] ?? $field;
+            if (! in_array($canonical, self::KNOWN_FIELDS, true)) {
+                continue;
+            }
+            if (! in_array($canonical, $resolved, true)) {
+                $resolved[] = $canonical;
+            }
+        }
+
+        return $resolved === [] ? $defaults : $resolved;
+    }
+}

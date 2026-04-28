@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Common;
 
+use App\Domain\Audit\Services\AuditService;
 use App\Domain\Tags\Models\Tag;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
 
@@ -16,6 +18,10 @@ class TagsController
         'type_document' => 'Type de Document',
         'priority'      => 'Priorité',
     ];
+
+    public function __construct(
+        private readonly AuditService $audit,
+    ) {}
 
     public function index(): View
     {
@@ -61,23 +67,45 @@ class TagsController
 
     public function store(Request $request): RedirectResponse
     {
+        $this->authorizeManage();
+
         $data = $this->validateTag($request);
 
-        Tag::create([
+        $tag = Tag::create([
             'name'          => $data['name'],
             'slug'          => Str::slug($data['name']),
             'color'         => strtolower($data['color'] ?? '#e0e7ff'),
             'category'      => $this->resolveCategory($data),
             'is_predefined' => false,
-            'created_by'    => auth()->id(),
+            'created_by'    => Auth::id(),
         ]);
+
+        $this->audit->record(
+            eventType: 'tag.created',
+            resourceType: 'tag',
+            resourceId: $tag->id,
+            metadata: [
+                'tag_name' => $tag->name,
+                'category' => $tag->category,
+                'color'    => $tag->color,
+            ],
+            request: $request,
+        );
 
         return redirect()->route('tags.index')->with('success', 'Tag créé avec succès.');
     }
 
     public function update(Request $request, Tag $tag): RedirectResponse
     {
+        $this->authorizeManage();
+
         $data = $this->validateTag($request, $tag);
+
+        $before = [
+            'name'     => $tag->name,
+            'category' => $tag->category,
+            'color'    => $tag->color,
+        ];
 
         $tag->update([
             'name'     => $data['name'],
@@ -86,14 +114,74 @@ class TagsController
             'category' => $this->resolveCategory($data),
         ]);
 
+        $this->audit->record(
+            eventType: 'tag.updated',
+            resourceType: 'tag',
+            resourceId: $tag->id,
+            metadata: [
+                'tag_name' => $tag->name,
+                'before'   => $before,
+                'after'    => [
+                    'name'     => $tag->name,
+                    'category' => $tag->category,
+                    'color'    => $tag->color,
+                ],
+            ],
+            request: $request,
+        );
+
         return redirect()->route('tags.index')->with('success', 'Tag mis à jour.');
     }
 
-    public function destroy(Tag $tag): RedirectResponse
+    public function destroy(Request $request, Tag $tag): RedirectResponse
     {
+        $this->authorizeManage();
+
+        $usageCount = $tag->documents()->count();
+        if ($usageCount > 0) {
+            $this->audit->record(
+                eventType: 'tag.deleted',
+                result: 'failed',
+                resourceType: 'tag',
+                resourceId: $tag->id,
+                metadata: [
+                    'tag_name'    => $tag->name,
+                    'reason'      => 'tag_in_use',
+                    'usage_count' => $usageCount,
+                ],
+                request: $request,
+            );
+
+            return redirect()->route('tags.index')->with(
+                'error',
+                "Impossible de supprimer ce tag : il est utilisé par {$usageCount} document(s)."
+            );
+        }
+
+        $snapshot = [
+            'tag_name' => $tag->name,
+            'category' => $tag->category,
+            'color'    => $tag->color,
+        ];
+        $tagId = $tag->id;
+
         $tag->delete();
 
+        $this->audit->record(
+            eventType: 'tag.deleted',
+            resourceType: 'tag',
+            resourceId: $tagId,
+            metadata: $snapshot,
+            request: $request,
+        );
+
         return redirect()->route('tags.index')->with('success', 'Tag supprimé.');
+    }
+
+    private function authorizeManage(): void
+    {
+        $user = Auth::user();
+        abort_if($user === null || ! $user->can('tag.manage'), 403, 'Accès refusé. Permission tag.manage requise.');
     }
 
     private function validateTag(Request $request, ?Tag $tag = null): array

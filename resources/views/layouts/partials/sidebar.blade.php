@@ -1,20 +1,27 @@
 @php
 $safeRoute = static fn (string $name): string => \Illuminate\Support\Facades\Route::has($name) ? route($name) : '#';
+$authUser = auth()->user();
+$isSuperAdmin = (bool) $authUser?->hasRole('Super Administrateur');
+$canSeeDocuments = $authUser && (
+    $authUser->can('document.view.assigned')
+    || $authUser->can('document.view.own_institution')
+    || $authUser->can('document.view.all')
+);
 
 $items = [
-    ['id' => 'dashboard',    'label' => 'Tableau de Bord',    'icon' => '/dashboard-blue.svg',   'icon_active' => '/dashboard-blue.svg',    'href' => $safeRoute('dashboard')],
-    ['id' => 'documents',    'label' => 'Documents',           'icon' => '/document.svg',          'icon_active' => '/document-blue.svg',     'href' => $safeRoute('documents.index')],
-    ['id' => 'tags',         'label' => 'Tags',                'icon' => '/tags.svg',              'icon_active' => '/tags-blue.svg',         'href' => $safeRoute('tags.index')],
-    ['id' => 'users',        'label' => 'Utilisateurs',        'icon' => '/people.svg',            'icon_active' => '/users-blue.svg',        'href' => $safeRoute('utilisateurs')],
-    ['id' => 'roles',        'label' => 'Rôles',               'icon' => '/key.svg',               'icon_active' => '/key-blue.svg',          'href' => $safeRoute('roles.index')],
-    ['id' => 'permissions',  'label' => 'Permissions',         'icon' => '/permissions-blue.svg',  'icon_active' => '/permissions-blue.svg',  'href' => $safeRoute('permissions.index')],
-    ['id' => 'institutions', 'label' => 'Institutions',        'icon' => '/building.svg',          'icon_active' => '/institutions-blue.svg', 'href' => $safeRoute('institutions.index')],
-    ['id' => 'chatbot',      'label' => 'Chatbot',             'icon' => '/search.svg',            'icon_active' => '/search-blue.svg',       'href' => $safeRoute('rag.index')],
-    ['id' => 'indexing',     'label' => 'Moniteur Indexation', 'icon' => '/indexing.svg',          'icon_active' => '/indexing-blue.svg',     'href' => $safeRoute('indexing.index')],
-    ['id' => 'traceability', 'label' => 'Traçabilité',         'icon' => '/traceability.svg',      'icon_active' => '/traceability-blue.svg', 'href' => $safeRoute('watermark.index')],
-    ['id' => 'audits',       'label' => "Journaux d'Audit",    'icon' => '/audit.svg',             'icon_active' => '/audit-blue.svg',        'href' => '#'],
-    ['id' => 'notifications','label' => 'Notifications',       'icon' => '/bell.svg',              'icon_active' => '/bell-blue.svg',         'href' => '#'],
-    ['id' => 'settings',     'label' => 'Paramètres',          'icon' => '/parameters.svg',        'icon_active' => '/parameters-blue.svg',   'href' => '#'],
+    ['id' => 'dashboard', 'label' => 'Tableau de Bord', 'icon' => '/dashboard-blue.svg', 'icon_active' => '/dashboard-blue.svg', 'href' => $safeRoute('dashboard'), 'visible' => true],
+    ['id' => 'documents', 'label' => 'Documents', 'icon' => '/document.svg', 'icon_active' => '/document-blue.svg', 'href' => $safeRoute('documents.index'), 'visible' => $isSuperAdmin || $canSeeDocuments],
+    ['id' => 'tags', 'label' => 'Tags', 'icon' => '/tags.svg', 'icon_active' => '/tags-blue.svg', 'href' => $safeRoute('tags.index'), 'visible' => $isSuperAdmin || $authUser?->can('tag.manage')],
+    ['id' => 'users', 'label' => 'Utilisateurs', 'icon' => '/people.svg', 'icon_active' => '/users-blue.svg', 'href' => $safeRoute('users.index'), 'visible' => $isSuperAdmin || $authUser?->can('user.view.all')],
+    ['id' => 'roles', 'label' => 'Rôles', 'icon' => '/key.svg', 'icon_active' => '/key-blue.svg', 'href' => $safeRoute('roles.index'), 'visible' => $isSuperAdmin || $authUser?->can('role.view')],
+    ['id' => 'permissions', 'label' => 'Permissions', 'icon' => '/permissions-blue.svg', 'icon_active' => '/permissions-blue.svg', 'href' => $safeRoute('permissions.index'), 'visible' => $isSuperAdmin || $authUser?->can('user.assign.permissions')],
+    ['id' => 'institutions', 'label' => 'Institutions', 'icon' => '/building.svg', 'icon_active' => '/institutions-blue.svg', 'href' => $safeRoute('institutions.index'), 'visible' => $isSuperAdmin || $authUser?->can('institution.view')],
+    ['id' => 'chatbot', 'label' => 'Chatbot', 'icon' => '/search.svg', 'icon_active' => '/search-blue.svg', 'href' => $safeRoute('rag.index'), 'visible' => $isSuperAdmin || $authUser?->can('rag.query') || $authUser?->can('search.basic')],
+    ['id' => 'indexing', 'label' => 'Moniteur Indexation', 'icon' => '/indexing.svg', 'icon_active' => '/indexing-blue.svg', 'href' => $safeRoute('indexing.index'), 'visible' => $isSuperAdmin || $authUser?->can('document.view.all')],
+    ['id' => 'traceability', 'label' => 'Traçabilité', 'icon' => '/traceability.svg', 'icon_active' => '/traceability-blue.svg', 'href' => $safeRoute('watermark.index'), 'visible' => $isSuperAdmin || $authUser?->can('audit.view')],
+    ['id' => 'audits', 'label' => "Journaux d'Audit", 'icon' => '/audit.svg', 'icon_active' => '/audit-blue.svg', 'href' => $safeRoute('audits.index'), 'visible' => $isSuperAdmin || $authUser?->can('audit.view')],
+    ['id' => 'notifications', 'label' => 'Notifications', 'icon' => '/bell.svg', 'icon_active' => '/bell-blue.svg', 'href' => $safeRoute('notifications.index'), 'visible' => $isSuperAdmin],
+    ['id' => 'settings', 'label' => 'Paramètres', 'icon' => '/parameters.svg', 'icon_active' => '/parameters-blue.svg', 'href' => $safeRoute('settings.index'), 'visible' => $isSuperAdmin],
 ];
 
 @endphp
@@ -36,6 +43,7 @@ $items = [
 
         <nav class="mt-6 flex-1 space-y-1 overflow-y-auto px-4 pb-6" aria-label="Navigation principale">
             @foreach ($items as $item)
+                @continue(!($item['visible'] ?? true))
                 @php $isActive = ($activeNav ?? 'dashboard') === $item['id']; @endphp
                 <a
                     href="{{ $item['href'] }}"

@@ -9,6 +9,7 @@ declare(strict_types=1);
 namespace App\Domain\Users\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Spatie\Permission\Models\Role as SpatieRole;
 
@@ -78,5 +79,10 @@ class Role extends SpatieRole
     {
         // System roles cannot be edited
         return !$this->is_system_role;
+    }
+
+    protected static function newFactory(): Factory
+    {
+        return \Database\Factories\Domain\Users\Models\RoleFactory::new();
     }
 }

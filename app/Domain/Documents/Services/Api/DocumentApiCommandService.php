@@ -5,12 +5,15 @@ declare(strict_types=1);
 namespace App\Domain\Documents\Services\Api;
 
 use App\Domain\Audit\Models\AuditLog;
+use App\Domain\Audit\Services\AuditService;
 use App\Domain\Documents\Models\Document;
 use App\Domain\Documents\Models\DocumentVersion;
+use App\Domain\Tags\Models\Tag;
 use App\Domain\Users\Models\User;
 use App\Http\Requests\Api\Documents\StoreDocumentsRequest;
 use App\Http\Requests\Api\Documents\UpdateDocumentRequest;
 use App\Jobs\IndexDocumentJob;
+use App\Services\Notifications\DocumentNotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Carbon;
@@ -23,6 +26,8 @@ class DocumentApiCommandService
 {
     public function __construct(
         private readonly DocumentApiAuthorizationService $authorization,
+        private readonly DocumentNotificationService $notifications,
+        private readonly AuditService $auditService,
     ) {}
 
     /**
@@ -67,7 +72,7 @@ class DocumentApiCommandService
                 ]);
 
                 $this->syncTargets($document, $meta);
-                $this->syncTags($document, $meta['tag_ids'] ?? [], $user->id);
+                $this->syncTags($document, $meta['tag_ids'] ?? [], $user, $request);
 
                 $this->audit($request, $user, 'document.uploaded', 'document', $document->id, [
                     'reference_number' => $document->reference_number,
@@ -110,6 +115,7 @@ class DocumentApiCommandService
         return DB::transaction(function () use ($validated, $document, $request, $user): Document {
             $oldStatus = $document->status;
             $fileUpdated = isset($validated['file']) && $validated['file'] instanceof UploadedFile;
+            $previousVersion = (int) $document->version_number;
 
             if ($fileUpdated) {
                 $this->purgeDocumentChunks($document->id);
@@ -162,7 +168,7 @@ class DocumentApiCommandService
             }
 
             if (array_key_exists('tag_ids', $validated)) {
-                $this->syncTags($document, $validated['tag_ids'] ?? [], $user->id);
+                $this->syncTags($document, $validated['tag_ids'] ?? [], $user, $request);
             }
 
             $this->audit($request, $user, 'document.updated', 'document', $document->id, [
@@ -174,6 +180,19 @@ class DocumentApiCommandService
 
             if ($document->status === 'active' && $fileUpdated) {
                 IndexDocumentJob::dispatch($document->id)->onQueue('indexing');
+            }
+
+            //  notify recipients when a new version is published (update with file).
+            if ($document->status === 'active' && $fileUpdated) {
+                $changeSummary = isset($validated['change_summary']) && is_string($validated['change_summary'])
+                    ? trim($validated['change_summary'])
+                    : null;
+                $this->notifications->notifyDocumentUpdated(
+                    $document,
+                    $document->version_number,
+                    $previousVersion,
+                    $changeSummary !== '' ? $changeSummary : null,
+                );
             }
 
             return $document;
@@ -201,6 +220,9 @@ class DocumentApiCommandService
             'status_before' => 'draft',
             'status_after' => 'active',
         ]);
+
+        // notify all users in target audience when published.
+        $this->notifications->notifyDocumentPublished($document);
 
         return $document;
     }
@@ -391,24 +413,80 @@ class DocumentApiCommandService
     /**
      * @param  array<int, int|string>  $tagIds
      */
-    private function syncTags(Document $document, array $tagIds, int $assignedBy): void
+    private function syncTags(Document $document, array $tagIds, User $user, Request $request): void
     {
-        DB::table('document_tags')->where('document_id', $document->id)->delete();
+        $existing = DB::table('document_tags')
+            ->where('document_id', $document->id)
+            ->pluck('tag_id')
+            ->map(static fn ($id): int => (int) $id)
+            ->all();
+
         $normalized = array_values(array_unique(array_map('intval', $tagIds)));
-        if ($normalized === []) {
+
+        $added   = array_values(array_diff($normalized, $existing));
+        $removed = array_values(array_diff($existing, $normalized));
+
+        if ($added === [] && $removed === []) {
             return;
         }
 
-        $rows = array_map(
-            static fn (int $tagId): array => [
-                'document_id' => $document->id,
-                'tag_id' => $tagId,
-                'assigned_at' => now(),
-                'assigned_by' => $assignedBy,
-            ],
-            $normalized
-        );
-        DB::table('document_tags')->insert($rows);
+        $this->authorization->assertPermission($user, 'tag.assign');
+
+        DB::table('document_tags')->where('document_id', $document->id)->delete();
+
+        if ($normalized !== []) {
+            $rows = array_map(
+                static fn (int $tagId): array => [
+                    'document_id' => $document->id,
+                    'tag_id' => $tagId,
+                    'assigned_at' => now(),
+                    'assigned_by' => $user->id,
+                ],
+                $normalized
+            );
+            DB::table('document_tags')->insert($rows);
+        }
+
+        if ($added !== [] || $removed !== []) {
+            $names = Tag::query()
+                ->whereIn('id', array_unique([...$added, ...$removed]))
+                ->pluck('name', 'id')
+                ->all();
+
+            foreach ($added as $tagId) {
+                $this->auditService->record(
+                    eventType: 'tag.assigned',
+                    user: $user,
+                    resourceType: 'document',
+                    resourceId: $document->id,
+                    metadata: [
+                        'document_id'        => $document->id,
+                        'document_title'     => $document->title,
+                        'reference_number'   => $document->reference_number,
+                        'tag_id'             => $tagId,
+                        'tag_name'           => $names[$tagId] ?? null,
+                    ],
+                    request: $request,
+                );
+            }
+
+            foreach ($removed as $tagId) {
+                $this->auditService->record(
+                    eventType: 'tag.removed',
+                    user: $user,
+                    resourceType: 'document',
+                    resourceId: $document->id,
+                    metadata: [
+                        'document_id'        => $document->id,
+                        'document_title'     => $document->title,
+                        'reference_number'   => $document->reference_number,
+                        'tag_id'             => $tagId,
+                        'tag_name'           => $names[$tagId] ?? null,
+                    ],
+                    request: $request,
+                );
+            }
+        }
     }
 
     /**

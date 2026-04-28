@@ -20,13 +20,7 @@ class DashboardController
             'statusStats'        => $this->dashboard->getStatusStats(),
             'indexingStats'      => $this->dashboard->getIndexingStats(),
             'activeInstitutions' => $this->dashboard->getActiveInstitutions(),
-            'popularTags'        => [
-                ['label' => 'Directive',  'class' => 'sikds-tag--directive'],
-                ['label' => 'Urgent',     'class' => 'sikds-tag--urgent'],
-                ['label' => 'Régulation', 'class' => 'sikds-tag--reg'],
-                ['label' => 'Rapport',    'class' => 'sikds-tag--rapport'],
-                ['label' => 'Décision',   'class' => 'sikds-tag--decision'],
-            ],
+            'popularTags'        => $this->dashboard->getPopularTags(),
         ]);
     }
 }

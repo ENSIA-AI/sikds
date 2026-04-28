@@ -6,6 +6,9 @@ use App\Http\Controllers\Common\TagsController;
 use App\Http\Controllers\Api\DocumentsApiController;
 use App\Http\Controllers\Web\DownloadController;
 use App\Http\Controllers\Web\IndexingController;
+use App\Http\Controllers\Web\AuditController;
+use App\Http\Controllers\Web\NotificationsController;
+use App\Http\Controllers\Web\SettingsController;
 use App\Http\Controllers\Web\RagController;
 use App\Http\Controllers\Web\WatermarkTraceabilityController;
 use App\Http\Controllers\InstitutionController;
@@ -51,6 +54,22 @@ Route::middleware(['auth'])
             ->name('indexing.index');
         Route::post('/indexing/{document}/retry', [IndexingController::class, 'retry'])
             ->name('indexing.retry');
+
+        // Audits
+        Route::get('/audits', [AuditController::class, 'index'])
+            ->name('audits.index');
+        Route::get('/audits/export', [AuditController::class, 'export'])
+            ->name('audits.export');
+
+        // Notifications
+        Route::get('/notifications', [NotificationsController::class, 'index'])
+            ->name('notifications.index');
+
+        // Settings
+        Route::get('/settings', [SettingsController::class, 'index'])
+            ->name('settings.index');
+        Route::post('/settings/update', [SettingsController::class, 'update'])
+            ->name('settings.update');
 
         // Watermark Traceability (index accepts GET query params: q, date_from, date_to, document, user, institution)
         Route::get('/watermark', [WatermarkTraceabilityController::class, 'index'])
