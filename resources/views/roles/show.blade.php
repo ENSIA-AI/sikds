@@ -26,36 +26,32 @@
  
     <div class="flex flex-wrap items-center gap-3">
         @can('role.edit')
-            @unless($role->is_system_role)
-                <a
-                    href="{{ route('roles.show', ['role' => $role, 'edit' => 1]) }}"
-                    class="inline-flex h-11 items-center justify-center gap-2 rounded-[10px] border border-black/10 bg-white px-6 text-sm font-medium text-[#0A0A0A] transition hover:bg-black/[0.02] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1E3A8A]"
-                >
-                    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" class="size-5">
-                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
-                    Modifier
-                </a>
-            @endunless
+            <a
+                href="{{ route('roles.show', ['role' => $role, 'edit' => 1]) }}"
+                class="inline-flex h-11 items-center justify-center gap-2 rounded-[10px] border border-black/10 bg-white px-6 text-sm font-medium text-[#0A0A0A] transition hover:bg-black/[0.02] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1E3A8A]"
+            >
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" class="size-5">
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                Modifier
+            </a>
         @endcan
  
         @can('role.delete')
-            @unless($role->is_system_role)
-                <form action="{{ route('roles.destroy', $role) }}" method="POST" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce rôle ?');">
-                    @csrf
-                    @method('DELETE')
-                    <button
-                        type="submit"
-                        class="inline-flex h-11 items-center justify-center gap-2 rounded-[10px] border border-red-200 bg-red-50 px-6 text-sm font-medium text-red-700 transition hover:bg-red-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600"
-                    >
-                        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" class="size-5">
-                            <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                        </svg>
-                        Supprimer
-                    </button>
-                </form>
-            @endunless
+            <form action="{{ route('roles.destroy', $role) }}" method="POST" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce rôle ?');">
+                @csrf
+                @method('DELETE')
+                <button
+                    type="submit"
+                    class="inline-flex h-11 items-center justify-center gap-2 rounded-[10px] border border-red-200 bg-red-50 px-6 text-sm font-medium text-red-700 transition hover:bg-red-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600"
+                >
+                    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" class="size-5">
+                        <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    Supprimer
+                </button>
+            </form>
         @endcan
     </div>
 </div>
