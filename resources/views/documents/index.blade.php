@@ -306,7 +306,7 @@
                                             </button>
                                             @break
                                         @case('delete')
-                                            <button type="button" class="sikds-docs-action-btn sikds-docs-action-btn--danger" title="Supprimer" aria-label="Supprimer" @click="performAction(@js($doc['delete_url']), 'DELETE', 'Document supprimé.', 'Êtes-vous sûr ? Cette action est irréversible. Si vous confirmez, le fichier sera supprimé.')">
+                                            <button type="button" class="sikds-docs-action-btn sikds-docs-action-btn--danger" title="Supprimer" aria-label="Supprimer" @click="openDeleteModal(@js($doc))">
                                                 <i :class="loading ? 'fa-solid fa-spinner fa-spin' : 'fa-regular fa-trash-can'"></i>
                                             </button>
                                             @break
@@ -350,6 +350,40 @@
         </div>
     </div>
 
+    {{-- Confirmation modal: Delete (dashboard) --}}
+    <div x-show="modal === 'delete'" x-transition.opacity class="sikds-doc-modal-overlay" @click.self="modal = null" x-cloak>
+        <div class="sikds-doc-modal">
+            <button type="button" class="sikds-doc-modal-close" @click="modal = null" aria-label="Fermer">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+            <div class="sikds-doc-modal-head">
+                <div class="sikds-doc-modal-icon sikds-doc-modal-icon--delete">
+                    <i class="fa-regular fa-circle-exclamation"></i>
+                </div>
+                <div>
+                    <h3 class="sikds-doc-modal-title">Supprimer le Document</h3>
+                    <p class="sikds-doc-modal-subtitle">Action irréversible</p>
+                </div>
+            </div>
+
+            <p class="sikds-doc-modal-text">
+                Êtes-vous sûr de vouloir supprimer définitivement le document
+                "<strong x-text="pendingDeleteDoc?.title ?? ''"></strong>" ?
+            </p>
+
+            <div class="sikds-doc-modal-actions">
+                <button type="button" class="sikds-doc-modal-btn sikds-doc-modal-btn--cancel" @click="modal = null">
+                    Annuler
+                </button>
+                <button type="button" class="sikds-doc-modal-btn sikds-doc-modal-btn--delete" @click="confirmDelete()">
+                    <i :class="loading ? 'fa-solid fa-spinner fa-spin' : 'fa-regular fa-trash-can'"></i>
+                    Supprimer
+                </button>
+            </div>
+        </div>
+    </div>
+
     </div>
 
     <script>
@@ -358,6 +392,8 @@
                 filtersOpen: false,
                 previewOpen: false,
                 previewDoc: null,
+                modal: null,
+                pendingDeleteDoc: null,
                 loading: false,
                 banner: { message: '', type: 'info' },
                 init() {
@@ -368,6 +404,10 @@
                     }
                 },
                 handleEscape() {
+                    if (this.modal) {
+                        this.modal = null;
+                        return;
+                    }
                     if (this.previewOpen) {
                         this.closePreview();
                         return;
@@ -384,9 +424,16 @@
                     this.previewDoc = null;
                     document.documentElement.classList.remove('overflow-hidden');
                 },
-                async performAction(url, method, successMessage, confirmMessage = null) {
+                openDeleteModal(doc) {
+                    this.pendingDeleteDoc = doc;
+                    this.modal = 'delete';
+                },
+                async confirmDelete() {
+                    if (!this.pendingDeleteDoc?.delete_url) return;
+                    await this.performAction(this.pendingDeleteDoc.delete_url, 'DELETE', 'Document supprimé.');
+                },
+                async performAction(url, method, successMessage) {
                     if (this.loading) return;
-                    if (confirmMessage && !window.confirm(confirmMessage)) return;
 
                     this.loading = true;
                     this.banner = { message: '', type: 'info' };
@@ -412,6 +459,8 @@
                             throw new Error(payload.message || 'Une erreur est survenue.');
                         }
 
+                        this.modal = null;
+                        this.pendingDeleteDoc = null;
                         this.banner = { message: successMessage, type: 'success' };
                         window.location.reload();
                     } catch (error) {

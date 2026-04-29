@@ -39,11 +39,12 @@
         @endcan
  
         @can('role.delete')
-            <form action="{{ route('roles.destroy', $role) }}" method="POST" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce rôle ?');">
+            <form id="delete-role-form" action="{{ route('roles.destroy', $role) }}" method="POST">
                 @csrf
                 @method('DELETE')
                 <button
                     type="submit"
+                    id="open-delete-role-modal"
                     class="inline-flex h-11 items-center justify-center gap-2 rounded-[10px] border border-red-200 bg-red-50 px-6 text-sm font-medium text-red-700 transition hover:bg-red-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600"
                 >
                     <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" class="size-5">
@@ -227,4 +228,80 @@
     </div>
 </form>
 @endif 
+
+@can('role.delete')
+    <div id="delete-role-modal" class="sikds-doc-modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="delete-role-title">
+        <div class="sikds-doc-modal">
+            <button type="button" id="close-delete-role-modal" class="sikds-doc-modal-close" aria-label="Fermer">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+            <div class="sikds-doc-modal-head">
+                <div class="sikds-doc-modal-icon sikds-doc-modal-icon--delete">
+                    <i class="fa-regular fa-circle-exclamation"></i>
+                </div>
+                <div>
+                    <h3 id="delete-role-title" class="sikds-doc-modal-title">Supprimer le Rôle</h3>
+                    <p class="sikds-doc-modal-subtitle">Action irréversible</p>
+                </div>
+            </div>
+
+            <p class="sikds-doc-modal-text">
+                Êtes-vous sûr de vouloir supprimer définitivement le rôle
+                "<strong>{{ $role->name }}</strong>" ?
+            </p>
+
+            <div class="sikds-doc-modal-actions">
+                <button type="button" id="cancel-delete-role-modal" class="sikds-doc-modal-btn sikds-doc-modal-btn--cancel">
+                    Annuler
+                </button>
+                <button type="button" id="confirm-delete-role-modal" class="sikds-doc-modal-btn sikds-doc-modal-btn--delete">
+                    <i class="fa-regular fa-trash-can"></i>
+                    Supprimer
+                </button>
+            </div>
+        </div>
+    </div>
+@endcan
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const form = document.getElementById('delete-role-form');
+    const modal = document.getElementById('delete-role-modal');
+    const openBtn = document.getElementById('open-delete-role-modal');
+    const closeBtn = document.getElementById('close-delete-role-modal');
+    const cancelBtn = document.getElementById('cancel-delete-role-modal');
+    const confirmBtn = document.getElementById('confirm-delete-role-modal');
+
+    if (!form || !modal || !openBtn) return;
+
+    const openModal = () => {
+        modal.classList.remove('hidden');
+    };
+    const closeModal = () => {
+        modal.classList.add('hidden');
+    };
+
+    openBtn.addEventListener('click', function (event) {
+        event.preventDefault();
+        openModal();
+    });
+    closeBtn?.addEventListener('click', closeModal);
+    cancelBtn?.addEventListener('click', closeModal);
+    modal.addEventListener('click', function (event) {
+        if (event.target === modal) closeModal();
+    });
+    document.addEventListener('keydown', function (event) {
+        if (event.key === 'Escape' && !modal.classList.contains('hidden')) {
+            closeModal();
+        }
+    });
+    confirmBtn?.addEventListener('click', function () {
+        form.submit();
+    });
+});
+</script>
+@endpush
+
 @endsection
