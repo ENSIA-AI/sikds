@@ -7,13 +7,6 @@
             <i class="fa-solid fa-rotate-right"></i>
             Rafraîchir
         </a>
-        <form method="POST" action="{{ route('logout') }}">
-            @csrf
-            <button type="submit" class="px-4 py-2 text-sm font-semibold rounded-[10px] border border-red-200 bg-red-50 text-red-700 hover:bg-red-100 transition-colors flex items-center gap-2">
-                <i class="fa-solid fa-right-from-bracket"></i>
-                Déconnexion
-            </button>
-        </form>
     </div>
 
     @if (session('success'))

@@ -38,6 +38,11 @@
             'indexing.started' => 'Démarrage indexation',
             'indexing.completed' => 'Indexation terminée',
             'indexing.failed' => 'Échec indexation',
+            'DOCUMENT_INDEXING_STARTED' => 'Démarrage indexation',
+            'DOCUMENT_INDEXING_COMPLETED' => 'Indexation terminée',
+            'DOCUMENT_INDEXING_FAILED' => 'Échec indexation',
+            'QUEUE_JOB_FAILED' => 'Échec d\'un job de file d\'attente',
+            'QUEUE_LONG_WAIT_DETECTED' => 'Attente longue détectée dans la file',
             'notification.sent' => 'Notification envoyée',
             'notification.failed' => 'Échec notification',
         ];
