@@ -42,7 +42,7 @@
         <x-stat-card icon="/bell-blue.svg" value="{{ number_format($stats['total']) }}" label="Total" trend="{{ $stats['total'] }}" iconStyle="filter: brightness(0) saturate(100%) invert(23%) sepia(66%) saturate(1400%) hue-rotate(210deg) brightness(95%) contrast(95%);" />
         <x-stat-card icon="/upload-blue.svg" value="{{ number_format($stats['sent']) }}" label="Envoyés" trend="{{ $stats['sent'] }}" iconStyle="filter: brightness(0) saturate(100%) invert(23%) sepia(66%) saturate(1400%) hue-rotate(210deg) brightness(95%) contrast(95%);" />
         <x-stat-card icon="/danger.svg" value="{{ number_format($stats['failed']) }}" label="En échec" trend="{{ $stats['failed'] }}" iconStyle="filter: brightness(0) saturate(100%) invert(23%) sepia(66%) saturate(1400%) hue-rotate(210deg) brightness(95%) contrast(95%);" />
-        <x-stat-card icon="/time-blue.svg" value="{{ number_format($stats['pending']) }}" label="En attente" trend="{{ $stats['pending'] }}" iconStyle="filter: brightness(0) saturate(100%) invert(23%) sepia(66%) saturate(1400%) hue-rotate(210deg) brightness(95%) contrast(95%);" />
+        <x-stat-card icon="/time-dark-blue.svg" value="{{ number_format($stats['pending']) }}" label="En attente" trend="{{ $stats['pending'] }}" iconStyle="filter: brightness(0) saturate(100%) invert(23%) sepia(66%) saturate(1400%) hue-rotate(210deg) brightness(95%) contrast(95%);" />
     </div>
 
     <div class="bg-white rounded-[14px] border shadow-sm mb-5" style="border-color:rgba(0,0,0,.1);">

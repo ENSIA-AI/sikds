@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\DocumentsApiController;
 use App\Http\Controllers\Web\DownloadController;
 use App\Http\Controllers\Web\IndexingController;
 use App\Http\Controllers\Web\AuditController;
+use App\Http\Controllers\Web\NotificationInboxController;
 use App\Http\Controllers\Web\NotificationsController;
 use App\Http\Controllers\Web\SettingsController;
 use App\Http\Controllers\Web\RagController;
@@ -61,9 +62,19 @@ Route::middleware(['auth'])
         Route::get('/audits/export', [AuditController::class, 'export'])
             ->name('audits.export');
 
-        // Notifications
+        // Notifications (admin/system view)
         Route::get('/notifications', [NotificationsController::class, 'index'])
             ->name('notifications.index');
+
+        // Per-user notification inbox + header bell endpoints
+        Route::get('/notifications/inbox', [NotificationInboxController::class, 'index'])
+            ->name('notifications.inbox');
+        Route::get('/notifications/latest', [NotificationInboxController::class, 'latest'])
+            ->name('notifications.latest');
+        Route::post('/notifications/{notification}/read', [NotificationInboxController::class, 'read'])
+            ->name('notifications.read');
+        Route::post('/notifications/read-all', [NotificationInboxController::class, 'markAllRead'])
+            ->name('notifications.read-all');
 
         // Settings
         Route::get('/settings', [SettingsController::class, 'index'])
