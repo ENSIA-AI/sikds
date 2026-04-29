@@ -22,7 +22,8 @@ class IndexingController extends Controller
     {
         /** @var \App\Domain\Users\Models\User $user */
         $user = Auth::user();
-        abort_if(! $user->can('audit.view'), 403, 'Accès refusé. Permission audit.view requise.');
+        $isSuperAdmin = $user->hasRole('Super Administrateur');
+        abort_if(! $isSuperAdmin && ! $user->can('indexing.manage'), 403, 'Accès refusé. Permission indexing.manage requise.');
 
         $documents = Document::query()
             ->select([
@@ -48,7 +49,8 @@ class IndexingController extends Controller
     {
         /** @var \App\Domain\Users\Models\User $user */
         $user = Auth::user();
-        abort_if(! $user->can('audit.view'), 403, 'Accès refusé. Permission audit.view requise.');
+        $isSuperAdmin = $user->hasRole('Super Administrateur');
+        abort_if(! $isSuperAdmin && ! $user->can('indexing.manage'), 403, 'Accès refusé. Permission indexing.manage requise.');
 
         if ($document->indexing_status !== 'failed') {
             return back()->with('error', 'Seuls les documents en échec peuvent être relancés.');

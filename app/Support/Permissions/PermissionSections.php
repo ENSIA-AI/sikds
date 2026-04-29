@@ -12,6 +12,7 @@ final class PermissionSections
     /** Display order in the modal */
     public const ORDER = [
         'documents',
+        'indexing',
         'utilisateurs',
         'roles',
         'tags',
@@ -22,6 +23,7 @@ final class PermissionSections
     /** Section key => French title */
     public const LABELS = [
         'documents' => 'Documents',
+        'indexing' => 'Indexation',
         'utilisateurs' => 'Utilisateurs',
         'roles' => 'Roles',
         'tags' => 'Tags',
@@ -39,6 +41,9 @@ final class PermissionSections
         }
         if (str_starts_with($n, 'user.') || str_starts_with($n, 'institution.')) {
             return 'utilisateurs';
+        }
+        if (str_starts_with($n, 'indexing.')) {
+            return 'indexing';
         }
         if (str_starts_with($n, 'role.')) {
             return 'roles';

@@ -41,12 +41,38 @@ final class CreateUserAction
         }
 
         // Validate custom permissions if provided
-        $customPermissions = [];
-        if (!empty($data['permission_ids'])) {
+        $customPermissions = collect();
+        if (! empty($data['permission_ids'])) {
             $customPermissions = Permission::whereIn('id', $data['permission_ids'])->get();
             if ($customPermissions->count() !== count($data['permission_ids'])) {
                 throw new \Exception('Une ou plusieurs permissions sélectionnées sont invalides.');
             }
+        }
+
+        // Permission dependencies (auto-required)
+        // Example: document.create implies tag.assign.
+        $rolePermissionCodes = Role::query()
+            ->whereIn('id', $data['role_ids'])
+            ->with('permissions:id,code')
+            ->get()
+            ->pluck('permissions')
+            ->flatten()
+            ->pluck('code')
+            ->filter()
+            ->map(fn ($c) => (string) $c)
+            ->all();
+        $effectiveCodes = array_values(array_unique([
+            ...$rolePermissionCodes,
+            ...$customPermissions->pluck('code')->filter()->map(fn ($c) => (string) $c)->all(),
+        ]));
+        $requiredCodes = [];
+        if (in_array('document.create', $effectiveCodes, true)) {
+            $requiredCodes[] = 'tag.assign';
+        }
+        $missingCodes = array_values(array_diff(array_values(array_unique($requiredCodes)), $effectiveCodes));
+        if ($missingCodes !== []) {
+            $extra = Permission::query()->whereIn('code', $missingCodes)->get();
+            $customPermissions = $customPermissions->concat($extra)->unique('id')->values();
         }
 
         $user = DB::transaction(function () use ($data, $createdById, $customPermissions) {
@@ -79,7 +105,7 @@ final class CreateUserAction
             $user->roles()->sync($syncData);
 
             // Assign custom permissions (direct, not via roles)
-            if (!empty($customPermissions)) {
+            if ($customPermissions->isNotEmpty()) {
                 $user->syncPermissions($customPermissions);
             }
 

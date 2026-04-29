@@ -78,6 +78,8 @@ final class UserController extends Controller
                 });
             });
 
+        $statsBase = clone $usersQuery;
+
         $nameDirection = strtolower((string) $request->query('direction', 'asc')) === 'desc' ? 'desc' : 'asc';
         if ($request->query('sort') === 'name') {
             $usersQuery->orderBy('full_name', $nameDirection);
@@ -112,9 +114,10 @@ final class UserController extends Controller
             ->groupBy('category');
 
         $stats = [
-            'total_users' => User::query()->count(),
-            'active_users' => User::query()->where('is_active', true)->count(),
-            'inactive_users' => User::query()->where('is_active', false)->count(),
+            // Keep stats consistent with current filters/search (same dataset as table, without pagination).
+            'total_users' => (clone $statsBase)->count(),
+            'active_users' => (clone $statsBase)->where('is_active', true)->count(),
+            'inactive_users' => (clone $statsBase)->where('is_active', false)->count(),
         ];
 
         $userRowPayloads = collect($users->items())->mapWithKeys(
@@ -354,16 +357,31 @@ final class UserController extends Controller
     /**
      * Deactivate a user.
      */
-    public function deactivate(User $user): RedirectResponse
+    public function deactivate(Request $request, User $user): RedirectResponse|JsonResponse
     {
         $this->authorize('user.deactivate');
 
         try {
             $this->deactivateUserAction->execute($user, auth()->id());
 
+            if ($request->wantsJson()) {
+                $fresh = $user->fresh(['institution', 'roles']);
+
+                return response()->json([
+                    'message' => "L'utilisateur « {$fresh->full_name} » a été désactivé.",
+                    'user' => $this->userPayloadForTable($fresh),
+                ]);
+            }
+
             return back()->with('success', "L'utilisateur « {$user->full_name} » a été désactivé.");
 
         } catch (\Exception $e) {
+            if ($request->wantsJson()) {
+                return response()->json([
+                    'message' => $e->getMessage(),
+                ], 422);
+            }
+
             return back()->with('error', "Erreur : {$e->getMessage()}");
         }
     }
@@ -371,13 +389,30 @@ final class UserController extends Controller
     /**
      * Reactivate a user.
      */
-    public function activate(User $user): RedirectResponse
+    public function activate(Request $request, User $user): RedirectResponse|JsonResponse
     {
-        $this->authorize('user.manage');
+        $this->authorize('user.deactivate');
 
-        $this->activateUserAction->execute($user);
+        try {
+            $fresh = $this->activateUserAction->execute($user);
 
-        return back()->with('success', "L'utilisateur « {$user->full_name} » a été réactivé.");
+            if ($request->wantsJson()) {
+                return response()->json([
+                    'message' => "L'utilisateur « {$fresh->full_name} » a été réactivé.",
+                    'user' => $this->userPayloadForTable($fresh),
+                ]);
+            }
+
+            return back()->with('success', "L'utilisateur « {$user->full_name} » a été réactivé.");
+        } catch (\Exception $e) {
+            if ($request->wantsJson()) {
+                return response()->json([
+                    'message' => $e->getMessage(),
+                ], 422);
+            }
+
+            return back()->with('error', "Erreur : {$e->getMessage()}");
+        }
     }
 
     /**

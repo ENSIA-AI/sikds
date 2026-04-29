@@ -12,7 +12,11 @@
 
 @section('content')
 
-<div class="mx-auto w-full max-w-full px-4 pb-10 sm:px-6" data-users-api-base="{{ url('/users') }}">
+<div
+    class="mx-auto w-full max-w-full px-4 pb-10 sm:px-6"
+    data-users-api-base="{{ url('/users') }}"
+    data-users-can-deactivate="{{ auth()->user()?->can('user.deactivate') ? 1 : 0 }}"
+>
     <script type="application/json" id="users-roles-bootstrap">
         @json($rolesForUi)
     </script>
@@ -110,7 +114,7 @@
                 <ul class="flex max-h-[min(60vh,220px)] flex-col gap-1 overflow-y-auto" role="listbox">
                     <li>
                         
-                            <a    href="{{ route('utilisateurs', array_filter(['search' => $filters['search'] ?? null])) }}"
+                            <a    href="{{ route('users.index', array_filter(['search' => $filters['search'] ?? null])) }}"
                             class="flex h-9 w-full items-center rounded-[10px] px-3 font-inter text-sm text-[#0A0A0A] hover:bg-[#F1F5F9] {{ empty($filters['role_id']) ? 'bg-[#EFF6FF] font-medium text-[#1C398E]' : '' }}"
                         >
                             Tous les rôles
@@ -119,7 +123,7 @@
                     @foreach ($roles as $role)
                         <li>
                             
-                            <a    href="{{ route('utilisateurs', array_filter(['search' => $filters['search'] ?? null, 'role_id' => $role->id])) }}"
+                            <a    href="{{ route('users.index', array_filter(['search' => $filters['search'] ?? null, 'role_id' => $role->id])) }}"
                                 class="flex h-9 w-full items-center rounded-[10px] px-3 font-inter text-sm text-[#0A0A0A] hover:bg-[#F1F5F9] {{ (int) ($filters['role_id'] ?? 0) === (int) $role->id ? 'bg-[#EFF6FF] font-medium text-[#1C398E]' : '' }}"
                             >
                                 {{ $role->name }}
@@ -133,7 +137,7 @@
         {{-- Alphabetic Sort Button --}}
         <div class="relative shrink-0">
             
-                <a    href="{{ route('utilisateurs', array_filter([
+                <a    href="{{ route('users.index', array_filter([
                     'search' => $filters['search'] ?? null,
                     'role_id' => $filters['role_id'] ?? null,
                     'sort' => 'name',
@@ -218,22 +222,55 @@
                                     @endif
                                 </td>
                                 <td class="px-4 align-middle text-right">
-                                    @can('user.manage')
-                                        @can('user.assign.permissions')
-                                            <button
-                                                type="button"
-                                                data-open-edit-user
-                                                class="inline-flex size-10 items-center justify-center rounded-[10px] text-[#0A0A0A] transition hover:bg-[#F4F4F5] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1E3A8A]"
-                                                aria-label="Modifier le rôle"
-                                            >
-                                                <svg class="size-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                                                    <circle cx="6" cy="12" r="1.6" />
-                                                    <circle cx="12" cy="12" r="1.6" />
-                                                    <circle cx="18" cy="12" r="1.6" />
-                                                </svg>
-                                            </button>
-                                        @endcan
-                                    @endcan
+                                    <div class="relative inline-flex items-center justify-end">
+                                        <button
+                                            type="button"
+                                            data-user-menu-toggle
+                                            class="inline-flex size-10 items-center justify-center rounded-[10px] text-[#0A0A0A] transition hover:bg-[#F4F4F5] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1E3A8A]"
+                                            aria-haspopup="menu"
+                                            aria-expanded="false"
+                                            aria-label="Actions utilisateur"
+                                        >
+                                            <svg class="size-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                                                <circle cx="6" cy="12" r="1.6" />
+                                                <circle cx="12" cy="12" r="1.6" />
+                                                <circle cx="18" cy="12" r="1.6" />
+                                            </svg>
+                                        </button>
+
+                                        <div
+                                            data-user-menu
+                                            hidden
+                                            class="absolute right-0 top-[46px] z-50 w-[202px] overflow-hidden rounded-[14px] border border-black/10 bg-white p-[0.67px] shadow-[0px_8px_10px_-6px_rgba(0,0,0,0.10),0px_20px_25px_-5px_rgba(0,0,0,0.10)]"
+                                            role="menu"
+                                        >
+                                            <div class="flex flex-col">
+                                                @can('user.manage')
+                                                    @can('user.assign.permissions')
+                                                        <button
+                                                            type="button"
+                                                            data-open-edit-user
+                                                            class="flex w-full items-center gap-3 rounded-[12px] px-3 py-2.5 text-left font-inter text-sm font-medium text-[#0A0A0A] transition hover:bg-black/[0.03]"
+                                                            role="menuitem"
+                                                        >
+                                                            Modifier le rôle
+                                                        </button>
+                                                    @endcan
+                                                @endcan
+
+                                                @can('user.deactivate')
+                                                    <button
+                                                        type="button"
+                                                        data-user-toggle-active
+                                                        class="flex w-full items-center gap-3 rounded-[12px] px-3 py-2.5 text-left font-inter text-sm font-medium {{ $user->is_active ? 'text-[#B45309]' : 'text-[#15803D]' }} transition hover:bg-black/[0.03]"
+                                                        role="menuitem"
+                                                    >
+                                                        {{ $user->is_active ? 'Désactiver' : 'Activer' }}
+                                                    </button>
+                                                @endcan
+                                            </div>
+                                        </div>
+                                    </div>
                                 </td>
                             </tr>
                         @empty

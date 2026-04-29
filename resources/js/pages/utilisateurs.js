@@ -180,14 +180,22 @@ function buildUserRow(payload) {
         : `<p class="font-inter text-sm font-medium text-[#B91C1C]">Inactif</p><p class="font-inter text-xs text-[#717182]">dernière activité ${escapeHtml(tsLabel)}</p>`;
     const roleName = payload.roles?.[0]?.name ?? '—';
     const instName = payload.institution?.name ?? '—';
+    const root = document.querySelector('[data-users-api-base]');
+    const canDeactivate = root?.dataset?.usersCanDeactivate === '1';
     const hasEdit = document.querySelector('[data-open-edit-user]') !== null;
-    const actionsCell = hasEdit
-        ? `<td class="px-4 align-middle text-right">
-            <button type="button" data-open-edit-user class="inline-flex size-10 items-center justify-center rounded-[10px] text-[#0A0A0A] transition hover:bg-[#F4F4F5] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1E3A8A]" aria-label="Modifier le rôle">
-              <svg class="size-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="6" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="18" cy="12" r="1.6"/></svg>
-            </button>
-          </td>`
-        : `<td class="px-4 align-middle text-right"></td>`;
+    const menuToggle = `<button type="button" data-user-menu-toggle class="inline-flex size-10 items-center justify-center rounded-[10px] text-[#0A0A0A] transition hover:bg-[#F4F4F5] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1E3A8A]" aria-haspopup="menu" aria-expanded="false" aria-label="Actions utilisateur"><svg class="size-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="6" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="18" cy="12" r="1.6"/></svg></button>`;
+
+    const editItem = hasEdit
+        ? `<button type="button" data-open-edit-user class="flex w-full items-center gap-3 rounded-[12px] px-3 py-2.5 text-left font-inter text-sm font-medium text-[#0A0A0A] transition hover:bg-black/[0.03]" role="menuitem">Assigner/retirer rôles</button>`
+        : '';
+
+    const toggleItem = canDeactivate
+        ? `<button type="button" data-user-toggle-active class="flex w-full items-center gap-3 rounded-[12px] px-3 py-2.5 text-left font-inter text-sm font-medium ${active ? 'text-[#B45309]' : 'text-[#15803D]'} transition hover:bg-black/[0.03]" role="menuitem">${active ? 'Désactiver' : 'Activer'}</button>`
+        : '';
+
+    const menu = `<div data-user-menu hidden class="absolute right-0 top-[46px] z-50 w-[202px] overflow-hidden rounded-[14px] border border-black/10 bg-white p-[0.67px] shadow-[0px_8px_10px_-6px_rgba(0,0,0,0.10),0px_20px_25px_-5px_rgba(0,0,0,0.10)]" role="menu"><div class="flex flex-col">${editItem}${toggleItem}</div></div>`;
+
+    const actionsCell = `<td class="px-4 align-middle text-right"><div class="relative inline-flex items-center justify-end">${menuToggle}${menu}</div></td>`;
 
     const payloadAttr = JSON.stringify(payload).replace(/"/g, '&quot;');
 
@@ -209,6 +217,105 @@ function buildUserRow(payload) {
       <td class="px-4 align-middle">${statusPrimary}</td>
       ${actionsCell}
     </tr>`;
+}
+
+function closeAllUserMenus(exceptEl = null) {
+    document.querySelectorAll('[data-user-menu]').forEach((menu) => {
+        if (exceptEl && menu === exceptEl) {
+            return;
+        }
+        menu.hidden = true;
+        const wrap = menu.closest('td, [data-user-row], .relative');
+        const btn = wrap?.querySelector?.('[data-user-menu-toggle]');
+        if (btn) {
+            btn.setAttribute('aria-expanded', 'false');
+        }
+    });
+}
+
+function wireUserActionMenus() {
+    document.addEventListener('click', (e) => {
+        const toggle = e.target.closest('[data-user-menu-toggle]');
+        if (toggle) {
+            e.preventDefault();
+            e.stopPropagation();
+            const wrap = toggle.closest('td') ?? toggle.parentElement;
+            const menu = wrap?.querySelector?.('[data-user-menu]');
+            if (!menu) {
+                return;
+            }
+            const willOpen = menu.hidden;
+            closeAllUserMenus(menu);
+            menu.hidden = !willOpen;
+            toggle.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
+            return;
+        }
+
+        // Click inside menu shouldn't close before actions run.
+        if (e.target.closest('[data-user-menu]')) {
+            return;
+        }
+
+        closeAllUserMenus();
+    });
+}
+
+async function toggleUserActiveFromRow(tr) {
+    let payload;
+    try {
+        payload = JSON.parse(tr.dataset.userPayload ?? '{}');
+    } catch {
+        return;
+    }
+    const apiBase = readApiBase();
+    const willDeactivate = !!payload.is_active;
+    const endpoint = willDeactivate ? 'deactivate' : 'activate';
+
+    try {
+        const res = await fetch(`${apiBase}/${payload.id}/${endpoint}`, {
+            method: 'POST',
+            headers: {
+                Accept: 'application/json',
+                'X-CSRF-TOKEN': readCsrfToken(),
+                'X-Requested-With': 'XMLHttpRequest',
+            },
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+            showToast(parseJsonErrors(data), 'error');
+            return;
+        }
+
+        showToast(data.message ?? 'Statut mis à jour.');
+        const tbody = document.querySelector('[data-users-tbody]');
+        const beforeActive = !!payload.is_active;
+        replaceOrAppendUserRow(tbody, data.user);
+
+        // Update stats
+        const afterActive = !!data.user?.is_active;
+        if (beforeActive !== afterActive) {
+            bumpStat(beforeActive ? 'active' : 'inactive', -1);
+            bumpStat(afterActive ? 'active' : 'inactive', 1);
+        }
+    } catch {
+        showToast('Erreur réseau.', 'error');
+    }
+}
+
+function wireUserActiveToggle() {
+    document.addEventListener('click', async (e) => {
+        const btn = e.target.closest('[data-user-toggle-active]');
+        if (!btn) {
+            return;
+        }
+        e.preventDefault();
+        const tr = btn.closest('[data-user-row]');
+        if (!tr) {
+            return;
+        }
+        closeAllUserMenus();
+        await toggleUserActiveFromRow(tr);
+    });
 }
 
 function replaceOrAppendUserRow(tbody, payload) {
@@ -524,4 +631,6 @@ document.addEventListener('DOMContentLoaded', () => {
     wireFilterPopup();
     wireCreateUserModal(rolesData);
     wireEditUserModal(rolesData);
+    wireUserActionMenus();
+    wireUserActiveToggle();
 });

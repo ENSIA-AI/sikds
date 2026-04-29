@@ -32,6 +32,21 @@ final class UpdateRoleAction
         $previousPermissionIds = $role->permissions()->pluck('id')->map(fn ($id): int => (int) $id)->all();
 
         $normalizedPermissionIds = array_values(array_unique(array_map('intval', $data['permission_ids'] ?? [])));
+        if ($normalizedPermissionIds !== []) {
+            $selectedCodes = Permission::query()
+                ->whereIn('id', $normalizedPermissionIds)
+                ->pluck('code')
+                ->filter()
+                ->map(fn ($c) => (string) $c)
+                ->all();
+            if (in_array('document.create', $selectedCodes, true) && ! in_array('tag.assign', $selectedCodes, true)) {
+                $tagAssignId = Permission::query()->where('code', 'tag.assign')->value('id');
+                if ($tagAssignId) {
+                    $normalizedPermissionIds[] = (int) $tagAssignId;
+                    $normalizedPermissionIds = array_values(array_unique(array_map('intval', $normalizedPermissionIds)));
+                }
+            }
+        }
 
         $fresh = DB::transaction(function () use ($role, $data, $normalizedPermissionIds) {
             $role->update([

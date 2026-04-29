@@ -50,9 +50,11 @@
                 @endforelse
             </div>
             <x-slot:footer>
-                <a href="{{ route('indexing.index') }}" class="inline-flex items-center hover:underline">
-                    Voir toutes les alertes →
-                </a>
+                @if (auth()->user()?->can('indexing.manage') || auth()->user()?->hasRole('Super Administrateur'))
+                    <a href="{{ route('indexing.index') }}" class="inline-flex items-center hover:underline">
+                        Voir toutes les alertes →
+                    </a>
+                @endif
             </x-slot:footer>
         </x-dashboard-panel>
 
