@@ -100,7 +100,7 @@ class Document extends Model
 
     public function scopeVisibleTo(Builder $query, User $user, bool $includeUploader = true): Builder
     {
-        if ($user->can('document.view.all') && $user->hasRole('Super Administrateur')) {
+        if ($user->can('document.view.all')) {
             return $query;
         }
 

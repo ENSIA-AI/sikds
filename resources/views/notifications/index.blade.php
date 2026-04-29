@@ -12,7 +12,7 @@
             'pending' => 'En attente',
             'failed' => 'Échec',
         ];
-        $isSuperAdmin = auth()->user()?->hasRole('Super Administrateur') ?? false;
+        $canViewTechnicalDetails = auth()->user()?->can('audit.view') ?? false;
         $humanEmailError = static function (?string $raw): ?string {
             if (! is_string($raw) || trim($raw) === '') {
                 return null;
@@ -155,7 +155,7 @@
                                             </div>
                                         @endif
 
-                                        @if ($isSuperAdmin && $rawError)
+                                        @if ($canViewTechnicalDetails && $rawError)
                                             <details class="mt-2">
                                                 <summary class="cursor-pointer text-xs font-medium" style="color:var(--sikds-primary)">Détails techniques</summary>
                                                 <pre class="mt-2 text-xs bg-gray-50 border border-black/10 rounded-[8px] p-2 overflow-auto max-h-28">{{ $rawError }}</pre>

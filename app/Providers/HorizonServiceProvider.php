@@ -16,8 +16,7 @@ class HorizonServiceProvider extends HorizonApplicationServiceProvider
                 return false;
             }
 
-            return $user->can('audit.view')
-                || $user->hasRole('Super Administrateur');
+            return $user->can('audit.view');
         });
     }
 }

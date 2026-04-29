@@ -3,6 +3,7 @@
 use App\Domain\Users\Exceptions\SsoAuthenticationException;
 use App\Domain\Users\Services\SsoService;
 use App\Http\Controllers\Auth\LocalLoginController;
+use App\Domain\Audit\Models\AuditLog;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Session;
@@ -33,14 +34,63 @@ Route::get('/auth/redirect', function (SsoService $ssoService) {
 
 Route::get('/callback', function (SsoService $ssoService) {
     try {
-        $ssoService->handleCallback(request());
+        $user = $ssoService->handleCallback(request());
+
+        AuditLog::query()->create([
+            'event_type' => 'auth.login.success',
+            'user_id' => $user->id,
+            'user_email' => $user->email,
+            'resource_type' => 'user',
+            'resource_id' => $user->id,
+            'metadata' => [
+                'auth_type' => 'sso',
+            ],
+            'result' => 'success',
+            'ip_address' => request()->ip(),
+            'user_agent' => request()->userAgent(),
+            'created_at' => now(),
+        ]);
 
         return redirect('/dashboard');
     } catch (SsoAuthenticationException $e) {
+        AuditLog::query()->create([
+            'event_type' => 'auth.login.failed',
+            'user_id' => null,
+            'user_email' => null,
+            'resource_type' => 'user',
+            'resource_id' => null,
+            'metadata' => [
+                'auth_type' => 'sso',
+                'reason' => $e->getMessage(),
+                'exception' => class_basename($e),
+            ],
+            'result' => 'failed',
+            'ip_address' => request()->ip(),
+            'user_agent' => request()->userAgent(),
+            'created_at' => now(),
+        ]);
+
         report($e);
 
         return redirect()->route('login')->with('error', 'SSO login failed. Please try again or contact support.');
     } catch (\Throwable $e) {
+        AuditLog::query()->create([
+            'event_type' => 'auth.login.failed',
+            'user_id' => null,
+            'user_email' => null,
+            'resource_type' => 'user',
+            'resource_id' => null,
+            'metadata' => [
+                'auth_type' => 'sso',
+                'reason' => 'unexpected_error',
+                'exception' => class_basename($e),
+            ],
+            'result' => 'failed',
+            'ip_address' => request()->ip(),
+            'user_agent' => request()->userAgent(),
+            'created_at' => now(),
+        ]);
+
         report($e);
 
         return redirect()->route('login')->with('error', 'Unexpected authentication error. Please try again.');

@@ -28,6 +28,10 @@ class AuthServiceProvider extends ServiceProvider
         // Define gates for all permissions
         // This allows using: Gate::allows('role.create')
         Gate::before(function (User $user, string $ability) {
+            if ($user->hasRole('Super Administrateur')) {
+                return true;
+            }
+
             // Check if user has the permission
             return $user->hasPermissionTo($ability) ? true : null;
         });

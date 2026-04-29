@@ -73,7 +73,7 @@
             'archived' => 'Archivé',
             'soft_deleted' => 'Supprimé',
         ];
-        $isSuperAdmin = auth()->user()?->hasRole('Super Administrateur') ?? false;
+        $canViewAuditTechnicalDetails = auth()->user()?->can('audit.view') ?? false;
         $contextSummary = static function (string $event, array $meta) use ($statusLabels, $eventTypeLabels, $fallbackEventLabel): array {
             $lines = [];
 
@@ -277,7 +277,7 @@
                                             <li>Appareil: {{ $log->user_agent ? 'Navigateur web' : 'Système' }}</li>
                                         </ul>
 
-                                        @if ($isSuperAdmin)
+                                        @if ($canViewAuditTechnicalDetails)
                                             <details class="mt-2">
                                                 <summary class="cursor-pointer text-xs font-medium" style="color:var(--sikds-primary)">Voir JSON</summary>
                                                 <pre class="mt-2 text-xs bg-gray-50 border border-black/10 rounded-[8px] p-2 overflow-auto max-h-28">{{ json_encode($meta, JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE) }}</pre>

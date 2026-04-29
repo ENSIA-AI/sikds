@@ -9,17 +9,9 @@ use Symfony\Component\HttpFoundation\Response;
 
 class DocumentApiAuthorizationService
 {
-    public function isSuperAdmin(User $user): bool
-    {
-        return $user->hasRole('Super Administrateur');
-    }
-
-    /**
-     * document.view.all is reserved for Super-Admin in runtime checks.
-     */
     public function canUseViewAll(User $user): bool
     {
-        return $user->can('document.view.all') && $this->isSuperAdmin($user);
+        return $user->can('document.view.all');
     }
 
     public function assertCanList(User $user): void
@@ -40,7 +32,7 @@ class DocumentApiAuthorizationService
         if (! $this->canUseViewAll($user)) {
             abort(
                 Response::HTTP_FORBIDDEN,
-                'Prévisualisation réservée au Super-Admin. Téléchargez le document pour consultation.'
+                'Permission document.view.all requise pour la prévisualisation.'
             );
         }
     }
@@ -53,9 +45,6 @@ class DocumentApiAuthorizationService
     public function assertCanRestore(User $user): void
     {
         $this->assertPermission($user, 'document.restore');
-        if (! $this->isSuperAdmin($user)) {
-            abort(Response::HTTP_FORBIDDEN, 'Seul le Super-Admin peut restaurer un document.');
-        }
     }
 }
 

@@ -106,7 +106,7 @@ class DocumentsController
     {
         /** @var User $user */
         $user = Auth::user();
-        abort_if(! $this->canPreview($user), 403, 'Prévisualisation réservée au Super-Admin. Téléchargez le document pour consultation.');
+        abort_if(! $this->canPreview($user), 403, 'Permission document.view.all requise pour la prévisualisation.');
 
         $resolved = $this->resolveDocument($document);
 
@@ -116,7 +116,7 @@ class DocumentsController
             'canEdit' => $user->can('document.edit'),
             'canDelete' => $user->can('document.delete'),
             'canPublish' => $user->can('document.publish'),
-            'canRestore' => $user->can('document.restore') && $user->hasRole('Super Administrateur'),
+            'canRestore' => $user->can('document.restore'),
         ]);
     }
 
@@ -188,7 +188,7 @@ class DocumentsController
             $actions[] = 'archive';
         }
         if ($document->status === 'soft_deleted') {
-            if ($user->can('document.restore') && $user->hasRole('Super Administrateur')) {
+            if ($user->can('document.restore')) {
                 $actions[] = 'restore';
             }
         } elseif ($user->can('document.delete')) {
@@ -487,7 +487,7 @@ class DocumentsController
 
     private function canPreview(User $user): bool
     {
-        return $user->can('document.view.all') && $user->hasRole('Super Administrateur');
+        return $user->can('document.view.all');
     }
 
     private function excerptDescription(?string $html): string

@@ -306,7 +306,7 @@
                                             </button>
                                             @break
                                         @case('delete')
-                                            <button type="button" class="sikds-docs-action-btn sikds-docs-action-btn--danger" title="Supprimer" aria-label="Supprimer" @click="performAction(@js($doc['delete_url']), 'DELETE', 'Document supprimé.')">
+                                            <button type="button" class="sikds-docs-action-btn sikds-docs-action-btn--danger" title="Supprimer" aria-label="Supprimer" @click="performAction(@js($doc['delete_url']), 'DELETE', 'Document supprimé.', 'Êtes-vous sûr ? Cette action est irréversible. Si vous confirmez, le fichier sera supprimé.')">
                                                 <i :class="loading ? 'fa-solid fa-spinner fa-spin' : 'fa-regular fa-trash-can'"></i>
                                             </button>
                                             @break
@@ -384,8 +384,9 @@
                     this.previewDoc = null;
                     document.documentElement.classList.remove('overflow-hidden');
                 },
-                async performAction(url, method, successMessage) {
+                async performAction(url, method, successMessage, confirmMessage = null) {
                     if (this.loading) return;
+                    if (confirmMessage && !window.confirm(confirmMessage)) return;
 
                     this.loading = true;
                     this.banner = { message: '', type: 'info' };

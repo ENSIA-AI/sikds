@@ -12,7 +12,8 @@ use Illuminate\Support\Str;
 
 /**
  * Update the details of an existing role.
- * - Block modification of system roles
+ * - Keep system role identity immutable (name/slug/description)
+ *   while still allowing permission updates
  * - Sync permissions (replaces old set with new)
  */
 final class UpdateRoleAction
@@ -23,10 +24,6 @@ final class UpdateRoleAction
 
     public function execute(Role $role, array $data): Role
     {
-        if ($role->is_system_role) {
-            throw new \Exception('Les rôles système ne peuvent pas être modifiés.');
-        }
-
         $beforeName        = $role->name;
         $beforeDescription = $role->description;
         $previousPermissionIds = $role->permissions()->pluck('id')->map(fn ($id): int => (int) $id)->all();
@@ -49,13 +46,15 @@ final class UpdateRoleAction
         }
 
         $fresh = DB::transaction(function () use ($role, $data, $normalizedPermissionIds) {
-            $role->update([
-                'name' => $data['name'],
-                'slug' => $role->name !== $data['name']
-                    ? Str::slug($data['name'])
-                    : $role->slug,
-                'description' => $data['description'] ?? null,
-            ]);
+            if (! $role->is_system_role) {
+                $role->update([
+                    'name' => $data['name'],
+                    'slug' => $role->name !== $data['name']
+                        ? Str::slug($data['name'])
+                        : $role->slug,
+                    'description' => $data['description'] ?? null,
+                ]);
+            }
 
             $role->permissions()->sync($normalizedPermissionIds);
 

@@ -50,7 +50,7 @@
                 @endforelse
             </div>
             <x-slot:footer>
-                @if (auth()->user()?->can('indexing.manage') || auth()->user()?->hasRole('Super Administrateur'))
+                @if (auth()->user()?->can('indexing.manage'))
                     <a href="{{ route('indexing.index') }}" class="inline-flex items-center hover:underline">
                         Voir toutes les alertes →
                     </a>
