@@ -27,6 +27,7 @@ final class PermissionController extends Controller
             'Documents',
             'Distribution',
             'Tags',
+            'Indexation',
             'Utilisateurs',
             'Roles',
             'Institutions',
@@ -47,6 +48,7 @@ final class PermissionController extends Controller
                 'documents', 'document' => 'Documents',
                 'distribution' => 'Distribution',
                 'tags', 'tag' => 'Tags',
+                'indexation', 'indexing' => 'Indexation',
                 'utilisateurs', 'utilisateur', 'users', 'user' => 'Utilisateurs',
                 'roles', 'role', 'roles permissions', 'roles & permissions', 'role permissions', 'roles and permissions' => 'Roles',
                 'institutions', 'institution' => 'Institutions',
@@ -69,6 +71,9 @@ final class PermissionController extends Controller
             }
             if (str_starts_with($v, 'tag.')) {
                 return 'Tags';
+            }
+            if (str_starts_with($v, 'indexing.')) {
+                return 'Indexation';
             }
             if (str_starts_with($v, 'user.')) {
                 return 'Utilisateurs';

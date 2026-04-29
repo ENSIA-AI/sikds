@@ -31,14 +31,16 @@ final class SyncUserPermissionsAction
         }
 
         // Validate roles exist
-        $roles = Role::whereIn('id', $data['role_ids'])->get();
+        $roles = Role::whereIn('id', $data['role_ids'])
+            ->with('permissions:id,code')
+            ->get();
         if ($roles->count() !== count($data['role_ids'])) {
             throw new \Exception('Un ou plusieurs rôles sélectionnés sont invalides.');
         }
 
         // Validate permissions exist (if provided)
-        $customPermissions = [];
-        if (!empty($data['permission_ids'])) {
+        $customPermissions = collect();
+        if (! empty($data['permission_ids'])) {
             $customPermissions = Permission::whereIn('id', $data['permission_ids'])->get();
             if ($customPermissions->count() !== count($data['permission_ids'])) {
                 throw new \Exception('Une ou plusieurs permissions sélectionnées sont invalides.');
@@ -50,6 +52,33 @@ final class SyncUserPermissionsAction
 
         $normalizedRoleIds = array_values(array_unique(array_map('intval', $data['role_ids'])));
         $normalizedPermissionIds = array_values(array_unique(array_map('intval', $data['permission_ids'] ?? [])));
+
+        // Permission dependencies (auto-required)
+        // Example: document.create implies tag.assign.
+        $rolePermissionCodes = $roles
+            ->pluck('permissions')
+            ->flatten()
+            ->pluck('code')
+            ->filter()
+            ->map(fn ($c) => (string) $c)
+            ->all();
+        $effectiveCodes = array_values(array_unique([
+            ...$rolePermissionCodes,
+            ...$customPermissions->pluck('code')->filter()->map(fn ($c) => (string) $c)->all(),
+        ]));
+        $requiredCodes = [];
+        if (in_array('document.create', $effectiveCodes, true)) {
+            $requiredCodes[] = 'tag.assign';
+        }
+        $requiredCodes = array_values(array_unique($requiredCodes));
+        if ($requiredCodes !== []) {
+            $missingCodes = array_values(array_diff($requiredCodes, $effectiveCodes));
+            if ($missingCodes !== []) {
+                $extra = Permission::query()->whereIn('code', $missingCodes)->get();
+                $customPermissions = $customPermissions->concat($extra)->unique('id')->values();
+                $normalizedPermissionIds = $customPermissions->pluck('id')->map(fn ($id): int => (int) $id)->values()->all();
+            }
+        }
 
         $fresh = DB::transaction(function () use ($user, $normalizedRoleIds, $assignedById, $customPermissions) {
             // Step 1: Sync roles

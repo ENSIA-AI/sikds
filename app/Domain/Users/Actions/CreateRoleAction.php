@@ -24,6 +24,21 @@ final class CreateRoleAction
     public function execute(array $data, int $createdById): Role
     {
         $permissionIds = array_values(array_unique(array_map('intval', $data['permission_ids'] ?? [])));
+        if ($permissionIds !== []) {
+            $selectedCodes = Permission::query()
+                ->whereIn('id', $permissionIds)
+                ->pluck('code')
+                ->filter()
+                ->map(fn ($c) => (string) $c)
+                ->all();
+            if (in_array('document.create', $selectedCodes, true) && ! in_array('tag.assign', $selectedCodes, true)) {
+                $tagAssignId = Permission::query()->where('code', 'tag.assign')->value('id');
+                if ($tagAssignId) {
+                    $permissionIds[] = (int) $tagAssignId;
+                    $permissionIds = array_values(array_unique(array_map('intval', $permissionIds)));
+                }
+            }
+        }
 
         $role = DB::transaction(function () use ($data, $createdById, $permissionIds) {
             $slug = Str::slug($data['name']);

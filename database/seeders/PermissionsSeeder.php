@@ -41,6 +41,7 @@ class PermissionsSeeder extends Seeder
             ['code' => 'institution.view', 'category' => 'institutions', 'description' => 'Voir les institutions.'],
             ['code' => 'rag.query', 'category' => 'rag', 'description' => 'Requêtes RAG.'],
             ['code' => 'search.basic', 'category' => 'rag', 'description' => 'Recherche simple.'],
+            ['code' => 'indexing.manage', 'category' => 'indexing', 'description' => 'Accéder au moniteur d’indexation et relancer les indexations en échec.'],
             ['code' => 'audit.view', 'category' => 'audit', 'description' => 'Consulter les journaux d’audit.'],
         ];
 

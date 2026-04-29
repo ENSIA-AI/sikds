@@ -86,14 +86,15 @@
         <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
             @php
                 $categoryIconStyles = [
-                    'Documents'    => ['src' => asset('images/document.png'), 'bg' => '#DBEAFE'],
-                    'Distribution' => ['src' => asset('images/distribution.png'), 'bg' => '#DCFCE7'],
-                    'Tags'         => ['src' => asset('images/tags.png'), 'bg' => '#F3E8FF'],
-                    'Utilisateurs' => ['src' => asset('images/utilisateurs.png'), 'bg' => '#FFEDD4'],
-                    'Roles'        => ['src' => asset('images/roles.png'), 'bg' => '#FFE2E2'],
-                    'Institutions' => ['src' => asset('images/institutions.png'), 'bg' => '#CBFBF1'],
-                    'Chatbot'      => ['src' => asset('images/chatbot.png'), 'bg' => '#E0E7FF'],
-                    'Audit'        => ['src' => asset('images/audit.png'), 'bg' => '#FCE7F3'],
+                    'Documents'    => ['src' => asset('document.svg'), 'bg' => '#DBEAFE'],
+                    'Distribution' => ['src' => asset('distribution.svg'), 'bg' => '#DCFCE7'],
+                    'Tags'         => ['src' => asset('tags.svg'), 'bg' => '#F3E8FF'],
+                    'Indexation'   => ['src' => asset('indexing.svg'), 'bg' => '#E0F2FE'],
+                    'Utilisateurs' => ['src' => asset('people.svg'), 'bg' => '#FFEDD4'],
+                    'Roles'        => ['src' => asset('key.svg'), 'bg' => '#FFE2E2'],
+                    'Institutions' => ['src' => asset('building.svg'), 'bg' => '#CBFBF1'],
+                    'Chatbot'      => ['src' => asset('search.svg'), 'bg' => '#E0E7FF'],
+                    'Audit'        => ['src' => asset('audit.svg'), 'bg' => '#FCE7F3'],
                 ];
             @endphp
 

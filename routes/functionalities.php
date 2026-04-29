@@ -116,8 +116,6 @@ Route::middleware(['auth'])
             Route::get('/', [PermissionController::class, 'index'])->name('index');
         });
 
-        Route::get('/utilisateurs', [UserController::class, 'index'])->name('utilisateurs');
-
         // User management
         Route::prefix('users')->name('users.')->group(function () {
             Route::get('/', [UserController::class, 'index'])->name('index');

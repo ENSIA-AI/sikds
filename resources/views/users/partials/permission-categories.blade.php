@@ -5,11 +5,12 @@
 
 @php
     /** @var \Illuminate\Support\Collection $permissionsByCategory */
-    $categoryOrder = ['documents', 'distributions', 'tags', 'utilisateurs', 'users', 'roles', 'institutions', 'institution', 'chatbot', 'audit'];
+    $categoryOrder = ['documents', 'distributions', 'tags', 'indexing', 'utilisateurs', 'users', 'roles', 'institutions', 'institution', 'chatbot', 'audit'];
     $categoryLabels = [
         'documents' => 'Documents',
         'distributions' => 'Distributions',
         'tags' => 'Tags',
+        'indexing' => 'Indexation',
         'utilisateurs' => 'Utilisateurs',
         'users' => 'Utilisateurs',
         'roles' => 'Rôles',

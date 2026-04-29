@@ -50,7 +50,7 @@ test('it displays users index page', function () {
 
     actingAs($this->authUser);
 
-    $response = $this->get(route('utilisateurs'));
+    $response = $this->get(route('users.index'));
 
     $response->assertOk();
     $response->assertViewIs('users');
@@ -68,7 +68,7 @@ test('it requires permission to view users', function () {
 
     actingAs($unauthorizedUser);
 
-    $response = $this->get(route('utilisateurs'));
+    $response = $this->get(route('users.index'));
 
     $response->assertForbidden();
 });
@@ -87,7 +87,7 @@ test('it can search users by name', function () {
         'institution_id' => $this->institution->id,
     ]);
 
-    $response = $this->get(route('utilisateurs', ['search' => 'John']));
+    $response = $this->get(route('users.index', ['search' => 'John']));
 
     $response->assertOk();
     $response->assertSee('John Doe');
@@ -108,7 +108,7 @@ test('it can search users by email', function () {
         'institution_id' => $this->institution->id,
     ]);
 
-    $response = $this->get(route('utilisateurs', ['search' => 'john@']));
+    $response = $this->get(route('users.index', ['search' => 'john@']));
 
     $response->assertOk();
     $response->assertSee('john@example.com');
@@ -129,7 +129,7 @@ test('it can filter users by role', function () {
     ]);
     $regularUser->roles()->attach($this->userRole->id);
 
-    $response = $this->get(route('utilisateurs', ['role_id' => $this->adminRole->id]));
+    $response = $this->get(route('users.index', ['role_id' => $this->adminRole->id]));
 
     $response->assertOk();
     $response->assertSee($adminUser->full_name);
@@ -150,7 +150,7 @@ test('it can sort users alphabetically', function () {
         'institution_id' => $this->institution->id,
     ]);
 
-    $response = $this->get(route('utilisateurs', ['sort' => 'name', 'direction' => 'asc']));
+    $response = $this->get(route('users.index', ['sort' => 'name', 'direction' => 'asc']));
 
     $content = $response->getContent();
 
