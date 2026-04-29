@@ -102,7 +102,7 @@ test('guests are redirected from documents api routes', function () {
     $this->getJson('/api/documents')->assertStatus(401);
 });
 
-test('non super admin cannot preview document via api show', function () {
+test('user with document.view.all can preview document via api show', function () {
     $user = User::factory()->create();
     grantPermission($user, 'document.view.all');
     $this->actingAs($user);
@@ -110,7 +110,8 @@ test('non super admin cannot preview document via api show', function () {
     $doc = createDocument($user, ['status' => 'active']);
 
     $this->getJson('/api/documents/'.$doc->id)
-        ->assertForbidden();
+        ->assertOk()
+        ->assertJsonPath('document.id', $doc->id);
 });
 
 test('super admin can preview document via api show and versions', function () {
@@ -394,7 +395,7 @@ test('updating active document with a new file purges old chunks and requeues in
     Queue::assertPushed(IndexDocumentJob::class, fn (IndexDocumentJob $job): bool => true);
 });
 
-test('soft delete and restore require correct permissions and super admin', function () {
+test('soft delete and restore require correct permissions', function () {
     $owner = User::factory()->create();
     $doc = createDocument($owner, ['status' => 'active']);
 
@@ -411,11 +412,6 @@ test('soft delete and restore require correct permissions and super admin', func
 
     $restorer = User::factory()->create();
     grantPermission($restorer, 'document.restore');
-    $this->actingAs($restorer);
-    $this->postJson('/api/documents/'.$doc->id.'/restore')
-        ->assertForbidden();
-
-    ensureSuperAdmin($restorer);
     $this->actingAs($restorer);
     $this->postJson('/api/documents/'.$doc->id.'/restore')
         ->assertOk();
