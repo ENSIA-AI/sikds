@@ -79,8 +79,10 @@
 
         <article class="rounded-2xl bg-white border shadow-sm overflow-hidden flex flex-col"
                  style="border-color:rgba(0,0,0,.08);"
-                 x-data="sikdsRecentChats({ userId: @js($authUser?->id ?? 0) })"
-                 x-init="load()">
+                 x-data="sikdsRecentChats({ userId: @js((string) ($authUser?->id ?? 'guest')) })"
+                 x-init="load()"
+                 @sikds:chat-updated.window="load()"
+                 @focus.window="load()">
             <div class="px-6 py-5 border-b" style="border-color:rgba(0,0,0,.06);">
                 <h3 class="text-lg font-bold" style="color:var(--sikds-ink);">Chats Récents</h3>
                 <p class="text-xs mt-0.5" style="color:var(--sikds-muted);">Vos derniers chats</p>
@@ -174,4 +176,57 @@
             </div>
         </article>
     </section>
+
+    @push('scripts')
+        <script>
+            function sikdsRecentChats(config) {
+                return {
+                    items: [],
+                    storageKey: 'sikds-chatbot-history-v2-' + (config.userId || 'guest'),
+
+                    load() {
+                        let history = [];
+                        try {
+                            const raw = sessionStorage.getItem(this.storageKey);
+                            if (raw) {
+                                const parsed = JSON.parse(raw);
+                                if (Array.isArray(parsed)) history = parsed;
+                            }
+                        } catch (e) {
+                            history = [];
+                        }
+
+                        const seen = new Set();
+                        const userMessages = [];
+                        for (let i = history.length - 1; i >= 0 && userMessages.length < 5; i--) {
+                            const entry = history[i];
+                            if (!entry || entry.role !== 'user') continue;
+                            const text = String(entry.text || '').trim();
+                            if (!text || seen.has(text)) continue;
+                            seen.add(text);
+                            userMessages.push({
+                                text: text.length > 80 ? text.slice(0, 77) + '...' : text,
+                                ts: typeof entry.ts === 'number' ? entry.ts : null,
+                                time: this.formatTime(entry.ts),
+                            });
+                        }
+                        this.items = userMessages;
+                    },
+
+                    formatTime(ts) {
+                        if (typeof ts !== 'number' || ts <= 0) return '';
+                        const diffSec = Math.max(1, Math.floor((Date.now() - ts) / 1000));
+                        if (diffSec < 60) return "à l'instant";
+                        const min = Math.floor(diffSec / 60);
+                        if (min < 60) return 'il y a ' + min + ' min';
+                        const hr = Math.floor(min / 60);
+                        if (hr < 24) return 'il y a ' + hr + ' h';
+                        const day = Math.floor(hr / 24);
+                        return 'il y a ' + day + ' j';
+                    },
+                };
+            }
+            window.sikdsRecentChats = sikdsRecentChats;
+        </script>
+    @endpush
 @endsection

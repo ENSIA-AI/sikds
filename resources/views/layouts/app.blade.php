@@ -220,8 +220,13 @@
 
                 const endpoint = @json(route('rag.query'));
                 const csrf = @json(csrf_token());
-                const storageKey = 'sikds-chatbot-history-v1';
+                const userKey = @json((string) ($authUser?->id ?? 'guest'));
+                const storageKey = 'sikds-chatbot-history-v2-' + userKey;
                 const seedMessage = 'Bonjour. Je peux vous aider a retrouver des informations dans les documents indexes.';
+
+                // Migrate / cleanup any pre-user-scoped legacy key so old chats from
+                // a previous account on this browser are not visible to the current one.
+                try { sessionStorage.removeItem('sikds-chatbot-history-v1'); } catch (e) {}
 
                 function escapeHtml(value) {
                     return String(value)
@@ -296,9 +301,13 @@
                 }
 
                 function pushHistory(entry) {
+                    const stamped = Object.assign({ ts: Date.now() }, entry);
                     const history = readHistory();
-                    history.push(entry);
+                    history.push(stamped);
                     writeHistory(history.slice(-30));
+                    try {
+                        window.dispatchEvent(new CustomEvent('sikds:chat-updated'));
+                    } catch (e) {}
                 }
 
                 function renderHistory() {

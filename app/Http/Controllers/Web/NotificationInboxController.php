@@ -50,11 +50,11 @@ class NotificationInboxController extends Controller
 
         $items = $this->notifications->latestForUser($user, $limit);
 
-        $payload = $items->map(function (Notification $notification): array {
+        $canPreviewDocuments = $user->can('document.view.all');
+
+        $payload = $items->map(function (Notification $notification) use ($canPreviewDocuments): array {
             $documentId = $notification->document_id;
-            $url = $documentId
-                ? route('documents.show', ['document' => $documentId])
-                : route('notifications.inbox');
+            $url = $this->resolveDocumentUrl($documentId, $canPreviewDocuments);
 
             return [
                 'id' => $notification->id,
@@ -99,10 +99,26 @@ class NotificationInboxController extends Controller
         }
 
         if ($notification->document_id) {
-            return redirect()->route('documents.show', ['document' => $notification->document_id]);
+            $target = $this->resolveDocumentUrl($notification->document_id, $user->can('document.view.all'));
+
+            return redirect()->to($target);
         }
 
         return redirect()->route('notifications.inbox');
+    }
+
+    /**
+     * Pick where to send a user when they click a notification linked to a document.
+     * Users without preview permission go to the list (where their visibility is enforced)
+     * instead of /documents/{id}, which would 403 for them.
+     */
+    private function resolveDocumentUrl(?int $documentId, bool $canPreview): string
+    {
+        if ($documentId !== null && $canPreview) {
+            return route('documents.show', ['document' => $documentId]);
+        }
+
+        return route('documents.index');
     }
 
     public function markAllRead(Request $request): JsonResponse|RedirectResponse
