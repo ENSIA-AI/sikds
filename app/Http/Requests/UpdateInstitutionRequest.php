@@ -58,8 +58,19 @@ final class UpdateInstitutionRequest extends FormRequest
             'contact_email' => ['required', 'string', 'email:rfc', 'max:255'],
             'contact_phone' => ['nullable', 'string', 'max:50', 'regex:/^[\d\s+().-]{8,32}$/'],
             'address' => ['nullable', 'string', 'max:2000'],
-            'logo' => ['nullable', 'image', 'max:4096'],
+            'logo' => ['nullable', 'file', 'mimes:jpg,jpeg,png,gif,webp,svg', 'max:4096'],
             'type' => ['sometimes', 'string', Rule::in(['ministry', 'university'])],
+        ];
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    public function messages(): array
+    {
+        return [
+            'logo.mimes' => 'Le logo doit être un fichier de type: jpg, jpeg, png, gif, webp ou svg.',
+            'logo.max' => 'Le logo ne doit pas dépasser 4 Mo.',
         ];
     }
 }
