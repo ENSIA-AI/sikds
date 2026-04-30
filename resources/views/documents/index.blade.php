@@ -118,12 +118,14 @@
         </div>
     </div>
 
-    <div class="flex justify-end mb-5">
-        <a href="{{ route('documents.create') }}" class="sikds-btn-upload">
-            <i class="fa-solid fa-plus"></i>
-            <span>Téléverser un Document</span>
-        </a>
-    </div>
+    @can('document.create')
+        <div class="flex justify-end mb-5">
+            <a href="{{ route('documents.create') }}" class="sikds-btn-upload">
+                <i class="fa-solid fa-plus"></i>
+                <span>Téléverser un Document</span>
+            </a>
+        </div>
+    @endcan
 
     @php
         $selectedStatus = $filters['status'] ?? [];

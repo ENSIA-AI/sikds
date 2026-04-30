@@ -381,7 +381,9 @@
         (function () {
             const endpoint = @json(route('rag.query'));
             const csrf = @json(csrf_token());
-            const storageKey = 'sikds-rag-chat-v3';
+            const authUserId = @json((int) auth()->id());
+            const legacyStorageKey = 'sikds-rag-chat-v3';
+            const storageKey = `sikds-rag-chat-v3-user-${authUserId || 'guest'}`;
             const inputEl = document.getElementById('rag-input');
             const sendBtn = document.getElementById('rag-send');
             const newChatBtn = document.getElementById('rag-new-chat');
@@ -391,6 +393,11 @@
             const promptBtns = Array.from(document.querySelectorAll('[data-prompt]'));
 
             let isLoading = false;
+
+            // Cleanup legacy shared session history key once we moved to per-user keys.
+            try {
+                sessionStorage.removeItem(legacyStorageKey);
+            } catch (error) {}
 
             function escapeHtml(value) {
                 return String(value)

@@ -76,8 +76,19 @@ test('authenticated users can access the documents list page', function () {
 
     $response->assertOk();
     $response->assertSee('Titre & Référence', false);
-    $response->assertSee('Téléverser un Document', false);
+    $response->assertDontSee('Téléverser un Document', false);
     $response->assertSee('Circulaire active', false);
+});
+
+test('documents list shows upload button only to users with create permission', function () {
+    $user = User::factory()->create();
+    webGrantPermission($user, 'document.create');
+    $this->actingAs($user);
+
+    $response = $this->get(route('documents.index'));
+
+    $response->assertOk();
+    $response->assertSee('Téléverser un Document', false);
 });
 
 test('documents list filters by search query', function () {
