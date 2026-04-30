@@ -23,6 +23,7 @@ class Notification extends Model
         'email_status',
         'email_error',
         'metadata',
+        'read_at',
         'created_at',
     ];
 
@@ -30,6 +31,7 @@ class Notification extends Model
         'metadata' => 'array',
         'created_at' => 'datetime',
         'email_sent_at' => 'datetime',
+        'read_at' => 'datetime',
         'recipient_user_id' => 'integer',
         'document_id' => 'integer',
     ];

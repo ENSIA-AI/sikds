@@ -50,7 +50,7 @@
 
                 {{-- Date range --}}
                 <div class="flex items-center gap-1.5 flex-shrink-0">
-                    <img src="/time-blue.svg" alt="" class="h-4 w-4 opacity-60">
+                    <img src="/time-dark-blue.svg" alt="" class="h-4 w-4 opacity-60">
                     <input type="date" name="date_from" value="{{ request('date_from') }}"
                            class="text-sm border border-black/10 rounded-[10px] px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[color:var(--sikds-primary)]/30">
                     <span class="text-sm" style="color:var(--sikds-muted)">&ndash;</span>

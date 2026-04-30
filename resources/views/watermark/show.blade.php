@@ -104,7 +104,7 @@
                     <div>
                         <p class="text-xs mb-0.5" style="color:var(--sikds-muted)">Date &amp; Heure</p>
                         <div class="flex items-center gap-1.5">
-                            <img src="/time-blue.svg" alt="" class="h-3.5 w-3.5 opacity-60">
+                            <img src="/time-dark-blue.svg" alt="" class="h-3.5 w-3.5 opacity-60">
                             <span class="text-sm" style="color:var(--sikds-ink)">{{ $log->downloaded_at?->format('Y-m-d H:i:s') }}</span>
                         </div>
                     </div>
@@ -138,7 +138,12 @@
                             <p class="font-semibold text-sm" style="color:var(--sikds-ink)">Action&nbsp;: {{ $auditEntry->event_type }}</p>
                             <p class="text-xs mt-1" style="color:var(--sikds-muted)">ID&nbsp;: {{ $auditId }} | {{ $auditEntry->created_at?->format('Y-m-d H:i:s') }}</p>
                         </div>
-                        <a href="#" class="flex-shrink-0 inline-flex items-center gap-1.5 text-sm font-medium hover:underline" style="color:var(--sikds-primary)">
+                        <a href="{{ route('audits.index', [
+                                'event_type' => $auditEntry->event_type,
+                                'date' => optional($auditEntry->created_at)->format('Y-m-d'),
+                            ]) }}"
+                           class="flex-shrink-0 inline-flex items-center gap-1.5 text-sm font-medium hover:underline"
+                           style="color:var(--sikds-primary)">
                             <img src="/distribution-blue.svg" alt="" class="h-3.5 w-3.5">
                             Voir dans les audits &rarr;
                         </a>
