@@ -89,7 +89,7 @@
                     'Documents'    => ['src' => asset('images/document.png'), 'bg' => '#DBEAFE'],
                     'Distribution' => ['src' => asset('images/distribution.png'), 'bg' => '#DCFCE7'],
                     'Tags'         => ['src' => asset('images/tags.png'), 'bg' => '#F3E8FF'],
-                    'Indexation'   => ['src' => asset('indexing.svg'), 'bg' => '#BAD4E6'],
+                    'Indexation'   => ['src' => asset('indexing-blue.svg'), 'bg' => '#BAD4E6'],
                     'Utilisateurs' => ['src' => asset('images/utilisateurs.png'), 'bg' => '#FFEDD4'],
                     'Roles'        => ['src' => asset('images/roles.png'), 'bg' => '#FFE2E2'],
                     'Institutions' => ['src' => asset('images/institutions.png'), 'bg' => '#CBFBF1'],
