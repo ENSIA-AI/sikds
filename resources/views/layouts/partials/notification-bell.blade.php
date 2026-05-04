@@ -14,7 +14,7 @@
         aria-label="Notifications"
     >
         <span class="relative inline-flex">
-            <img src="/bell.svg" alt="" class="h-5 w-5">
+            <i class="fa-regular fa-bell text-white text-[18px] leading-none" aria-hidden="true"></i>
             <span
                 id="sikds-notification-bell-badge"
                 class="hidden absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full bg-red-500 ring-2 ring-white"
@@ -27,7 +27,7 @@
         id="sikds-notification-bell-panel"
         class="hidden absolute right-0 top-full z-50 mt-2 w-[22rem] max-w-[calc(100vw-2rem)] origin-top-right rounded-2xl border border-slate-200 bg-white shadow-xl overflow-hidden"
         role="menu"
-        aria-label="Notifications récentes"
+        aria-label="Notiifications récentes"
     >
         <div class="flex items-center justify-between px-4 py-3 border-b border-slate-100">
             <p class="text-sm font-semibold text-slate-900">Notifications</p>

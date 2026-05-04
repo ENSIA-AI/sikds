@@ -30,13 +30,13 @@ final class CreateUserAction
                 throw new \Exception('L\'institution sélectionnée n\'existe pas ou est inactive.');
             });
 
-        // Validate at least one role
-        if (empty($data['role_ids'])) {
-            throw new \Exception('L\'utilisateur doit avoir au moins un rôle.');
-        }
-
-        $roles = Role::whereIn('id', $data['role_ids'])->get();
-        if ($roles->count() !== count($data['role_ids'])) {
+        // Roles are OPTIONAL at creation. Admins can assign them later via
+        // the Modify modal / edit-permissions screen.
+        $roleIds = array_values(array_map('intval', $data['role_ids'] ?? []));
+        $roles = $roleIds !== []
+            ? Role::whereIn('id', $roleIds)->get()
+            : collect();
+        if ($roleIds !== [] && $roles->count() !== count($roleIds)) {
             throw new \Exception('Un ou plusieurs rôles sélectionnés sont invalides.');
         }
 
@@ -51,16 +51,18 @@ final class CreateUserAction
 
         // Permission dependencies (auto-required)
         // Example: document.create implies tag.assign.
-        $rolePermissionCodes = Role::query()
-            ->whereIn('id', $data['role_ids'])
-            ->with('permissions:id,code')
-            ->get()
-            ->pluck('permissions')
-            ->flatten()
-            ->pluck('code')
-            ->filter()
-            ->map(fn ($c) => (string) $c)
-            ->all();
+        $rolePermissionCodes = $roleIds !== []
+            ? Role::query()
+                ->whereIn('id', $roleIds)
+                ->with('permissions:id,code')
+                ->get()
+                ->pluck('permissions')
+                ->flatten()
+                ->pluck('code')
+                ->filter()
+                ->map(fn ($c) => (string) $c)
+                ->all()
+            : [];
         $effectiveCodes = array_values(array_unique([
             ...$rolePermissionCodes,
             ...$customPermissions->pluck('code')->filter()->map(fn ($c) => (string) $c)->all(),
@@ -75,7 +77,7 @@ final class CreateUserAction
             $customPermissions = $customPermissions->concat($extra)->unique('id')->values();
         }
 
-        $user = DB::transaction(function () use ($data, $createdById, $customPermissions) {
+        $user = DB::transaction(function () use ($data, $createdById, $customPermissions, $roleIds) {
             // Generate username from email
             $username = explode('@', $data['email'])[0];
 
@@ -94,9 +96,9 @@ final class CreateUserAction
                 'created_by' => $createdById,
             ]);
 
-            // Assign roles
+            // Assign roles (may be empty when admin chose to skip role at creation)
             $syncData = [];
-            foreach ($data['role_ids'] as $roleId) {
+            foreach ($roleIds as $roleId) {
                 $syncData[$roleId] = [
                     'assigned_at' => now(),
                     'assigned_by' => $createdById,
@@ -122,7 +124,7 @@ final class CreateUserAction
                 'target_email'     => $user->email,
                 'institution_id'   => $user->institution_id,
                 'auth_type'        => $user->auth_type,
-                'role_ids'         => array_values(array_map('intval', $data['role_ids'])),
+                'role_ids'         => $roleIds,
                 'role_names'       => $roles->pluck('name')->all(),
                 'permission_ids'   => array_values(array_map('intval', $data['permission_ids'] ?? [])),
                 'is_active'        => (bool) $user->is_active,

@@ -66,7 +66,8 @@
                             aria-controls="sikds-user-menu"
                             aria-label="Ouvrir le menu utilisateur"
                         >
-                            <img src="/person.svg" alt="Profil" class="h-5 w-5">
+                            <i class="fa-regular fa-user text-white text-[18px] leading-none" aria-hidden="true"></i>
+                            <span class="sr-only">Profil</span>
                         </button>
                         <div
                             id="sikds-user-menu"
@@ -200,7 +201,7 @@
                 class="h-14 w-14 rounded-full bg-[#1E3A8A] text-white shadow-xl hover:bg-[#163171] inline-flex items-center justify-center"
                 aria-label="Ouvrir l'assistant"
             >
-                <i class="fa-solid fa-comments text-lg"></i>
+                <i class="fa-regular fa-comments text-white text-lg leading-none" aria-hidden="true"></i>
             </button>
         </div>
 
@@ -326,8 +327,8 @@
                 function setOpen(open) {
                     panel.classList.toggle('hidden', !open);
                     toggle.innerHTML = open
-                        ? '<i class="fa-solid fa-xmark text-xl"></i>'
-                        : '<i class="fa-solid fa-comments text-lg"></i>';
+                        ? '<i class="fa-solid fa-xmark text-white text-xl leading-none"></i>'
+                        : '<i class="fa-regular fa-comments text-white text-lg leading-none"></i>';
                     toggle.setAttribute('aria-label', open ? 'Fermer l assistant' : 'Ouvrir l assistant');
                     if (open) {
                         renderHistory();
