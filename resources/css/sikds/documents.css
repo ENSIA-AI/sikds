@@ -74,7 +74,7 @@
         display:     flex;
         align-items: center;
         gap:         12px;
-        flex-shrink: 0;
+        flex-wrap:   wrap;
     }
 
     .sikds-docs-daterange {
@@ -86,6 +86,25 @@
         border:        1px solid var(--sikds-border-solid);
         border-radius: var(--sikds-radius-sm);
         background:    var(--sikds-surface);
+        flex:          1 1 auto;
+        min-width:     220px;
+    }
+
+    /* Below the search-grows breakpoint, give the search/right group the full row
+       so the Filtres button doesn't end up floating awkwardly to the side. */
+    @media (max-width: 767.98px) {
+        .sikds-docs-search,
+        .sikds-docs-toolbar-right {
+            flex: 1 1 100%;
+            width: 100%;
+        }
+
+        .sikds-docs-filter-btn,
+        .sikds-docs-filter-wrap {
+            flex: 1 1 auto;
+            min-width: 120px;
+            justify-content: center;
+        }
     }
 
     .sikds-docs-daterange-icon {
