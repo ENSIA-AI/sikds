@@ -18,10 +18,7 @@
 
     {{-- Top bar: back link + action buttons --}}
     <div class="sikds-doc-topbar">
-        <a href="{{ route('documents.index') }}" class="sikds-doc-back">
-            <i class="fa-solid fa-arrow-left"></i>
-            <span>Retour aux documents</span>
-        </a>
+        <x-back-link :href="route('documents.index')" label="Retour aux documents" class="sikds-doc-back" />
 
         <div class="sikds-doc-actions">
             <button type="button"

@@ -10,28 +10,28 @@
             value="{{ number_format($stats['total']) }}"
             label="Total Téléchargements"
             trend="{{ $stats['total'] }}"
-            iconBg="#dbeafe"
+            iconStyle="filter: brightness(0) saturate(100%) invert(17%) sepia(65%) saturate(2584%) hue-rotate(214deg) brightness(91%) contrast(98%);"
         />
         <x-stat-card
             icon="/time-orange.svg"
             value="{{ number_format($stats['today']) }}"
             label="Aujourd'hui"
             trend="{{ $stats['today'] }}"
-            iconBg="#ffedd5"
+            iconStyle="filter: brightness(0) saturate(100%) invert(17%) sepia(65%) saturate(2584%) hue-rotate(214deg) brightness(91%) contrast(98%);"
         />
         <x-stat-card
             icon="/users-pink.svg"
             value="{{ number_format($stats['unique_users']) }}"
             label="Utilisateurs Uniques"
             trend="{{ $stats['unique_users'] }}"
-            iconBg="#fce7f3"
+            iconStyle="filter: brightness(0) saturate(100%) invert(17%) sepia(65%) saturate(2584%) hue-rotate(214deg) brightness(91%) contrast(98%);"
         />
         <x-stat-card
             icon="/building-orange.svg"
             value="{{ number_format($stats['institutions']) }}"
             label="Institutions"
             trend="{{ $stats['institutions'] }}"
-            iconBg="#ffedd5"
+            iconStyle="filter: brightness(0) saturate(100%) invert(17%) sepia(65%) saturate(2584%) hue-rotate(214deg) brightness(91%) contrast(98%);"
         />
     </div>
 

@@ -11,9 +11,7 @@
     @endphp
 
     {{-- Top bar: back link + identity --}}
-    <a href="{{ route('watermark.index') }}" class="inline-flex items-center gap-1 text-xs font-medium hover:underline mb-3" style="color:var(--sikds-muted)">
-        &larr; Retour à la traçabilité
-    </a>
+    <x-back-link :href="route('watermark.index')" label="Retour à la traçabilité" class="mb-3" />
 
     <div class="flex items-center gap-3 mb-6">
         <div class="h-10 w-10 rounded-[10px] grid place-items-center flex-shrink-0" style="background:var(--sikds-primary)">
@@ -28,10 +26,10 @@
         </div>
     </div>
 
-    <div class="grid grid-cols-3 gap-5">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
 
         {{-- ===== LEFT 2/3 ===== --}}
-        <div class="col-span-2 space-y-5">
+        <div class="lg:col-span-2 space-y-5 min-w-0">
 
             {{-- Document info --}}
             <div class="bg-white rounded-[14px] border p-6" style="border-color:rgba(0,0,0,.1);box-shadow:var(--sikds-shadow-panel);">
@@ -61,24 +59,24 @@
                     </div>
                     <h2 class="font-semibold text-base" style="color:var(--sikds-ink)">Informations de l'Utilisateur</h2>
                 </div>
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div class="min-w-0">
                         <p class="text-xs mb-0.5" style="color:var(--sikds-muted)">Nom complet</p>
-                        <p class="font-semibold text-sm" style="color:var(--sikds-ink)">{{ $log->user?->full_name ?? $log->user?->username ?? '&mdash;' }}</p>
+                        <p class="font-semibold text-sm break-words" style="color:var(--sikds-ink)">{{ $log->user?->full_name ?? $log->user?->username ?? '&mdash;' }}</p>
                     </div>
-                    <div>
+                    <div class="min-w-0">
                         <p class="text-xs mb-0.5" style="color:var(--sikds-muted)">ID Utilisateur</p>
-                        <p class="text-sm font-mono" style="color:var(--sikds-ink)">{{ $userId }}</p>
+                        <p class="text-sm font-mono break-all" style="color:var(--sikds-ink)">{{ $userId }}</p>
                     </div>
-                    <div>
+                    <div class="min-w-0">
                         <p class="text-xs mb-0.5" style="color:var(--sikds-muted)">Email</p>
-                        <p class="text-sm" style="color:var(--sikds-ink)">{{ $log->user?->email ?? '&mdash;' }}</p>
+                        <p class="text-sm break-all" style="color:var(--sikds-ink)">{{ $log->user?->email ?? '&mdash;' }}</p>
                     </div>
-                    <div>
+                    <div class="min-w-0">
                         <p class="text-xs mb-0.5" style="color:var(--sikds-muted)">Institution</p>
-                        <div class="flex items-center gap-1.5">
-                            <img src="/building-blue.svg" alt="" class="h-3.5 w-3.5 opacity-60">
-                            <p class="text-sm" style="color:var(--sikds-ink)">{{ $log->user?->institution?->name ?? '&mdash;' }}</p>
+                        <div class="flex items-start gap-1.5">
+                            <img src="/building-blue.svg" alt="" class="h-3.5 w-3.5 opacity-60 mt-0.5 shrink-0">
+                            <p class="text-sm break-words" style="color:var(--sikds-ink)">{{ $log->user?->institution?->name ?? '&mdash;' }}</p>
                         </div>
                     </div>
                 </div>
@@ -92,27 +90,27 @@
                     </div>
                     <h2 class="font-semibold text-base" style="color:var(--sikds-ink)">Informations du Téléchargement</h2>
                 </div>
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div class="min-w-0">
                         <p class="text-xs mb-0.5" style="color:var(--sikds-muted)">ID Téléchargement</p>
-                        <p class="text-sm font-mono" style="color:var(--sikds-ink)">{{ $downloadId }}</p>
+                        <p class="text-sm font-mono break-all" style="color:var(--sikds-ink)">{{ $downloadId }}</p>
                     </div>
-                    <div>
+                    <div class="min-w-0">
                         <p class="text-xs mb-0.5" style="color:var(--sikds-muted)">Statut</p>
                         <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold" style="background:#dcfce7;color:#15803d;">&#x25CF; Complété</span>
                     </div>
-                    <div>
+                    <div class="min-w-0">
                         <p class="text-xs mb-0.5" style="color:var(--sikds-muted)">Date &amp; Heure</p>
-                        <div class="flex items-center gap-1.5">
-                            <img src="/time-dark-blue.svg" alt="" class="h-3.5 w-3.5 opacity-60">
-                            <span class="text-sm" style="color:var(--sikds-ink)">{{ $log->downloaded_at?->format('Y-m-d H:i:s') }}</span>
+                        <div class="flex items-start gap-1.5">
+                            <img src="/time-dark-blue.svg" alt="" class="h-3.5 w-3.5 opacity-60 mt-0.5 shrink-0">
+                            <span class="text-sm break-words" style="color:var(--sikds-ink)">{{ $log->downloaded_at?->format('Y-m-d H:i:s') }}</span>
                         </div>
                     </div>
-                    <div>
+                    <div class="min-w-0">
                         <p class="text-xs mb-0.5" style="color:var(--sikds-muted)">Adresse IP</p>
-                        <div class="flex items-center gap-1.5">
-                            <img src="/traceability-blue.svg" alt="" class="h-3.5 w-3.5 opacity-60">
-                            <span class="font-mono text-sm" style="color:var(--sikds-ink)">{{ $log->ip_address }}</span>
+                        <div class="flex items-start gap-1.5">
+                            <img src="/traceability-blue.svg" alt="" class="h-3.5 w-3.5 opacity-60 mt-0.5 shrink-0">
+                            <span class="font-mono text-sm break-all" style="color:var(--sikds-ink)">{{ $log->ip_address }}</span>
                         </div>
                     </div>
                 </div>
@@ -155,7 +153,7 @@
         </div>
 
         {{-- ===== RIGHT 1/3 ===== --}}
-        <div class="col-span-1 space-y-5">
+        <div class="lg:col-span-1 space-y-5 min-w-0">
 
             {{-- Visible watermark --}}
             <div class="bg-white rounded-[14px] border p-5" style="border-color:rgba(0,0,0,.1);box-shadow:var(--sikds-shadow-panel);">
@@ -220,9 +218,9 @@
                 </div>
                 <div class="space-y-2">
                     @foreach ($meta as $key => $value)
-                        <div class="flex items-start justify-between gap-2 py-1 border-b last:border-0" style="border-color:rgba(0,0,0,.06);">
-                            <span class="text-xs font-mono shrink-0" style="color:var(--sikds-muted)">{{ $key }}</span>
-                            <span class="text-xs font-mono text-right break-all" style="color:var(--sikds-ink)">{{ $value ?? '&mdash;' }}</span>
+                        <div class="flex flex-col gap-0.5 py-1 border-b last:border-0" style="border-color:rgba(0,0,0,.06);">
+                            <span class="text-[11px] font-mono uppercase tracking-wide" style="color:var(--sikds-muted)">{{ $key }}</span>
+                            <span class="text-xs font-mono break-all" style="color:var(--sikds-ink)">{{ $value ?? '&mdash;' }}</span>
                         </div>
                     @endforeach
                 </div>
