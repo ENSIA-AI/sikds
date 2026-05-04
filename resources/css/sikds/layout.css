@@ -137,6 +137,8 @@
         width:            44px;
         flex-shrink:      0;
         background-color: var(--sikds-primary);
+        color:            #fff;
+        box-shadow:       0 2px 8px rgba(28, 57, 142, 0.28);
     }
 
     .sikds-header-notif {
@@ -147,6 +149,7 @@
         width: 44px;
         flex-shrink: 0;
         background-color: var(--sikds-primary);
+        color:            #fff;
         color: #fff;
         box-shadow: 0 2px 8px rgba(28, 57, 142, 0.28);
     }
@@ -188,6 +191,7 @@
         @apply fixed inset-y-0 left-0 z-50 h-screen shrink-0;
         width:            var(--sikds-sidebar-width);
         background-color: var(--sikds-primary);
+        color:            #fff;
         transform:        translateX(-100%);
         transition:       transform 0.2s ease-out;
     }

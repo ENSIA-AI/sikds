@@ -25,12 +25,12 @@
     @endif
 
     {{-- Toolbar --}}
-    <div class="mb-6 flex items-center justify-between">
-        <div>
-            <h2 class="text-[28px] font-semibold sikds-ink leading-none">Tags des Documents</h2>
+    <div class="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+        <div class="min-w-0">
+            <h2 class="text-2xl sm:text-[28px] font-semibold sikds-ink leading-tight">Tags des Documents</h2>
             <p class="mt-1 text-sm sikds-muted-text">Organiser et catégoriser les documents</p>
         </div>
-        <button type="button" @click="openModal()" class="sikds-tags-btn-create">
+        <button type="button" @click="openModal()" class="sikds-tags-btn-create shrink-0 self-start sm:self-auto">
             <i class="fa-solid fa-plus text-sm"></i>
             <span>Créer un Tag</span>
         </button>
