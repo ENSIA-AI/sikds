@@ -186,14 +186,14 @@ function buildUserRow(payload) {
     const menuToggle = `<button type="button" data-user-menu-toggle class="inline-flex size-10 items-center justify-center rounded-[10px] text-[#0A0A0A] transition hover:bg-[#F4F4F5] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1E3A8A]" aria-haspopup="menu" aria-expanded="false" aria-label="Actions utilisateur"><svg class="size-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="6" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="18" cy="12" r="1.6"/></svg></button>`;
 
     const editItem = hasEdit
-        ? `<button type="button" data-open-edit-user class="flex w-full items-center gap-3 rounded-[12px] px-3 py-2.5 text-left font-inter text-sm font-medium text-[#0A0A0A] transition hover:bg-black/[0.03]" role="menuitem">Assigner/retirer rôles</button>`
+        ? `<button type="button" data-open-edit-user class="flex w-full items-center gap-3 px-3 py-2.5 text-left font-inter text-sm font-medium text-[#0A0A0A] transition hover:bg-[#f3f4f6]" role="menuitem"><i class="fa-solid fa-pen-to-square text-xs text-[#717182]"></i>Modifier</button>`
         : '';
 
     const toggleItem = canDeactivate
-        ? `<button type="button" data-user-toggle-active class="flex w-full items-center gap-3 rounded-[12px] px-3 py-2.5 text-left font-inter text-sm font-medium ${active ? 'text-[#B45309]' : 'text-[#15803D]'} transition hover:bg-black/[0.03]" role="menuitem">${active ? 'Désactiver' : 'Activer'}</button>`
+        ? `<button type="button" data-user-toggle-active class="flex w-full items-center gap-3 px-3 py-2.5 text-left font-inter text-sm font-medium transition hover:bg-[#f3f4f6] ${active ? 'text-[#ef4444]' : 'text-[#22c55e]'}" role="menuitem">${active ? '<i class="fa-solid fa-ban text-xs text-[#ef4444]"></i>Désactiver' : '<i class="fa-solid fa-circle-check text-xs text-[#22c55e]"></i>Activer'}</button>`
         : '';
 
-    const menu = `<div data-user-menu hidden class="absolute right-0 top-[46px] z-50 w-[202px] overflow-hidden rounded-[14px] border border-black/10 bg-white p-[0.67px] shadow-[0px_8px_10px_-6px_rgba(0,0,0,0.10),0px_20px_25px_-5px_rgba(0,0,0,0.10)]" role="menu"><div class="flex flex-col">${editItem}${toggleItem}</div></div>`;
+    const menu = `<div data-user-menu hidden class="z-50 w-[202px] overflow-hidden rounded-[8px] border border-[#e5e7eb] bg-white py-1 shadow-[0_4px_12px_rgba(0,0,0,0.12)]" role="menu"><div class="flex flex-col">${editItem}${toggleItem}</div></div>`;
 
     const actionsCell = `<td class="px-4 align-middle text-right"><div class="relative inline-flex items-center justify-end">${menuToggle}${menu}</div></td>`;
 
@@ -209,9 +209,9 @@ function buildUserRow(payload) {
       </td>
       <td class="px-4 align-middle"><span class="font-inter text-sm text-[#0A0A0A]">${escapeHtml(roleName)}</span></td>
       <td class="px-4 align-middle">
-        <div class="flex items-center gap-2">
-          <span class="text-[#717182]" aria-hidden="true"><svg class="size-4 shrink-0" viewBox="0 0 24 24" fill="none"><path d="M4 10.5 12 4l8 6.5V20a1 1 0 0 1-1 1h-5v-6H10v6H5a1 1 0 0 1-1-1v-9.5Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg></span>
-          <span class="font-inter text-sm text-[#0A0A0A]">${escapeHtml(instName)}</span>
+        <div class="flex items-start gap-2 min-w-0">
+          <span class="text-[#717182] mt-0.5" aria-hidden="true"><svg class="size-4 shrink-0" viewBox="0 0 24 24" fill="none"><path d="M4 10.5 12 4l8 6.5V20a1 1 0 0 1-1 1h-5v-6H10v6H5a1 1 0 0 1-1-1v-9.5Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg></span>
+          <span class="font-inter text-xs leading-snug text-[#0A0A0A] break-words" title="${escapeHtml(instName)}">${escapeHtml(instName)}</span>
         </div>
       </td>
       <td class="px-4 align-middle">${statusPrimary}</td>
@@ -225,6 +225,7 @@ function closeAllUserMenus(exceptEl = null) {
             return;
         }
         menu.hidden = true;
+        resetUserMenuPosition(menu);
         const wrap = menu.closest('td, [data-user-row], .relative');
         const btn = wrap?.querySelector?.('[data-user-menu-toggle]');
         if (btn) {
@@ -233,7 +234,68 @@ function closeAllUserMenus(exceptEl = null) {
     });
 }
 
+/**
+ * Position a row's action menu using fixed positioning so it always
+ * escapes any ancestor scroll/overflow container. Flips above the trigger
+ * when there isn't enough space below.
+ */
+function positionUserMenu(menu, toggle) {
+    // Force fixed positioning before measuring.
+    menu.style.position = 'fixed';
+    menu.style.top = '0';
+    menu.style.left = '0';
+    menu.style.right = 'auto';
+    menu.style.bottom = 'auto';
+    menu.style.visibility = 'hidden';
+
+    const triggerRect = toggle.getBoundingClientRect();
+    const menuRect = menu.getBoundingClientRect();
+    const viewportH = window.innerHeight || document.documentElement.clientHeight;
+    const viewportW = window.innerWidth || document.documentElement.clientWidth;
+    const gap = 6;
+
+    // Right-align under (or above) the trigger.
+    let left = triggerRect.right - menuRect.width;
+    if (left < 8) left = 8;
+    if (left + menuRect.width > viewportW - 8) left = viewportW - 8 - menuRect.width;
+
+    let top = triggerRect.bottom + gap;
+    // Flip above the trigger when it would otherwise overflow the viewport.
+    if (top + menuRect.height > viewportH - 8) {
+        top = triggerRect.top - menuRect.height - gap;
+        if (top < 8) top = 8;
+    }
+
+    menu.style.top = `${Math.round(top)}px`;
+    menu.style.left = `${Math.round(left)}px`;
+    menu.style.visibility = '';
+    menu.dataset.fixedPositioned = '1';
+}
+
+function resetUserMenuPosition(menu) {
+    if (menu.dataset.fixedPositioned !== '1') return;
+    delete menu.dataset.fixedPositioned;
+    menu.style.position = '';
+    menu.style.top = '';
+    menu.style.left = '';
+    menu.style.right = '';
+    menu.style.bottom = '';
+    menu.style.visibility = '';
+}
+
 function wireUserActionMenus() {
+    // Reposition any open menu on scroll/resize so it follows the row.
+    const reposition = () => {
+        document.querySelectorAll('[data-user-menu]').forEach((menu) => {
+            if (menu.hidden || menu.dataset.fixedPositioned !== '1') return;
+            const wrap = menu.closest('td') ?? menu.parentElement;
+            const trigger = wrap?.querySelector?.('[data-user-menu-toggle]');
+            if (trigger) positionUserMenu(menu, trigger);
+        });
+    };
+    window.addEventListener('scroll', reposition, true);
+    window.addEventListener('resize', reposition);
+
     document.addEventListener('click', (e) => {
         const toggle = e.target.closest('[data-user-menu-toggle]');
         if (toggle) {
@@ -248,6 +310,12 @@ function wireUserActionMenus() {
             closeAllUserMenus(menu);
             menu.hidden = !willOpen;
             toggle.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
+
+            if (willOpen) {
+                positionUserMenu(menu, toggle);
+            } else {
+                resetUserMenuPosition(menu);
+            }
             return;
         }
 
@@ -419,7 +487,12 @@ function wireCreateUserModal(rolesData) {
             return;
         }
         const id = Number(card.dataset.roleId);
-        selectedRoleId = Number.isFinite(id) ? id : null;
+        // Toggle: clicking the already-selected role deselects it
+        if (Number.isFinite(id) && id === selectedRoleId) {
+            selectedRoleId = null;
+        } else {
+            selectedRoleId = Number.isFinite(id) ? id : null;
+        }
         setSelectedRoleInGrid(grid, selectedRoleId, pTitle, pList, rolesData);
     });
 
@@ -447,19 +520,13 @@ function wireCreateUserModal(rolesData) {
             errBox.textContent = '';
             errBox.classList.add('hidden');
         }
-        if (!selectedRoleId) {
-            if (errBox) {
-                errBox.textContent = 'Veuillez sélectionner un rôle.';
-                errBox.classList.remove('hidden');
-            }
-            return;
-        }
         const form = e.target;
+        // Roles are optional at user creation. Only send role_ids when one is selected.
         const body = {
             full_name: form.full_name.value.trim(),
             email: form.email.value.trim(),
             institution_id: Number(form.institution_id.value),
-            role_ids: [selectedRoleId],
+            role_ids: selectedRoleId ? [selectedRoleId] : [],
             permission_ids: collectCheckedPermissionIds(modal, 'create'),
             auth_type: 'sso',
         };
@@ -504,14 +571,18 @@ function wireEditUserModal(rolesData) {
         return;
     }
     const apiBase = readApiBase();
+    const canAssignPermissions = modal.dataset.editUserCanAssignPermissions === '1';
     let selectedRoleId = null;
     let currentUserId = null;
 
     const grid = modal.querySelector('[data-edit-role-grid]');
     const pTitle = modal.querySelector('[data-edit-role-preview-title]');
     const pList = modal.querySelector('[data-edit-role-preview-list]');
-    const nameEl = modal.querySelector('[data-edit-user-name]');
+    const nameDisplay = modal.querySelector('[data-edit-user-display-name]');
     const idInput = modal.querySelector('[data-edit-user-id]');
+    const fullNameInput = modal.querySelector('#edit-full-name');
+    const emailInput = modal.querySelector('#edit-email');
+    const institutionSelect = modal.querySelector('#edit-institution');
 
     wirePermissionAccordions(modal);
 
@@ -521,7 +592,12 @@ function wireEditUserModal(rolesData) {
             return;
         }
         const id = Number(card.dataset.roleId);
-        selectedRoleId = Number.isFinite(id) ? id : null;
+        // Toggle: clicking the already-selected role deselects it
+        if (Number.isFinite(id) && id === selectedRoleId) {
+            selectedRoleId = null;
+        } else {
+            selectedRoleId = Number.isFinite(id) ? id : null;
+        }
         setSelectedRoleInGrid(grid, selectedRoleId, pTitle, pList, rolesData);
     });
 
@@ -536,13 +612,24 @@ function wireEditUserModal(rolesData) {
         if (idInput) {
             idInput.value = String(currentUserId);
         }
-        if (nameEl) {
-            nameEl.textContent = payload.full_name ?? '';
+        if (nameDisplay) {
+            nameDisplay.textContent = payload.full_name ?? '';
+        }
+        if (fullNameInput) {
+            fullNameInput.value = payload.full_name ?? '';
+        }
+        if (emailInput) {
+            emailInput.value = payload.email ?? '';
+        }
+        if (institutionSelect) {
+            institutionSelect.value = payload.institution?.id ? String(payload.institution.id) : '';
         }
         const roleId = payload.roles?.[0]?.id ?? null;
         selectedRoleId = roleId;
-        setSelectedRoleInGrid(grid, roleId, pTitle, pList, rolesData);
-        setCheckedPermissions(modal, 'edit', payload.custom_permission_ids ?? []);
+        if (canAssignPermissions) {
+            setSelectedRoleInGrid(grid, roleId, pTitle, pList, rolesData);
+            setCheckedPermissions(modal, 'edit', payload.custom_permission_ids ?? []);
+        }
         modal.hidden = false;
         setBodyModalOpen(true);
         modal.querySelector('[data-edit-user-panel]')?.focus();
@@ -585,19 +672,25 @@ function wireEditUserModal(rolesData) {
             errBox.textContent = '';
             errBox.classList.add('hidden');
         }
-        if (!currentUserId || !selectedRoleId) {
+        if (!currentUserId) {
+            return;
+        }
+
+        const fullName = fullNameInput?.value?.trim() ?? '';
+        const email = emailInput?.value?.trim() ?? '';
+        const institutionId = Number(institutionSelect?.value);
+
+        if (!fullName || !email || !Number.isFinite(institutionId)) {
             if (errBox) {
-                errBox.textContent = 'Veuillez sélectionner un rôle.';
+                errBox.textContent = 'Le nom, l’email et l’institution sont obligatoires.';
                 errBox.classList.remove('hidden');
             }
             return;
         }
-        const body = {
-            role_ids: [selectedRoleId],
-            permission_ids: collectCheckedPermissionIds(modal, 'edit'),
-        };
+
         try {
-            const res = await fetch(`${apiBase}/${currentUserId}/permissions`, {
+            // 1) Update core user fields (name / email / institution).
+            const updateRes = await fetch(`${apiBase}/${currentUserId}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -605,19 +698,58 @@ function wireEditUserModal(rolesData) {
                     'X-CSRF-TOKEN': readCsrfToken(),
                     'X-Requested-With': 'XMLHttpRequest',
                 },
-                body: JSON.stringify(body),
+                body: JSON.stringify({
+                    full_name: fullName,
+                    email,
+                    institution_id: institutionId,
+                }),
             });
-            const data = await res.json().catch(() => ({}));
-            if (!res.ok) {
+            const updateData = await updateRes.json().catch(() => ({}));
+            if (!updateRes.ok) {
                 if (errBox) {
-                    errBox.textContent = parseJsonErrors(data);
+                    errBox.textContent = parseJsonErrors(updateData);
                     errBox.classList.remove('hidden');
                 }
                 return;
             }
-            showToast(data.message ?? 'Rôle mis à jour.');
-            const tbody = document.querySelector('[data-users-tbody]');
-            replaceOrAppendUserRow(tbody, data.user);
+
+            // 2) Optionally update roles + custom permissions in the same modal.
+            let toastMsg = 'Utilisateur mis à jour.';
+            let userPayload = updateData.user ?? null;
+
+            if (canAssignPermissions) {
+                const permRes = await fetch(`${apiBase}/${currentUserId}/permissions`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Accept: 'application/json',
+                        'X-CSRF-TOKEN': readCsrfToken(),
+                        'X-Requested-With': 'XMLHttpRequest',
+                    },
+                    body: JSON.stringify({
+                        role_ids: selectedRoleId ? [selectedRoleId] : [],
+                        permission_ids: collectCheckedPermissionIds(modal, 'edit'),
+                    }),
+                });
+                const permData = await permRes.json().catch(() => ({}));
+                if (!permRes.ok) {
+                    if (errBox) {
+                        errBox.textContent = parseJsonErrors(permData);
+                        errBox.classList.remove('hidden');
+                    }
+                    return;
+                }
+                if (permData.user) userPayload = permData.user;
+                toastMsg = permData.message ?? 'Utilisateur et rôle mis à jour.';
+            }
+
+            showToast(toastMsg);
+            if (userPayload) {
+                const tbody = document.querySelector('[data-users-tbody]');
+                replaceOrAppendUserRow(tbody, userPayload);
+            } else {
+                window.location.reload();
+            }
             close();
         } catch {
             showToast('Erreur réseau.', 'error');

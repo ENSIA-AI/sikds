@@ -11,9 +11,10 @@ final class StoreUserRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        // Same capability as the create-user UI: manage users + assign permissions/roles
-        return $this->user()->can('user.manage')
-            && $this->user()->can('user.assign.permissions');
+        // Creating a user only requires user.manage. Roles/permissions are
+        // optional at creation and gated separately by user.assign.permissions
+        // when the admin chooses to assign them in the same form.
+        return $this->user()->can('user.manage');
     }
 
     public function rules(): array
@@ -31,7 +32,9 @@ final class StoreUserRequest extends FormRequest
                 'integer',
                 Rule::exists('institutions', 'id')->where('is_active', true),
             ],
-            'role_ids' => ['required', 'array', 'min:1'],
+            // Roles are OPTIONAL at user creation — admins can assign them later
+            // via the Modify modal / edit-permissions screen.
+            'role_ids' => ['nullable', 'array'],
             'role_ids.*' => ['integer', 'exists:roles,id'],
             
             // Custom permissions (optional)
@@ -59,8 +62,6 @@ final class StoreUserRequest extends FormRequest
             'email.unique' => 'Cet email est déjà utilisé.',
             'institution_id.required' => 'L\'institution est requise.',
             'institution_id.exists' => 'L\'institution sélectionnée n\'existe pas ou est inactive.',
-            'role_ids.required' => 'Au moins un rôle doit être assigné.',
-            'role_ids.min' => 'Au moins un rôle doit être assigné.',
             'permission_ids.*.exists' => 'Une ou plusieurs permissions sont invalides.',
             'password.required_if' => 'Le mot de passe est requis pour l\'authentification locale.',
             'password.min' => 'Le mot de passe doit contenir au moins 12 caractères.',

@@ -27,7 +27,8 @@ final class SyncUserPermissionsRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'role_ids' => ['required', 'array', 'min:1'],
+            // Roles are optional — admin may save the user with no role at all.
+            'role_ids' => ['nullable', 'array'],
             'role_ids.*' => ['integer', 'exists:roles,id'],
             'permission_ids' => ['nullable', 'array'],
             'permission_ids.*' => ['integer', 'exists:permissions,id'],
@@ -40,8 +41,6 @@ final class SyncUserPermissionsRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'role_ids.required' => 'Au moins un rôle doit être assigné.',
-            'role_ids.min' => 'Au moins un rôle doit être assigné.',
             'role_ids.*.exists' => 'Un ou plusieurs rôles sélectionnés sont invalides.',
             'permission_ids.*.exists' => 'Une ou plusieurs permissions sélectionnées sont invalides.',
         ];

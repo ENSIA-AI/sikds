@@ -25,16 +25,15 @@ final class SyncUserPermissionsAction
      */
     public function execute(User $user, array $data, int $assignedById): User
     {
-        // Validate at least one role
-        if (empty($data['role_ids'])) {
-            throw new \Exception('L\'utilisateur doit avoir au moins un rôle.');
-        }
+        // Roles are OPTIONAL — admin may sync with an empty role set,
+        // which means "user has no role; only direct permissions apply".
+        $requestedRoleIds = array_values(array_map('intval', $data['role_ids'] ?? []));
 
-        // Validate roles exist
-        $roles = Role::whereIn('id', $data['role_ids'])
-            ->with('permissions:id,code')
-            ->get();
-        if ($roles->count() !== count($data['role_ids'])) {
+        $roles = $requestedRoleIds !== []
+            ? Role::whereIn('id', $requestedRoleIds)->with('permissions:id,code')->get()
+            : collect();
+
+        if ($requestedRoleIds !== [] && $roles->count() !== count($requestedRoleIds)) {
             throw new \Exception('Un ou plusieurs rôles sélectionnés sont invalides.');
         }
 
