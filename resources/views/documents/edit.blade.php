@@ -15,10 +15,7 @@
     })"
 >
     <div class="sikds-doc-edit-topbar">
-        <a href="{{ $document['show_url'] }}" class="sikds-doc-back">
-            <i class="fa-solid fa-arrow-left"></i>
-            <span>Retour au document</span>
-        </a>
+        <x-back-link :href="$document['show_url']" label="Retour au document" class="sikds-doc-back" />
         <div class="sikds-doc-edit-top-actions">
             <button type="button" class="sikds-doc-edit-btn sikds-doc-edit-btn--cancel" @click="showCancelModal = true">
                 <i class="fa-solid fa-xmark"></i>

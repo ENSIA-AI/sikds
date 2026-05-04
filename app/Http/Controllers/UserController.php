@@ -263,16 +263,29 @@ final class UserController extends Controller
     /**
      * Update the specified user.
      */
-    public function update(UpdateUserRequest $request, User $user): RedirectResponse
+    public function update(UpdateUserRequest $request, User $user): RedirectResponse|JsonResponse
     {
         try {
             $user = $this->updateUserAction->execute($user, $request->validated());
+
+            if ($request->wantsJson()) {
+                return response()->json([
+                    'message' => "L'utilisateur « {$user->full_name} » a été mis à jour.",
+                    'user' => $this->userPayloadForTable($user->fresh(['institution', 'roles'])),
+                ]);
+            }
 
             return redirect()
                 ->route('users.show', $user)
                 ->with('success', "L'utilisateur « {$user->full_name} » a été mis à jour.");
 
         } catch (\Exception $e) {
+            if ($request->wantsJson()) {
+                return response()->json([
+                    'message' => $e->getMessage(),
+                ], 422);
+            }
+
             return back()
                 ->withInput()
                 ->with('error', "Erreur : {$e->getMessage()}");

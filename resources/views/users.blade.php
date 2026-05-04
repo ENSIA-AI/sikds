@@ -46,27 +46,21 @@
                     <p class="font-inter text-sm font-normal text-[#717182]">Total Utilisateurs</p>
                     <p class="font-inter text-2xl font-semibold text-[#0A0A0A]" data-stat="total">{{ $stats['total_users'] ?? 0 }}</p>
                 </div>
-                <div class="flex size-12 shrink-0 items-center justify-center rounded-[12px] bg-[#DBEAFE]">
-                    <img src="{{ asset('images/user.svg') }}" alt="" class="size-7" width="28" height="28" />
-                </div>
+                <img src="{{ asset('images/user.svg') }}" alt="" class="size-10 shrink-0" width="40" height="40" style="filter: brightness(0) saturate(100%) invert(17%) sepia(65%) saturate(2584%) hue-rotate(214deg) brightness(91%) contrast(98%);" />
             </article>
             <article class="flex h-[89px] justify-between gap-3 rounded-[14px] border-[0.67px] border-black/10 bg-white px-[16.67px] py-[16.67px] shadow-[0px_1px_2px_-1px_rgba(0,0,0,0.10),0px_1px_3px_0px_rgba(0,0,0,0.10)]">
                 <div class="flex min-w-0 flex-col justify-center">
                     <p class="font-inter text-sm font-normal text-[#717182]">Utilisateurs Actifs</p>
                     <p class="font-inter text-2xl font-semibold text-[#0A0A0A]" data-stat="active">{{ $stats['active_users'] ?? 0 }}</p>
                 </div>
-                <div class="flex size-12 shrink-0 items-center justify-center rounded-[12px] bg-[#DCFCE7]">
-                    <img src="{{ asset('images/actif.svg') }}" alt="" class="size-7" width="28" height="28" />
-                </div>
+                <img src="{{ asset('images/actif.svg') }}" alt="" class="size-10 shrink-0" width="40" height="40" style="filter: brightness(0) saturate(100%) invert(17%) sepia(65%) saturate(2584%) hue-rotate(214deg) brightness(91%) contrast(98%);" />
             </article>
             <article class="flex h-[89px] justify-between gap-3 rounded-[14px] border-[0.67px] border-black/10 bg-white px-[16.67px] py-[16.67px] shadow-[0px_1px_2px_-1px_rgba(0,0,0,0.10),0px_1px_3px_0px_rgba(0,0,0,0.10)] md:col-span-2 lg:col-span-1">
                 <div class="flex min-w-0 flex-col justify-center">
                     <p class="font-inter text-sm font-normal text-[#717182]">Utilisateurs Inactifs</p>
                     <p class="font-inter text-2xl font-semibold text-[#0A0A0A]" data-stat="inactive">{{ $stats['inactive_users'] ?? 0 }}</p>
                 </div>
-                <div class="flex size-12 shrink-0 items-center justify-center rounded-[12px] bg-[#FFE2E2]">
-                    <img src="{{ asset('images/inactif.svg') }}" alt="" class="size-7" width="28" height="28" />
-                </div>
+                <img src="{{ asset('images/inactif.svg') }}" alt="" class="size-10 shrink-0" width="40" height="40" style="filter: brightness(0) saturate(100%) invert(17%) sepia(65%) saturate(2584%) hue-rotate(214deg) brightness(91%) contrast(98%);" />
             </article>
         </div>
     </section>
@@ -160,7 +154,7 @@
     {{-- Container C — Table --}}
     <section aria-label="Liste des utilisateurs" class="w-full">
         <div class="overflow-hidden rounded-[14px] border border-black/10 bg-white shadow-[0px_4px_6px_-4px_rgba(0,0,0,0.10),0px_10px_15px_-3px_rgba(0,0,0,0.10)]">
-            <div class="max-h-[849px] overflow-x-auto overflow-y-auto">
+            <div class="overflow-x-auto">
                 <table class="w-full min-w-[720px] border-collapse table-fixed" data-users-table>
                     <thead class="sticky top-0 z-[1] bg-[#F4F4F5]">
                         <tr class="h-12">
@@ -203,13 +197,13 @@
                                     <span class="font-inter text-sm text-[#0A0A0A]">{{ $user->roles->pluck('name')->first() ?? '—' }}</span>
                                 </td>
                                 <td class="px-4 align-middle">
-                                    <div class="flex items-center gap-2">
-                                        <span class="text-[#717182]" aria-hidden="true">
+                                    <div class="flex items-start gap-2 min-w-0">
+                                        <span class="text-[#717182] mt-0.5" aria-hidden="true">
                                             <svg class="size-4 shrink-0" viewBox="0 0 24 24" fill="none">
                                                 <path d="M4 10.5 12 4l8 6.5V20a1 1 0 0 1-1 1h-5v-6H10v6H5a1 1 0 0 1-1-1v-9.5Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" />
                                             </svg>
                                         </span>
-                                        <span class="font-inter text-sm text-[#0A0A0A]">{{ $user->institution->name ?? '—' }}</span>
+                                        <span class="font-inter text-xs leading-snug text-[#0A0A0A] break-words" title="{{ $user->institution->name ?? '' }}">{{ $user->institution->name ?? '—' }}</span>
                                     </div>
                                 </td>
                                 <td class="px-4 align-middle">
@@ -241,31 +235,36 @@
                                         <div
                                             data-user-menu
                                             hidden
-                                            class="absolute right-0 top-[46px] z-50 w-[202px] overflow-hidden rounded-[14px] border border-black/10 bg-white p-[0.67px] shadow-[0px_8px_10px_-6px_rgba(0,0,0,0.10),0px_20px_25px_-5px_rgba(0,0,0,0.10)]"
+                                            class="z-50 w-[202px] overflow-hidden rounded-[8px] border border-[#e5e7eb] bg-white py-1 shadow-[0_4px_12px_rgba(0,0,0,0.12)]"
                                             role="menu"
                                         >
                                             <div class="flex flex-col">
                                                 @can('user.manage')
-                                                    @can('user.assign.permissions')
-                                                        <button
-                                                            type="button"
-                                                            data-open-edit-user
-                                                            class="flex w-full items-center gap-3 rounded-[12px] px-3 py-2.5 text-left font-inter text-sm font-medium text-[#0A0A0A] transition hover:bg-black/[0.03]"
-                                                            role="menuitem"
-                                                        >
-                                                            Modifier le rôle
-                                                        </button>
-                                                    @endcan
+                                                    <button
+                                                        type="button"
+                                                        data-open-edit-user
+                                                        class="flex w-full items-center gap-3 px-3 py-2.5 text-left font-inter text-sm font-medium text-[#0A0A0A] transition hover:bg-[#f3f4f6]"
+                                                        role="menuitem"
+                                                    >
+                                                        <i class="fa-solid fa-pen-to-square text-xs text-[#717182]"></i>
+                                                        Modifier
+                                                    </button>
                                                 @endcan
 
                                                 @can('user.deactivate')
                                                     <button
                                                         type="button"
                                                         data-user-toggle-active
-                                                        class="flex w-full items-center gap-3 rounded-[12px] px-3 py-2.5 text-left font-inter text-sm font-medium {{ $user->is_active ? 'text-[#B45309]' : 'text-[#15803D]' }} transition hover:bg-black/[0.03]"
+                                                        class="flex w-full items-center gap-3 px-3 py-2.5 text-left font-inter text-sm font-medium transition hover:bg-[#f3f4f6] {{ $user->is_active ? 'text-[#ef4444]' : 'text-[#22c55e]' }}"
                                                         role="menuitem"
                                                     >
-                                                        {{ $user->is_active ? 'Désactiver' : 'Activer' }}
+                                                        @if($user->is_active)
+                                                            <i class="fa-solid fa-ban text-xs text-[#ef4444]"></i>
+                                                            Désactiver
+                                                        @else
+                                                            <i class="fa-solid fa-circle-check text-xs text-[#22c55e]"></i>
+                                                            Activer
+                                                        @endif
                                                     </button>
                                                 @endcan
                                             </div>
@@ -387,7 +386,10 @@
                             <input type="hidden" name="auth_type" value="sso" />
 
                             <div class="mt-5 w-full max-w-[607px] rounded-[10px] border border-black/10 p-4">
-                                <p class="font-inter text-sm font-semibold text-[#0A0A0A]">Rôle &amp; Accès</p>
+                                <div class="flex items-center justify-between gap-2">
+                                    <p class="font-inter text-sm font-semibold text-[#0A0A0A]">Rôle &amp; Accès</p>
+                                    <span class="font-inter text-xs text-[#717182]">Optionnel — peut être assigné plus tard</span>
+                                </div>
                                 <div class="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-2" data-create-role-grid>
                                     @foreach ($rolesForUi as $role)
                                         <x-user-role-card
@@ -435,38 +437,77 @@
         @endcan
     @endcan
 
-    {{-- Edit Role Modal --}}
+    {{-- Edit User Modal --}}
     @can('user.manage')
-        @can('user.assign.permissions')
+        <div
+            id="edit-user-modal"
+            class="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6"
+            hidden
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="edit-user-title"
+            data-edit-user-can-assign-permissions="{{ auth()->user()?->can('user.assign.permissions') ? 1 : 0 }}"
+        >
+            <div data-edit-user-overlay class="absolute inset-0 bg-black/50"></div>
             <div
-                id="edit-user-modal"
-                class="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6"
-                hidden
-                role="dialog"
-                aria-modal="true"
-                aria-labelledby="edit-user-title"
+                data-edit-user-panel
+                tabindex="-1"
+                class="relative z-10 flex max-h-[min(100dvh-2rem,760px)] w-full max-w-[672px] flex-col overflow-hidden rounded-[14px] bg-white shadow-[0px_25px_50px_-12px_rgba(0,0,0,0.35)]"
             >
-                <div data-edit-user-overlay class="absolute inset-0 bg-black/50"></div>
-                <div
-                    data-edit-user-panel
-                    tabindex="-1"
-                    class="relative z-10 flex max-h-[min(100dvh-2rem,720px)] w-full max-w-[672px] flex-col overflow-hidden rounded-[14px] bg-white shadow-[0px_25px_50px_-12px_rgba(0,0,0,0.35)]"
-                >
-                    <header class="shrink-0 border-b border-black/10 px-6 pb-4 pt-6">
-                        <h2 id="edit-user-title" class="font-inter text-2xl font-semibold text-[#0A0A0A]">Modifier le Rôle de l'utilisateur</h2>
-                        <p class="mt-1 font-inter text-sm font-normal text-[#717182]">Ajouter ou modifier le rôle d'un utilisateur</p>
-                        <p class="mt-2 font-inter text-sm font-medium text-[#1C398E]" data-edit-user-name></p>
-                    </header>
-                    <form data-edit-user-form class="flex min-h-0 flex-1 flex-col overflow-hidden">
-                        <input type="hidden" name="user_id" data-edit-user-id value="" />
-                        <div class="min-h-0 flex-1 overflow-y-auto px-6 py-5">
-                            <div
-                                data-edit-user-errors
-                                class="mb-4 hidden rounded-[10px] border border-red-200 bg-red-50 px-3 py-2 font-inter text-sm text-red-800"
-                                role="alert"
-                            ></div>
+                <header class="shrink-0 border-b border-black/10 px-6 pb-4 pt-6">
+                    <h2 id="edit-user-title" class="font-inter text-2xl font-semibold text-[#0A0A0A]">Modifier l'utilisateur</h2>
+                    <p class="mt-1 font-inter text-sm font-normal text-[#717182]">Mettre à jour les informations, le rôle et les permissions</p>
+                    <p class="mt-2 font-inter text-sm font-medium text-[#1C398E]" data-edit-user-display-name></p>
+                </header>
+                <form data-edit-user-form class="flex min-h-0 flex-1 flex-col overflow-hidden">
+                    <input type="hidden" name="user_id" data-edit-user-id value="" />
+                    <div class="min-h-0 flex-1 overflow-y-auto px-6 py-5">
+                        <div
+                            data-edit-user-errors
+                            class="mb-4 hidden rounded-[10px] border border-red-200 bg-red-50 px-3 py-2 font-inter text-sm text-red-800"
+                            role="alert"
+                        ></div>
 
-                            <div class="w-full max-w-[607px] rounded-[10px] border border-black/10 p-4">
+                        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                            <div class="flex flex-col gap-1.5 sm:col-span-2">
+                                <label for="edit-full-name" class="font-inter text-sm font-medium text-[#0A0A0A]">Nom complet</label>
+                                <input
+                                    id="edit-full-name"
+                                    name="full_name"
+                                    type="text"
+                                    required
+                                    class="h-[37px] w-full rounded-[10px] border border-black/10 bg-white px-3 font-inter text-sm outline-none focus:border-[#1E3A8A] focus:ring-2 focus:ring-[#1E3A8A]/20"
+                                />
+                            </div>
+                            <div class="flex flex-col gap-1.5 sm:col-span-2">
+                                <label for="edit-email" class="font-inter text-sm font-medium text-[#0A0A0A]">Email</label>
+                                <input
+                                    id="edit-email"
+                                    name="email"
+                                    type="email"
+                                    required
+                                    class="h-[37px] w-full rounded-[10px] border border-black/10 bg-white px-3 font-inter text-sm outline-none focus:border-[#1E3A8A] focus:ring-2 focus:ring-[#1E3A8A]/20"
+                                />
+                                <p class="font-inter text-xs text-[#717182]">L'admin peut corriger l'email même pour les comptes provisionnés via SSO.</p>
+                            </div>
+                            <div class="flex flex-col gap-1.5 sm:col-span-2">
+                                <label for="edit-institution" class="font-inter text-sm font-medium text-[#0A0A0A]">Institution</label>
+                                <select
+                                    id="edit-institution"
+                                    name="institution_id"
+                                    required
+                                    class="h-[37px] w-full rounded-[10px] border border-black/10 bg-white px-3 font-inter text-sm outline-none focus:border-[#1E3A8A] focus:ring-2 focus:ring-[#1E3A8A]/20"
+                                >
+                                    <option value="">Sélectionner une institution</option>
+                                    @foreach ($institutions as $inst)
+                                        <option value="{{ $inst->id }}">{{ $inst->name }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
+
+                        @can('user.assign.permissions')
+                            <div class="mt-5 w-full max-w-[607px] rounded-[10px] border border-black/10 p-4">
                                 <p class="font-inter text-sm font-semibold text-[#0A0A0A]">Rôle &amp; Accès</p>
                                 <div class="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-2" data-edit-role-grid>
                                     @foreach ($rolesForUi as $role)
@@ -474,7 +515,6 @@
                                             :roleName="$role->name"
                                             :inactifusers="$role->permissions->count() . ' permissions'"
                                             :description="(string) ($role->description ?? '')"
-                                        
                                             :roleId="$role->id"
                                             data-edit-role-card
                                         />
@@ -493,26 +533,26 @@
                                     @include('users.partials.permission-categories', ['permissionsByCategory' => $permissionsByCategory, 'modalKey' => 'edit'])
                                 </div>
                             </div>
-                        </div>
-                        <footer class="flex shrink-0 items-center justify-end gap-3 border-t border-black/10 px-6 py-4">
-                            <button
-                                type="button"
-                                data-close-edit-user
-                                class="inline-flex h-11 min-w-[106px] items-center justify-center rounded-[10px] border border-black/10 bg-white px-4 font-inter text-sm font-medium text-[#0A0A0A] transition hover:bg-black/[0.03]"
-                            >
-                                Annuler
-                            </button>
-                            <button
-                                type="submit"
-                                class="inline-flex h-11 min-w-[140px] items-center justify-center rounded-[10px] bg-[#1E3A8A] px-6 font-inter text-sm font-semibold text-white transition hover:bg-[#163171] disabled:opacity-60"
-                            >
-                                Modifier
-                            </button>
-                        </footer>
-                    </form>
-                </div>
+                        @endcan
+                    </div>
+                    <footer class="flex shrink-0 items-center justify-end gap-3 border-t border-black/10 px-6 py-4">
+                        <button
+                            type="button"
+                            data-close-edit-user
+                            class="inline-flex h-11 min-w-[106px] items-center justify-center rounded-[10px] border border-black/10 bg-white px-4 font-inter text-sm font-medium text-[#0A0A0A] transition hover:bg-black/[0.03]"
+                        >
+                            Annuler
+                        </button>
+                        <button
+                            type="submit"
+                            class="inline-flex h-11 min-w-[140px] items-center justify-center rounded-[10px] bg-[#1E3A8A] px-6 font-inter text-sm font-semibold text-white transition hover:bg-[#163171] disabled:opacity-60"
+                        >
+                            Enregistrer
+                        </button>
+                    </footer>
+                </form>
             </div>
-        @endcan
+        </div>
     @endcan
 
     <div

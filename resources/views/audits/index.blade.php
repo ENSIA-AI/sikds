@@ -2,6 +2,8 @@
 @section('page_title', 'Journaux d’Audit')
 @section('page_subtitle', 'Traçabilité complète des actions système et sécurité')
 @section('content')
+    <script type="application/json" id="audit-selected-events">@json(is_array(request('event_type')) ? request('event_type') : (request('event_type') ? [request('event_type')] : []))</script>
+    <script type="application/json" id="audit-selected-statuses">@json(is_array(request('result')) ? request('result') : (request('result') ? [request('result')] : []))</script>
     @php
         $resultLabels = ['success' => 'Succès', 'warning' => 'Avertissement', 'failed' => 'Échec'];
         $eventTypeLabels = [
@@ -40,6 +42,22 @@
             'indexing.failed' => 'Échec indexation',
             'notification.sent' => 'Notification envoyée',
             'notification.failed' => 'Échec notification',
+            // Defensive aliases for shorter event keys that may appear via legacy or future emitters.
+            'login' => 'Connexion',
+            'logout' => 'Déconnexion',
+            'upload' => 'Téléversement',
+            'download' => 'Téléchargement',
+            'create' => 'Création',
+            'delete' => 'Suppression',
+            'update' => 'Mise à jour',
+            'view' => 'Consultation',
+            'document.upload' => 'Téléversement',
+            'document.create' => 'Création',
+            'document.delete' => 'Suppression',
+            'document.update' => 'Mise à jour',
+            'document.view' => 'Consultation',
+            'user.create' => "Création d'utilisateur",
+            'user.update' => "Modification d'utilisateur",
         ];
         $fallbackEventLabel = static function (string $event): string {
             return str($event)
@@ -137,8 +155,8 @@
             ->filter(fn ($value) => $value !== null && $value !== '');
     @endphp
 
-    <div class="bg-white rounded-[14px] border shadow-sm mb-5" style="border-color:rgba(0,0,0,.1);">
-        <form method="GET" action="{{ route('audits.index') }}" id="audit-filter-form">
+        <div x-data="auditFilters()" class="bg-white rounded-[14px] border shadow-sm mb-5" style="border-color:rgba(0,0,0,.1);">
+        <form method="GET" action="{{ route('audits.index') }}" id="audit-filter-form" x-ref="filterForm">
             <div class="px-5 pt-4 pb-3 flex items-center justify-end">
                 <button type="button" id="open-export-modal"
                    class="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold border border-black/10 rounded-[12px] hover:bg-gray-50 transition-colors">
@@ -148,67 +166,121 @@
             </div>
 
             <div class="px-5 pb-4 grid grid-cols-1 lg:grid-cols-12 gap-3">
-                <input type="date" name="date" value="{{ request('date') }}"
-                       class="lg:col-span-3 text-sm border border-black/10 rounded-[10px] px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[color:var(--sikds-primary)]/30">
-
-                <div class="lg:col-span-3 flex items-center rounded-[10px] bg-[#060b2b] px-3 py-2 text-white">
-                    <i class="fa-solid fa-filter text-xs mr-2"></i>
-                    <select name="event_type" class="w-full bg-transparent text-sm focus:outline-none">
-                        <option value="" class="text-black">Type d'événement</option>
-                        @foreach ($eventTypes as $eventType)
-                            <option value="{{ $eventType }}" class="text-black" @selected(request('event_type') === $eventType)>{{ $eventTypeLabels[$eventType] ?? $fallbackEventLabel($eventType) }}</option>
-                        @endforeach
-                    </select>
-                    @if ($activeFiltersCount > 0)
-                        <span class="ml-2 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-white px-1 text-[11px] font-semibold text-[#060b2b]">{{ $activeFiltersCount }}</span>
-                    @endif
+                {{-- Date filter --}}
+                <div class="lg:col-span-3">
+                    <input type="date" name="date" value="{{ request('date') }}"
+                           class="h-10 w-full text-sm border border-[#e5e7eb] rounded-[8px] px-3 bg-white focus:outline-none focus:border-[#1c398e] focus:ring-2 focus:ring-[#1c398e]/20 transition">
                 </div>
 
-                <input type="text" name="user" value="{{ request('user', request('actor')) }}"
-                       class="lg:col-span-3 text-sm border border-black/10 rounded-[10px] px-3 py-2 focus:outline-none"
-                       placeholder="Filtrer par utilisateur...">
+                {{-- Event Type multi-select --}}
+                <div class="lg:col-span-3 relative" @click.outside="eventOpen = false">
+                    @php
+                        $selectedEventTypes = is_array(request('event_type')) ? request('event_type') : (request('event_type') ? [request('event_type')] : []);
+                    @endphp
+                    <button type="button" @click="eventOpen = !eventOpen"
+                            class="h-10 w-full flex items-center gap-2 text-sm border border-[#e5e7eb] rounded-[8px] px-3 bg-white text-left focus:outline-none focus:border-[#1c398e] focus:ring-2 focus:ring-[#1c398e]/20 transition"
+                            :class="{ 'border-[#1c398e] ring-2 ring-[#1c398e]/20': eventOpen }">
+                        <i class="fa-solid fa-filter text-xs shrink-0" style="color:var(--sikds-muted)"></i>
+                        <span class="flex-1 truncate" x-text="selectedEvents.length ? selectedEvents.length + ' type(s)' : 'Type d\'événement'" :class="selectedEvents.length ? 'text-[#0a0a0a] font-medium' : 'text-[#717182]'"></span>
+                        <i class="fa-solid fa-chevron-down text-[10px] shrink-0 transition-transform" :class="{ 'rotate-180': eventOpen }" style="color:var(--sikds-muted)"></i>
+                    </button>
+                    @if (count($selectedEventTypes) > 0)
+                        <span class="absolute -top-1.5 -right-1.5 inline-flex h-5 min-w-[1.25rem] items-center justify-center rounded-full px-1 text-[11px] font-semibold text-white" style="background-color:var(--sikds-primary)">{{ count($selectedEventTypes) }}</span>
+                    @endif
+                    <div x-show="eventOpen" x-transition.origin.top
+                         class="absolute left-0 right-0 top-full z-50 mt-1.5 max-h-64 overflow-y-auto rounded-[12px] border border-black/10 bg-white py-1 shadow-[0_8px_30px_-4px_rgba(0,0,0,0.15)]" x-cloak>
+                        @foreach ($eventTypes as $et)
+                            <label class="flex items-center gap-2.5 px-3 py-2 text-sm cursor-pointer hover:bg-[#f1f5f9] transition-colors">
+                                <input type="checkbox" name="event_type[]" value="{{ $et }}"
+                                       {{ in_array($et, $selectedEventTypes, true) ? 'checked' : '' }}
+                                       x-model="selectedEvents"
+                                       class="h-4 w-4 rounded border-black/20 text-[#1c398e] focus:ring-[#1c398e]/30">
+                                <span>{{ $eventTypeLabels[$et] ?? $fallbackEventLabel($et) }}</span>
+                            </label>
+                        @endforeach
+                    </div>
+                </div>
 
-                <select name="result" class="lg:col-span-3 text-sm border border-black/10 rounded-[10px] px-3 py-2 focus:outline-none">
-                    <option value="">Tous les statuts</option>
-                    @foreach ($resultLabels as $key => $label)
-                        <option value="{{ $key }}" @selected(request('result') === $key)>{{ $label }}</option>
-                    @endforeach
-                </select>
+                {{-- User filter --}}
+                <div class="lg:col-span-3">
+                    <input type="text" name="user" value="{{ request('user', request('actor')) }}"
+                           class="h-10 w-full text-sm border border-[#e5e7eb] rounded-[8px] px-3 bg-white focus:outline-none focus:border-[#1c398e] focus:ring-2 focus:ring-[#1c398e]/20 transition"
+                           placeholder="Filtrer par utilisateur...">
+                </div>
+
+                {{-- Status multi-select --}}
+                <div class="lg:col-span-3 relative" @click.outside="statusOpen = false">
+                    @php
+                        $selectedResults = is_array(request('result')) ? request('result') : (request('result') ? [request('result')] : []);
+                    @endphp
+                    <button type="button" @click="statusOpen = !statusOpen"
+                            class="h-10 w-full flex items-center gap-2 text-sm border border-[#e5e7eb] rounded-[8px] px-3 bg-white text-left focus:outline-none focus:border-[#1c398e] focus:ring-2 focus:ring-[#1c398e]/20 transition"
+                            :class="{ 'border-[#1c398e] ring-2 ring-[#1c398e]/20': statusOpen }">
+                        <span class="flex-1 truncate" x-text="selectedStatuses.length ? selectedStatuses.length + ' statut(s)' : 'Tous les statuts'" :class="selectedStatuses.length ? 'text-[#0a0a0a] font-medium' : 'text-[#717182]'"></span>
+                        <i class="fa-solid fa-chevron-down text-[10px] shrink-0 transition-transform" :class="{ 'rotate-180': statusOpen }" style="color:var(--sikds-muted)"></i>
+                    </button>
+                    <div x-show="statusOpen" x-transition.origin.top
+                         class="absolute left-0 right-0 top-full z-50 mt-1.5 rounded-[12px] border border-black/10 bg-white py-1 shadow-[0_8px_30px_-4px_rgba(0,0,0,0.15)]" x-cloak>
+                        @foreach ($resultLabels as $key => $label)
+                            <label class="flex items-center gap-2.5 px-3 py-2 text-sm cursor-pointer hover:bg-[#f1f5f9] transition-colors">
+                                <input type="checkbox" name="result[]" value="{{ $key }}"
+                                       {{ in_array($key, $selectedResults, true) ? 'checked' : '' }}
+                                       x-model="selectedStatuses"
+                                       class="h-4 w-4 rounded border-black/20 text-[#1c398e] focus:ring-[#1c398e]/30">
+                                <span>{{ $label }}</span>
+                            </label>
+                        @endforeach
+                    </div>
+                </div>
             </div>
 
+            {{-- Active filter chips --}}
             <div class="px-5 pb-4 flex flex-wrap items-center justify-between gap-3">
-                <div class="text-sm" style="color:var(--sikds-muted)">
-                    Filtres actifs:
+                <div class="flex flex-wrap items-center gap-2 text-sm" style="color:var(--sikds-muted)">
+                    <span>Filtres actifs:</span>
                     @if ($nonEmptyFilters->isEmpty())
-                        <span class="inline-flex items-center rounded-full bg-gray-100 px-2 py-1 text-xs">Aucun</span>
+                        <span class="inline-flex items-center rounded-full bg-[#f1f5f9] px-2.5 py-1 text-xs text-[#717182]">Aucun</span>
                     @else
                         @foreach ($nonEmptyFilters as $key => $value)
                             @php
-                                $displayValue = is_string($value) ? $value : json_encode($value);
-                                if ($key === 'event_type' && is_string($value)) {
-                                    $displayValue = $eventTypeLabels[$value] ?? $fallbackEventLabel($value);
-                                }
-                                if ($key === 'result' && is_string($value)) {
-                                    $displayValue = $resultLabels[$value] ?? $value;
+                                if (is_array($value)) {
+                                    $displayParts = [];
+                                    foreach ($value as $v) {
+                                        if ($key === 'event_type') {
+                                            $displayParts[] = $eventTypeLabels[$v] ?? $fallbackEventLabel($v);
+                                        } elseif ($key === 'result') {
+                                            $displayParts[] = $resultLabels[$v] ?? $v;
+                                        } else {
+                                            $displayParts[] = $v;
+                                        }
+                                    }
+                                    $displayValue = implode(', ', $displayParts);
+                                } else {
+                                    $displayValue = $value;
+                                    if ($key === 'event_type' && is_string($value)) {
+                                        $displayValue = $eventTypeLabels[$value] ?? $fallbackEventLabel($value);
+                                    }
+                                    if ($key === 'result' && is_string($value)) {
+                                        $displayValue = $resultLabels[$value] ?? $value;
+                                    }
                                 }
                                 $displayKey = $filterLabelMap[$key] ?? str($key)->replace('_', ' ')->title()->toString();
                             @endphp
-                            <span class="inline-flex items-center rounded-full bg-gray-100 px-2 py-1 text-xs">
+                            <span class="inline-flex items-center gap-1.5 rounded-full bg-[#eef2ff] px-2.5 py-1 text-xs font-medium text-[#1c398e]">
+                                <i class="fa-solid fa-circle text-[4px]"></i>
                                 {{ $displayKey }}: {{ $displayValue }}
                             </span>
                         @endforeach
                     @endif
                 </div>
                 <div class="flex items-center gap-2">
-                    <button type="button" id="copy-audits-link"
-                            class="px-4 py-2 text-sm border border-black/10 rounded-[10px] hover:bg-gray-50 transition-colors">
-                        Copier le lien
-                    </button>
                     <a href="{{ route('audits.index') }}"
-                       class="px-4 py-2 text-sm border border-black/10 rounded-[10px] hover:bg-gray-50 transition-colors">
+                       class="inline-flex items-center gap-1.5 px-4 py-2 text-sm border border-black/10 rounded-[10px] hover:bg-gray-50 transition-colors" style="color:var(--sikds-ink)">
+                        <i class="fa-solid fa-rotate-left text-[10px]"></i>
                         Réinitialiser
                     </a>
-                    <button type="submit" class="px-4 py-2 text-sm font-semibold text-white rounded-[10px]" style="background-color:var(--sikds-primary);">
+                    <button type="submit" class="inline-flex items-center gap-1.5 px-5 py-2 text-sm font-semibold text-white rounded-[10px] transition hover:opacity-90" style="background-color:var(--sikds-primary);">
+                        <i class="fa-solid fa-check text-[10px]"></i>
                         Appliquer
                     </button>
                 </div>
@@ -403,11 +475,21 @@
 
     @push('scripts')
         <script>
+            function auditFilters() {
+                return {
+                    eventOpen: false,
+                    statusOpen: false,
+                    selectedEvents: JSON.parse(document.getElementById('audit-selected-events')?.textContent || '[]'),
+                    selectedStatuses: JSON.parse(document.getElementById('audit-selected-statuses')?.textContent || '[]'),
+                };
+            }
+            // Expose globally for Alpine.js x-data binding
+            window.auditFilters = auditFilters;
+
             document.addEventListener('DOMContentLoaded', function () {
+
                 const filterForm = document.getElementById('audit-filter-form');
                 const dateInput = filterForm?.querySelector('input[name="date"]');
-                const eventTypeSelect = filterForm?.querySelector('select[name="event_type"]');
-                const resultSelect = filterForm?.querySelector('select[name="result"]');
                 const userInput = filterForm?.querySelector('input[name="user"]');
                 const applyBtn = filterForm?.querySelector('button[type="submit"]');
 
@@ -418,9 +500,17 @@
                     filterForm.submit();
                 };
 
-                eventTypeSelect?.addEventListener('change', submitFilters);
-                resultSelect?.addEventListener('change', submitFilters);
                 dateInput?.addEventListener('change', submitFilters);
+
+                // Auto-apply when any event_type or result checkbox toggles inside the multi-selects.
+                let multiSelectDebounceTimer = null;
+                filterForm?.querySelectorAll('input[type="checkbox"][name="event_type[]"], input[type="checkbox"][name="result[]"]').forEach((cb) => {
+                    cb.addEventListener('change', function () {
+                        if (multiSelectDebounceTimer) clearTimeout(multiSelectDebounceTimer);
+                        // Small debounce so a rapid multi-click batches into a single submit.
+                        multiSelectDebounceTimer = setTimeout(submitFilters, 250);
+                    });
+                });
 
                 let userDebounceTimer = null;
                 userInput?.addEventListener('input', function () {
@@ -435,19 +525,7 @@
                     }
                 });
 
-                const copyBtn = document.getElementById('copy-audits-link');
-                if (copyBtn) {
-                    copyBtn.addEventListener('click', async function () {
-                        try {
-                            await navigator.clipboard.writeText(window.location.href);
-                            copyBtn.textContent = 'Lien copié';
-                            setTimeout(() => { copyBtn.textContent = 'Copier le lien'; }, 1200);
-                        } catch (e) {
-                            copyBtn.textContent = 'Copie impossible';
-                            setTimeout(() => { copyBtn.textContent = 'Copier le lien'; }, 1200);
-                        }
-                    });
-                }
+
 
                 const modal = document.getElementById('export-audit-modal');
                 const openBtn = document.getElementById('open-export-modal');

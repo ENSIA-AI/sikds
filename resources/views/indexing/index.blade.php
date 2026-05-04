@@ -21,7 +21,7 @@
                     <th class="sikds-th-title">Titre & Référence</th>
                     <th class="sikds-th-status">Statut</th>
                     <th class="sikds-th-date">Chunks</th>
-                    <th class="sikds-th-date">Dernière mise à jour</th>
+                    <th class="sikds-th-date-wide">Dernière mise à jour</th>
                     <th class="sikds-th-actions">Action</th>
                 </tr>
             </thead>

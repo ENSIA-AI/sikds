@@ -25,7 +25,7 @@
     <div class="grid gap-6 lg:grid-cols-2">
         <article class="bg-white rounded-[14px] border border-black/10 p-5" style="box-shadow:var(--sikds-shadow-panel);">
             <h3 class="text-base font-bold mb-4 flex items-center gap-2" style="color:var(--sikds-ink);">
-                <i class="fa-solid fa-globe text-blue-600"></i>
+                <i class="fa-solid fa-globe text-[#1e3a8a]"></i>
                 Langue d'affichage
             </h3>
             <p class="text-xs text-slate-500 mb-4">Langue actuelle de l'interface.</p>
@@ -46,7 +46,7 @@
 
         <article class="bg-white rounded-[14px] border border-black/10 p-5" style="box-shadow:var(--sikds-shadow-panel);">
             <h3 class="text-base font-bold mb-4 flex items-center gap-2" style="color:var(--sikds-ink);">
-                <i class="fa-solid fa-shield-halved text-amber-600"></i>
+                <i class="fa-solid fa-shield-halved text-[#1e3a8a]"></i>
                 Audit & Conformité
             </h3>
             <form method="POST" action="{{ route('settings.update') }}" class="space-y-3">
@@ -70,7 +70,7 @@
 
         <article class="bg-white rounded-[14px] border border-black/10 p-5 lg:col-span-2" style="box-shadow:var(--sikds-shadow-panel);">
             <h3 class="text-base font-bold mb-4 flex items-center gap-2" style="color:var(--sikds-ink);">
-                <i class="fa-solid fa-bell text-purple-600"></i>
+                <i class="fa-solid fa-bell text-[#1e3a8a]"></i>
                 Notifications Email
             </h3>
             <form method="POST" action="{{ route('settings.update') }}" class="space-y-4">
@@ -108,7 +108,7 @@
 
         <article class="bg-white rounded-[14px] border border-black/10 p-5 lg:col-span-2" style="box-shadow:var(--sikds-shadow-panel);">
             <h3 class="text-base font-bold mb-4 flex items-center gap-2" style="color:var(--sikds-ink);">
-                <i class="fa-solid fa-water text-teal-600"></i>
+                <i class="fa-solid fa-water text-[#1e3a8a]"></i>
                 Filigrane (Watermark)
             </h3>
             <form method="POST" action="{{ route('settings.update') }}" class="space-y-3">

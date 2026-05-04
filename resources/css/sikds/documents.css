@@ -243,6 +243,9 @@
 
     .sikds-docs-table {
         width:           100%;
+        /* min-width sized to fit all columns comfortably (title + status + tags + audience + date + actions row).
+           Below this width the wrapper scrolls horizontally so columns don't squish into each other. */
+        min-width:       1100px;
         border-collapse: collapse;
         font-size:       13px;
         table-layout:    fixed;
@@ -253,7 +256,14 @@
     .sikds-th-tags    { width: 16%; }
     .sikds-th-audience { width: 13%; }
     .sikds-th-date    { width: 13%; }
+    /* Wider date column for "Dernière mise à jour" headers that need extra room. */
+    .sikds-th-date-wide { width: 18%; }
     .sikds-th-actions { width: 18%; }
+
+    /* Keep multi-word table headers from breaking into the next column. */
+    .sikds-docs-table thead th {
+        white-space: nowrap;
+    }
 
     .sikds-docs-table thead th {
         padding:        14px 16px;

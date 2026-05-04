@@ -6,10 +6,7 @@
 @section('content')
     <div class="max-w-5xl space-y-6">
         <div class="flex items-center justify-between">
-            <a href="{{ route('roles.index') }}" class="inline-flex items-center gap-2 text-sm text-slate-600 hover:text-slate-900">
-                <i class="fa-solid fa-arrow-left"></i>
-                Retour aux rôles
-            </a>
+            <x-back-link :href="route('roles.index')" label="Retour aux rôles" />
         </div>
 
         <form action="{{ route('roles.store') }}" method="POST" class="space-y-6">

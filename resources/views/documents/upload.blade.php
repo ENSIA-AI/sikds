@@ -16,9 +16,7 @@
     class="sikds-upload"
 >
 
-    <a href="{{ route('documents.index') }}" class="sikds-upload-back">
-        <i class="fa-solid fa-arrow-left"></i> Retour aux documents
-    </a>
+    <x-back-link :href="route('documents.index')" label="Retour aux documents" class="sikds-upload-back" />
 
     <h2 class="sikds-upload-heading">Téléverser des Documents</h2>
     <p class="sikds-upload-sub">Ajouter de nouveaux documents au système SIKDS</p>

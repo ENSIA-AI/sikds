@@ -36,7 +36,13 @@ class AuditController extends Controller
 
         $activeFiltersCount = collect($request->query())
             ->except('page')
-            ->filter(fn ($value) => $value !== null && $value !== '')
+            ->filter(function ($value): bool {
+                if (is_array($value)) {
+                    return collect($value)->filter(fn ($v) => $v !== null && $v !== '')->isNotEmpty();
+                }
+
+                return $value !== null && $value !== '';
+            })
             ->count();
 
         return view('audits.index', compact('logs', 'eventTypes', 'activeFiltersCount') + ['activeNav' => 'audits']);
@@ -147,12 +153,21 @@ class AuditController extends Controller
             });
         }
 
-        if ($eventType = $request->input('event_type')) {
-            $query->where('event_type', $eventType);
+        // Multi-select: accept either ?event_type=X (single) or ?event_type[]=X&event_type[]=Y (array).
+        $eventType = $request->input('event_type');
+        $eventTypes = is_array($eventType)
+            ? array_values(array_filter(array_map('strval', $eventType), fn ($v): bool => $v !== ''))
+            : (is_string($eventType) && trim($eventType) !== '' ? [$eventType] : []);
+        if ($eventTypes !== []) {
+            $query->whereIn('event_type', $eventTypes);
         }
 
-        if ($result = $request->input('result')) {
-            $query->where('result', $result);
+        $result = $request->input('result');
+        $results = is_array($result)
+            ? array_values(array_filter(array_map('strval', $result), fn ($v): bool => $v !== ''))
+            : (is_string($result) && trim($result) !== '' ? [$result] : []);
+        if ($results !== []) {
+            $query->whereIn('result', $results);
         }
 
         if ($actor = trim((string) $request->input('actor', ''))) {
