@@ -278,12 +278,21 @@ class DocumentsController
                     'document.soft_deleted' => ['title' => 'Document supprimé', 'icon' => 'fa-regular fa-trash-can', 'class' => 'sikds-doc-event-icon--share'],
                     'document.restored' => ['title' => 'Document restauré', 'icon' => 'fa-solid fa-rotate-left', 'class' => 'sikds-doc-event-icon--share'],
                     'document.archived' => ['title' => 'Document archivé', 'icon' => 'fa-solid fa-box-archive', 'class' => 'sikds-doc-event-icon--share'],
+                    'document.forwarded' => ['title' => 'Document transféré', 'icon' => 'fa-solid fa-share-from-square', 'class' => 'sikds-doc-event-icon--share'],
+                    'tag.assigned' => ['title' => 'Étiquette ajoutée', 'icon' => 'fa-solid fa-tag', 'class' => 'sikds-doc-event-icon--version'],
+                    'tag.removed' => ['title' => 'Étiquette retirée', 'icon' => 'fa-solid fa-tag', 'class' => 'sikds-doc-event-icon--share'],
+                    'DOCUMENT_INDEXING_STARTED' => ['title' => 'Indexation démarrée', 'icon' => 'fa-solid fa-bolt', 'class' => 'sikds-doc-event-icon--version'],
+                    'DOCUMENT_INDEXING_COMPLETED' => ['title' => 'Indexation terminée', 'icon' => 'fa-solid fa-circle-check', 'class' => 'sikds-doc-event-icon--version'],
+                    'DOCUMENT_INDEXING_FAILED' => ['title' => "Échec d'indexation", 'icon' => 'fa-solid fa-triangle-exclamation', 'class' => 'sikds-doc-event-icon--share'],
                 ];
                 $data = $map[$activity->event_type] ?? ['title' => $activity->event_type, 'icon' => 'fa-regular fa-circle', 'class' => 'sikds-doc-event-icon--version'];
 
+                $resultLabels = ['success' => 'Succès', 'failed' => 'Échec', 'warning' => 'Avertissement'];
+                $resultLabel = $activity->result ? ($resultLabels[$activity->result] ?? $activity->result) : null;
+
                 return [
                     'title' => $data['title'],
-                    'meta' => ($activity->user_email ?? 'Système').($activity->result ? ' • '.$activity->result : ''),
+                    'meta' => ($activity->user_email ?? 'Système').($resultLabel ? ' • '.$resultLabel : ''),
                     'timestamp' => $activity->created_at?->format('d/m/Y H:i') ?? '-',
                     'icon' => $data['icon'],
                     'icon_class' => $data['class'],

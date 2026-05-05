@@ -2,16 +2,36 @@
 @section('page_title', 'Notifications')
 @section('page_subtitle', 'Suivi des notifications email et de leur état de livraison')
 @section('content')
+    <script type="application/json" id="notifications-selected-types">@json(is_array(request('type')) ? request('type') : (request('type') ? [request('type')] : []))</script>
+    <script type="application/json" id="notifications-selected-statuses">@json(is_array(request('status')) ? request('status') : (request('status') ? [request('status')] : []))</script>
     @php
         $typeLabels = [
             'document.published' => 'Document publié',
             'document.updated' => 'Document mis à jour',
+            'document.forwarded' => 'Document partagé',
         ];
         $statusLabels = [
             'sent' => 'Envoyé',
             'pending' => 'En attente',
             'failed' => 'Échec',
         ];
+        $filterLabelMap = [
+            'q' => 'Recherche',
+            'type' => 'Type',
+            'status' => 'Statut',
+            'date_from' => 'Du',
+            'date_to' => 'Au',
+        ];
+        $selectedTypes = is_array(request('type')) ? request('type') : (request('type') ? [request('type')] : []);
+        $selectedStatuses = is_array(request('status')) ? request('status') : (request('status') ? [request('status')] : []);
+        $nonEmptyFilters = collect(request()->query())
+            ->except('page')
+            ->filter(function ($value): bool {
+                if (is_array($value)) {
+                    return collect($value)->filter(fn ($v) => $v !== null && $v !== '')->isNotEmpty();
+                }
+                return $value !== null && $value !== '';
+            });
         $canViewTechnicalDetails = auth()->user()?->can('audit.view') ?? false;
         $humanEmailError = static function (?string $raw): ?string {
             if (! is_string($raw) || trim($raw) === '') {
@@ -45,37 +65,123 @@
         <x-stat-card icon="/time-dark-blue.svg" value="{{ number_format($stats['pending']) }}" label="En attente" trend="{{ $stats['pending'] }}" iconStyle="filter: brightness(0) saturate(100%) invert(23%) sepia(66%) saturate(1400%) hue-rotate(210deg) brightness(95%) contrast(95%);" />
     </div>
 
-    <div class="bg-white rounded-[14px] border shadow-sm mb-5" style="border-color:rgba(0,0,0,.1);">
-        <form method="GET" action="{{ route('notifications.index') }}" class="px-5 py-4" id="notifications-filter-form">
-            <div class="grid grid-cols-1 md:grid-cols-6 gap-3">
-                <input type="text" name="q" value="{{ request('q') }}"
-                       class="md:col-span-2 text-sm border border-black/10 rounded-[10px] px-3 py-2 focus:outline-none"
-                       placeholder="Rechercher utilisateur/document/type...">
-                <select name="type" class="text-sm border border-black/10 rounded-[10px] px-3 py-2 focus:outline-none">
-                    <option value="">Tous les types</option>
-                    @foreach ($types as $type)
-                        <option value="{{ $type }}" @selected(request('type') === $type)>{{ $typeLabels[$type] ?? $type }}</option>
-                    @endforeach
-                </select>
-                <select name="status" class="text-sm border border-black/10 rounded-[10px] px-3 py-2 focus:outline-none">
-                    <option value="">Tous les statuts</option>
-                    @foreach ($statusLabels as $key => $label)
-                        <option value="{{ $key }}" @selected(request('status') === $key)>{{ $label }}</option>
-                    @endforeach
-                </select>
-                <input type="date" name="date_from" value="{{ request('date_from') }}"
-                       class="text-sm border border-black/10 rounded-[10px] px-3 py-2 focus:outline-none">
-                <input type="date" name="date_to" value="{{ request('date_to') }}"
-                       class="text-sm border border-black/10 rounded-[10px] px-3 py-2 focus:outline-none">
+    <div x-data="notificationFilters()" class="bg-white rounded-[14px] border shadow-sm mb-5" style="border-color:rgba(0,0,0,.1);">
+        <form method="GET" action="{{ route('notifications.index') }}" id="notifications-filter-form" x-ref="filterForm">
+            <div class="px-5 pt-4 pb-3 grid grid-cols-1 lg:grid-cols-12 gap-3">
+                {{-- Type multi-select --}}
+                <div class="lg:col-span-3 relative" @click.outside="typeOpen = false">
+                    <button type="button" @click="typeOpen = !typeOpen"
+                            class="h-10 w-full flex items-center gap-2 text-sm border border-[#e5e7eb] rounded-[8px] px-3 bg-white text-left focus:outline-none focus:border-[#1c398e] focus:ring-2 focus:ring-[#1c398e]/20 transition"
+                            :class="{ 'border-[#1c398e] ring-2 ring-[#1c398e]/20': typeOpen }">
+                        <i class="fa-solid fa-filter text-xs shrink-0" style="color:var(--sikds-muted)"></i>
+                        <span class="flex-1 truncate" x-text="selectedTypes.length ? selectedTypes.length + ' type(s)' : 'Tous les types'" :class="selectedTypes.length ? 'text-[#0a0a0a] font-medium' : 'text-[#717182]'"></span>
+                        <i class="fa-solid fa-chevron-down text-[10px] shrink-0 transition-transform" :class="{ 'rotate-180': typeOpen }" style="color:var(--sikds-muted)"></i>
+                    </button>
+                    @if (count($selectedTypes) > 0)
+                        <span class="absolute -top-1.5 -right-1.5 inline-flex h-5 min-w-[1.25rem] items-center justify-center rounded-full px-1 text-[11px] font-semibold text-white" style="background-color:var(--sikds-primary)">{{ count($selectedTypes) }}</span>
+                    @endif
+                    <div x-show="typeOpen" x-transition.origin.top
+                         class="absolute left-0 right-0 top-full z-50 mt-1.5 max-h-64 overflow-y-auto rounded-[12px] border border-black/10 bg-white py-1 shadow-[0_8px_30px_-4px_rgba(0,0,0,0.15)]" x-cloak>
+                        @foreach ($types as $t)
+                            <label class="flex items-center gap-2.5 px-3 py-2 text-sm cursor-pointer hover:bg-[#f1f5f9] transition-colors">
+                                <input type="checkbox" name="type[]" value="{{ $t }}"
+                                       {{ in_array($t, $selectedTypes, true) ? 'checked' : '' }}
+                                       x-model="selectedTypes"
+                                       class="h-4 w-4 rounded border-black/20 text-[#1c398e] focus:ring-[#1c398e]/30">
+                                <span>{{ $typeLabels[$t] ?? $t }}</span>
+                            </label>
+                        @endforeach
+                    </div>
+                </div>
+
+                {{-- Status multi-select --}}
+                <div class="lg:col-span-3 relative" @click.outside="statusOpen = false">
+                    <button type="button" @click="statusOpen = !statusOpen"
+                            class="h-10 w-full flex items-center gap-2 text-sm border border-[#e5e7eb] rounded-[8px] px-3 bg-white text-left focus:outline-none focus:border-[#1c398e] focus:ring-2 focus:ring-[#1c398e]/20 transition"
+                            :class="{ 'border-[#1c398e] ring-2 ring-[#1c398e]/20': statusOpen }">
+                        <span class="flex-1 truncate" x-text="selectedStatuses.length ? selectedStatuses.length + ' statut(s)' : 'Tous les statuts'" :class="selectedStatuses.length ? 'text-[#0a0a0a] font-medium' : 'text-[#717182]'"></span>
+                        <i class="fa-solid fa-chevron-down text-[10px] shrink-0 transition-transform" :class="{ 'rotate-180': statusOpen }" style="color:var(--sikds-muted)"></i>
+                    </button>
+                    @if (count($selectedStatuses) > 0)
+                        <span class="absolute -top-1.5 -right-1.5 inline-flex h-5 min-w-[1.25rem] items-center justify-center rounded-full px-1 text-[11px] font-semibold text-white" style="background-color:var(--sikds-primary)">{{ count($selectedStatuses) }}</span>
+                    @endif
+                    <div x-show="statusOpen" x-transition.origin.top
+                         class="absolute left-0 right-0 top-full z-50 mt-1.5 rounded-[12px] border border-black/10 bg-white py-1 shadow-[0_8px_30px_-4px_rgba(0,0,0,0.15)]" x-cloak>
+                        @foreach ($statusLabels as $key => $label)
+                            <label class="flex items-center gap-2.5 px-3 py-2 text-sm cursor-pointer hover:bg-[#f1f5f9] transition-colors">
+                                <input type="checkbox" name="status[]" value="{{ $key }}"
+                                       {{ in_array($key, $selectedStatuses, true) ? 'checked' : '' }}
+                                       x-model="selectedStatuses"
+                                       class="h-4 w-4 rounded border-black/20 text-[#1c398e] focus:ring-[#1c398e]/30">
+                                <span>{{ $label }}</span>
+                            </label>
+                        @endforeach
+                    </div>
+                </div>
+
+                {{-- Date from --}}
+                <div class="lg:col-span-3">
+                    <input type="date" name="date_from" value="{{ request('date_from') }}"
+                           class="h-10 w-full text-sm border border-[#e5e7eb] rounded-[8px] px-3 bg-white focus:outline-none focus:border-[#1c398e] focus:ring-2 focus:ring-[#1c398e]/20 transition">
+                </div>
+
+                {{-- Date to --}}
+                <div class="lg:col-span-3">
+                    <input type="date" name="date_to" value="{{ request('date_to') }}"
+                           class="h-10 w-full text-sm border border-[#e5e7eb] rounded-[8px] px-3 bg-white focus:outline-none focus:border-[#1c398e] focus:ring-2 focus:ring-[#1c398e]/20 transition">
+                </div>
             </div>
-            <div class="mt-3 flex justify-end gap-2">
-                <a href="{{ route('notifications.index') }}"
-                   class="px-4 py-2 text-sm border border-black/10 rounded-[10px] hover:bg-gray-50 transition-colors">
-                    Réinitialiser
-                </a>
-                <button type="submit" class="px-4 py-2 text-sm font-semibold text-white rounded-[10px]" style="background-color:var(--sikds-primary);">
-                    Appliquer
-                </button>
+
+            {{-- Active filter chips --}}
+            <div class="px-5 pb-4 flex flex-wrap items-center justify-between gap-3">
+                <div class="flex flex-wrap items-center gap-2 text-sm" style="color:var(--sikds-muted)">
+                    <span>Filtres actifs:</span>
+                    @if ($nonEmptyFilters->isEmpty())
+                        <span class="inline-flex items-center rounded-full bg-[#f1f5f9] px-2.5 py-1 text-xs text-[#717182]">Aucun</span>
+                    @else
+                        @foreach ($nonEmptyFilters as $key => $value)
+                            @php
+                                if (is_array($value)) {
+                                    $displayParts = [];
+                                    foreach ($value as $v) {
+                                        if ($key === 'type') {
+                                            $displayParts[] = $typeLabels[$v] ?? $v;
+                                        } elseif ($key === 'status') {
+                                            $displayParts[] = $statusLabels[$v] ?? $v;
+                                        } else {
+                                            $displayParts[] = $v;
+                                        }
+                                    }
+                                    $displayValue = implode(', ', $displayParts);
+                                } else {
+                                    $displayValue = $value;
+                                    if ($key === 'type' && is_string($value)) {
+                                        $displayValue = $typeLabels[$value] ?? $value;
+                                    }
+                                    if ($key === 'status' && is_string($value)) {
+                                        $displayValue = $statusLabels[$value] ?? $value;
+                                    }
+                                }
+                                $displayKey = $filterLabelMap[$key] ?? str($key)->replace('_', ' ')->title()->toString();
+                            @endphp
+                            <span class="inline-flex items-center gap-1.5 rounded-full bg-[#eef2ff] px-2.5 py-1 text-xs font-medium text-[#1c398e]">
+                                <i class="fa-solid fa-circle text-[4px]"></i>
+                                {{ $displayKey }}: {{ $displayValue }}
+                            </span>
+                        @endforeach
+                    @endif
+                </div>
+                <div class="flex items-center gap-2">
+                    <a href="{{ route('notifications.index') }}"
+                       class="inline-flex items-center gap-1.5 px-4 py-2 text-sm border border-black/10 rounded-[10px] hover:bg-gray-50 transition-colors" style="color:var(--sikds-ink)">
+                        <i class="fa-solid fa-rotate-left text-[10px]"></i>
+                        Réinitialiser
+                    </a>
+                    <button type="submit" class="inline-flex items-center gap-1.5 px-5 py-2 text-sm font-semibold text-white rounded-[10px] transition hover:opacity-90" style="background-color:var(--sikds-primary);">
+                        <i class="fa-solid fa-check text-[10px]"></i>
+                        Appliquer
+                    </button>
+                </div>
             </div>
         </form>
     </div>
@@ -197,13 +303,20 @@
 
     @push('scripts')
         <script>
+            function notificationFilters() {
+                return {
+                    typeOpen: false,
+                    statusOpen: false,
+                    selectedTypes: JSON.parse(document.getElementById('notifications-selected-types')?.textContent || '[]'),
+                    selectedStatuses: JSON.parse(document.getElementById('notifications-selected-statuses')?.textContent || '[]'),
+                };
+            }
+            window.notificationFilters = notificationFilters;
+
             document.addEventListener('DOMContentLoaded', function () {
                 const form = document.getElementById('notifications-filter-form');
                 if (!form) return;
 
-                const q = form.querySelector('input[name="q"]');
-                const type = form.querySelector('select[name="type"]');
-                const status = form.querySelector('select[name="status"]');
                 const from = form.querySelector('input[name="date_from"]');
                 const to = form.querySelector('input[name="date_to"]');
                 const apply = form.querySelector('button[type="submit"]');
@@ -214,22 +327,15 @@
                     form.submit();
                 };
 
-                type?.addEventListener('change', submit);
-                status?.addEventListener('change', submit);
                 from?.addEventListener('change', submit);
                 to?.addEventListener('change', submit);
 
-                let t = null;
-                q?.addEventListener('input', function () {
-                    if (t) clearTimeout(t);
-                    t = setTimeout(submit, 450);
-                });
-
-                q?.addEventListener('keydown', function (e) {
-                    if (e.key === 'Enter') {
-                        e.preventDefault();
-                        submit();
-                    }
+                let multiSelectTimer = null;
+                form.querySelectorAll('input[type="checkbox"][name="type[]"], input[type="checkbox"][name="status[]"]').forEach((cb) => {
+                    cb.addEventListener('change', function () {
+                        if (multiSelectTimer) clearTimeout(multiSelectTimer);
+                        multiSelectTimer = setTimeout(submit, 250);
+                    });
                 });
             });
         </script>

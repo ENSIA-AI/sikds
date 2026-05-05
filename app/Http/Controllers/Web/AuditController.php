@@ -32,6 +32,7 @@ class AuditController extends Controller
             ->select('event_type')
             ->distinct()
             ->orderBy('event_type')
+            ->limit(500)
             ->pluck('event_type');
 
         $activeFiltersCount = collect($request->query())
