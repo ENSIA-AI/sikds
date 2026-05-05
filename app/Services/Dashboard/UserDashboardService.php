@@ -8,9 +8,22 @@ use App\Domain\Documents\Models\Document;
 use App\Domain\Documents\Models\DownloadLog;
 use App\Domain\Notifications\Services\UserNotificationService;
 use App\Domain\Users\Models\User;
+use Illuminate\Support\Facades\Cache;
 
 class UserDashboardService
 {
+    private const ADMIN_PERMISSIONS = [
+        'user.view.all',
+        'user.manage',
+        'role.view',
+        'institution.view',
+        'audit.view',
+        'tag.manage',
+        'indexing.manage',
+    ];
+
+    private const ADMIN_CHECK_TTL = 300;
+
     public function __construct(private readonly UserNotificationService $notifications) {}
 
     /**
@@ -19,23 +32,11 @@ class UserDashboardService
      */
     public function shouldShowSimpleDashboard(User $user): bool
     {
-        $adminPermissions = [
-            'user.view.all',
-            'user.manage',
-            'role.view',
-            'institution.view',
-            'audit.view',
-            'tag.manage',
-            'indexing.manage',
-        ];
-
-        foreach ($adminPermissions as $permission) {
-            if ($user->can($permission)) {
-                return false;
-            }
-        }
-
-        return true;
+        return Cache::remember(
+            "user.{$user->id}.dashboard.simple",
+            self::ADMIN_CHECK_TTL,
+            fn (): bool => ! $user->canAny(self::ADMIN_PERMISSIONS),
+        );
     }
 
     /**
