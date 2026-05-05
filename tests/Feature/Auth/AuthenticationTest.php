@@ -1,49 +1,37 @@
 <?php
 
-use App\Livewire\Auth\Login;
-use App\Models\User;
-use Livewire\Livewire;
+use App\Domain\Users\Models\User;
+use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 
-test('login screen can be rendered', function () {
+beforeEach(function (): void {
+    config()->set('app.key', 'base64:'.base64_encode(random_bytes(32)));
+    $this->withoutVite();
+});
+
+test('login page route is registered', function () {
+    expect(route('login', absolute: false))->toBe('/login');
+});
+
+test('sso redirect route points to oauth entry', function () {
+    expect(route('sso.redirect', absolute: false))->toBe('/auth/redirect');
+});
+
+test('login page renders for guests', function () {
     $response = $this->get('/login');
 
-    $response->assertStatus(200);
-});
-
-test('users can authenticate using the login screen', function () {
-    $user = User::factory()->create();
-
-    $response = Livewire::test(Login::class)
-        ->set('email', $user->email)
-        ->set('password', 'password')
-        ->call('login');
-
-    $response
-        ->assertHasNoErrors()
-        ->assertRedirect(route('dashboard', absolute: false));
-
-    $this->assertAuthenticated();
-});
-
-test('users can not authenticate with invalid password', function () {
-    $user = User::factory()->create();
-
-    $response = Livewire::test(Login::class)
-        ->set('email', $user->email)
-        ->set('password', 'wrong-password')
-        ->call('login');
-
-    $response->assertHasErrors('email');
-
-    $this->assertGuest();
+    $response->assertOk();
+    $response->assertSee('Continuer avec le SSO', false);
 });
 
 test('users can logout', function () {
+    $this->withoutMiddleware(PreventRequestForgery::class);
+
     $user = User::factory()->create();
 
     $response = $this->actingAs($user)->post('/logout');
 
-    $response->assertRedirect('/');
+    $response->assertRedirect('/login');
+    $response->assertSessionHas('success', 'Déconnexion réussie.');
 
     $this->assertGuest();
 });

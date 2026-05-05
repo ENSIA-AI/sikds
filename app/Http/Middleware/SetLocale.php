@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Middleware;
 
 use Closure;
@@ -9,19 +11,16 @@ use Symfony\Component\HttpFoundation\Response;
 
 class SetLocale
 {
-    /**
-     * Handle an incoming request.
-     *
-     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
-     */
     public function handle(Request $request, Closure $next): Response
     {
+        $supported = array_keys(config('languages.lang', ['fr' => 'Français']));
+        $locale = $request->session()->get('locale', config('app.locale'));
 
-        if (session()->has('applocale') && array_key_exists(session()->get('applocale'), config('languages.lang'))) {
-            App::setLocale(session()->get('applocale'));
-        } else {
-            App::setLocale(config('app.fallback_locale'));
+        if (! in_array($locale, $supported, true)) {
+            $locale = config('app.locale');
         }
+
+        App::setLocale($locale);
 
         return $next($request);
     }

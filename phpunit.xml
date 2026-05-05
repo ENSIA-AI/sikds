@@ -3,6 +3,7 @@
          xsi:noNamespaceSchemaLocation="vendor/phpunit/phpunit/phpunit.xsd"
          bootstrap="vendor/autoload.php"
          colors="true"
+         cacheDirectory="storage/framework/cache/phpunit"
 >
     <testsuites>
         <testsuite name="Unit">
@@ -18,6 +19,7 @@
         </include>
     </source>
     <php>
+        <env name="APP_KEY" value="base64:2fl+7vP4lNn8KJQxQ0YqZ3vH8mN1pL5sT9wU2cX6bD0="/>
         <env name="APP_ENV" value="testing"/>
         <env name="APP_MAINTENANCE_DRIVER" value="file"/>
         <env name="BCRYPT_ROUNDS" value="4"/>
@@ -27,6 +29,7 @@
         <env name="MAIL_MAILER" value="array"/>
         <env name="PULSE_ENABLED" value="false"/>
         <env name="QUEUE_CONNECTION" value="sync"/>
+        <env name="PHPUNIT_RESULT_CACHE" value="storage/framework/cache/.phpunit.result.cache"/>
         <env name="SESSION_DRIVER" value="array"/>
         <env name="TELESCOPE_ENABLED" value="false"/>
     </php>

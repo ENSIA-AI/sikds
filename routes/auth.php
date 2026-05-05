@@ -1,26 +1,119 @@
 <?php
 
-use App\Http\Controllers\Sso\SsoController;
-use App\Livewire\Auth\Login;
-use App\Services\Sso_service;
-use Illuminate\Http\Request;
+use App\Domain\Users\Exceptions\SsoAuthenticationException;
+use App\Domain\Users\Services\SsoService;
+use App\Http\Controllers\Auth\LocalLoginController;
+use App\Domain\Audit\Models\AuditLog;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Session;
 
-Route::post('logout', App\Livewire\Actions\Logout::class)
-    ->name('logout');
+Route::post('logout', function () {
+    Auth::guard('web')->logout();
+    Session::invalidate();
+    Session::regenerateToken();
 
-/*
- * login with SSO server
- */
+    return redirect()->route('login')->with('success', 'Déconnexion réussie.');
+})->name('logout');
 
-$service = (new Sso_service);
+Route::get('/login', function () {
+    if (Auth::check()) {
+        return redirect()->route('dashboard');
+    }
 
-Route::get('/login_sso', function (Request $request) {
-    return (new Sso_service)->login_sso($request);
+    return view('auth.login-minimal');
 })->name('login');
 
-Route::get('/callback', function (Request $request) {
-    return (new Sso_service)->callback($request);
-});
+Route::get('/auth/redirect', function (SsoService $ssoService) {
+    if (Auth::check()) {
+        return redirect()->route('dashboard');
+    }
 
-Route::get('/user', SsoController::class)->name('user');
+    return $ssoService->redirectToProvider(request());
+})->middleware('throttle:sso')->name('sso.redirect');
+
+Route::middleware('throttle:sso')->get('/callback', function (SsoService $ssoService) {
+    try {
+        $user = $ssoService->handleCallback(request());
+
+        AuditLog::query()->create([
+            'event_type' => 'auth.login.success',
+            'user_id' => $user->id,
+            'user_email' => $user->email,
+            'resource_type' => 'user',
+            'resource_id' => $user->id,
+            'metadata' => [
+                'auth_type' => 'sso',
+            ],
+            'result' => 'success',
+            'ip_address' => request()->ip(),
+            'user_agent' => request()->userAgent(),
+            'created_at' => now(),
+        ]);
+
+        return redirect('/dashboard');
+    } catch (SsoAuthenticationException $e) {
+        AuditLog::query()->create([
+            'event_type' => 'auth.login.failed',
+            'user_id' => null,
+            'user_email' => null,
+            'resource_type' => 'user',
+            'resource_id' => null,
+            'metadata' => [
+                'auth_type' => 'sso',
+                'reason' => $e->getMessage(),
+                'exception' => class_basename($e),
+            ],
+            'result' => 'failed',
+            'ip_address' => request()->ip(),
+            'user_agent' => request()->userAgent(),
+            'created_at' => now(),
+        ]);
+
+        report($e);
+
+        return redirect()->route('login')->with('error', 'SSO login failed. Please try again or contact support.');
+    } catch (\Throwable $e) {
+        AuditLog::query()->create([
+            'event_type' => 'auth.login.failed',
+            'user_id' => null,
+            'user_email' => null,
+            'resource_type' => 'user',
+            'resource_id' => null,
+            'metadata' => [
+                'auth_type' => 'sso',
+                'reason' => 'unexpected_error',
+                'exception' => class_basename($e),
+            ],
+            'result' => 'failed',
+            'ip_address' => request()->ip(),
+            'user_agent' => request()->userAgent(),
+            'created_at' => now(),
+        ]);
+
+        report($e);
+
+        return redirect()->route('login')->with('error', 'Unexpected authentication error. Please try again.');
+    }
+})->name('sso.callback');
+
+Route::get('/user', function () {
+    if (!Auth::check()) {
+        return response()->json(['message' => 'Unauthenticated'], 401);
+    }
+
+    return response()->json([
+        'id' => Auth::id(),
+        'username' => Auth::user()->username,
+        'email' => Auth::user()->email,
+        'full_name' => Auth::user()->full_name,
+    ]);
+})->name('user');
+
+// Local development login — not available in production
+if (app()->environment('local')) {
+    Route::get('/login/local', [LocalLoginController::class, 'showLoginForm'])->name('login.local');
+    Route::post('/login/local', [LocalLoginController::class, 'login'])
+        ->middleware('throttle:login')
+        ->name('login.local.post');
+}

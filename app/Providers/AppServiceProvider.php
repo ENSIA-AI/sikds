@@ -1,55 +1,88 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Providers;
 
-use App\Auth\Providers\CachedEloquentUserProvider;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Foundation\Application;
+use App\Domain\Audit\Models\AuditLog;
+use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Http\Request;
+use Illuminate\Queue\Events\JobFailed;
+use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Queue;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Str;
+use Laravel\Horizon\Events\LongWaitDetected;
 
 class AppServiceProvider extends ServiceProvider
 {
-    /**
-     * Register any application services.
-     */
     public function register(): void
     {
         //
     }
 
-    /**
-     * Bootstrap any application services.
-     */
     public function boot(): void
     {
+        $this->configureRateLimiters();
 
-        $this->declareCacheElequentProvider();
+        Queue::failing(function (JobFailed $event): void {
+            $payload = $event->job->payload();
 
-        $this->automaticallyEagerLoadRelationships();
+            AuditLog::query()->create([
+                'event_type' => 'QUEUE_JOB_FAILED',
+                'user_id' => null,
+                'user_email' => null,
+                'resource_type' => 'queue',
+                'resource_id' => 0,
+                'metadata' => [
+                    'connection' => $event->connectionName,
+                    'queue' => $event->job->getQueue(),
+                    'job_name' => (string) ($payload['displayName'] ?? $event->job->resolveName()),
+                    'job_id' => $event->job->getJobId(),
+                    'exception' => $event->exception->getMessage(),
+                ],
+                'result' => 'failed',
+                'ip_address' => null,
+                'user_agent' => null,
+                'created_at' => now(),
+            ]);
+        });
 
-    }
-
-    /**
-     * Configure the general configuration
-     */
-    public function configure(): void
-    {
-        // Set the default string length for database columns
-
-    }
-
-    private function declareCacheElequentProvider(): void
-    {
-        auth()->provider('CachedElequent', function (Application $app, array $config) {
-            return new CachedEloquentUserProvider(
-                $app['hash'],
-                $config['model']
-            );
+        Event::listen(function (LongWaitDetected $event): void {
+            foreach ($event->queues as $queue) {
+                AuditLog::query()->create([
+                    'event_type' => 'QUEUE_LONG_WAIT_DETECTED',
+                    'user_id' => null,
+                    'user_email' => null,
+                    'resource_type' => 'queue',
+                    'resource_id' => 0,
+                    'metadata' => [
+                        'connection' => $event->connectionName,
+                        'queue' => $queue,
+                        'wait_seconds' => $event->waitTime,
+                    ],
+                    'result' => 'warning',
+                    'ip_address' => null,
+                    'user_agent' => null,
+                    'created_at' => now(),
+                ]);
+            }
         });
     }
 
-    private function automaticallyEagerLoadRelationships()
+    private function configureRateLimiters(): void
     {
-        Model::automaticallyEagerLoadRelationships();
+        RateLimiter::for('login', function (Request $request): array {
+            $email = Str::lower((string) $request->input('email'));
+            $ip = (string) $request->ip();
+
+            return [
+                Limit::perMinute(5)->by($email.'|'.$ip),
+                Limit::perMinute(20)->by($ip),
+            ];
+        });
+
+        RateLimiter::for('sso', fn (Request $request) => Limit::perMinute(30)->by((string) $request->ip()));
     }
 }

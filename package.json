@@ -3,7 +3,10 @@
     "type": "module",
     "scripts": {
         "build": "vite build",
-        "dev": "vite"
+        "dev": "vite",
+        "test": "NODE_OPTIONS=--experimental-vm-modules jest",
+        "test:watch": "NODE_OPTIONS=--experimental-vm-modules jest --watch",
+        "test:coverage": "NODE_OPTIONS=--experimental-vm-modules jest --coverage"
     },
     "dependencies": {
         "@fortawesome/fontawesome-free": "^6.7.2",
@@ -11,6 +14,7 @@
         "@fortawesome/free-brands-svg-icons": "^6.7.2",
         "@fortawesome/free-regular-svg-icons": "^6.7.2",
         "@fortawesome/free-solid-svg-icons": "^6.7.2",
+        "alpinejs": "^3.15.11",
         "autoprefixer": "^10.4.20",
         "axios": "^1.12.0",
         "concurrently": "^9.0.1",
@@ -21,13 +25,13 @@
         "select2-tailwindcss-v4-theme": "^1.1.0",
         "vite": "^6.4"
     },
-    "optionalDependencies": {
-        "@rollup/rollup-linux-x64-gnu": "4.9.5",
-        "@tailwindcss/oxide-linux-x64-gnu": "^4.0.1",
-        "lightningcss-linux-x64-gnu": "^1.29.1"
-    },
     "devDependencies": {
         "@tailwindcss/vite": "^4.1.10",
+        "@testing-library/dom": "^10.4.1",
+        "@testing-library/jest-dom": "^6.9.1",
+        "jest": "^30.3.0",
+        "jest-environment-jsdom": "^30.3.0",
+        "jsdom": "^29.0.2",
         "tailwindcss": "^4.1.10"
     }
 }

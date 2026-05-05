@@ -1,10 +1,6 @@
 <?php
 
-use App\Http\Controllers\Common\LanguageController;
-use Illuminate\Support\Facades\Route;
+// Common routes loaded by `routes/web.php`.
+// This file is intentionally minimal; feature-specific routes are defined
+// in `routes/auth.php` and `routes/functionalities.php`.
 
-// Make language change route publicly accessible so guests can switch locale
-Route::get('change-language/{lang}', [LanguageController::class, 'changeLanguage'])
-    ->name('changeLanguage');
-
-Route::group(['middleware' => 'auth'], function () {})->middleware(['auth']);

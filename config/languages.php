@@ -2,8 +2,8 @@
 
 return [
     'lang' => [
-        'ar' => 'Arabic',
+        'fr' => 'Français',
         'en' => 'English',
-        'fr' => 'French',
+        'ar' => 'العربية',
     ],
 ];

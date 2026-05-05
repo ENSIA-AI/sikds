@@ -1,25 +1,24 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Common;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\App;
-use Illuminate\Support\Facades\Session;
 
 class LanguageController extends Controller
 {
-    public function changeLanguage($lang): RedirectResponse
+    public function changeLanguage(string $lang): RedirectResponse
     {
-        if (! array_key_exists($lang, config('languages.lang'))) {
-            return redirect()->back();
+        $languages = config('languages.lang', []);
+        if (! array_key_exists($lang, $languages)) {
+            abort(404);
         }
 
         App::setLocale($lang);
-
-        Session::put('applocale', $lang);
-
-        Session::regenerate();
+        session(['locale' => $lang]);
 
         return redirect()->back();
     }

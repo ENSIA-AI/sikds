@@ -17,6 +17,18 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Documents disk (PDFs)
+    |--------------------------------------------------------------------------
+    |
+    | Use `local` for development (files under storage/app/apa_upload).
+    | Set to `s3` in production with AWS_* / SeaweedFS endpoint configured.
+    |
+    */
+
+    'documents_disk' => env('DOCUMENTS_DISK', 'local'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Filesystem Disks
     |--------------------------------------------------------------------------
     |

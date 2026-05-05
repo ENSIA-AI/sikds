@@ -1,82 +1,109 @@
-# SIKDS
+# Project Overview
 
-## Overview
+SIKDS (Secure Institutional Knowledge & Distribution System) is the ministry platform used to distribute official documents to institutions, enforce role-based access control, and provide secure search/RAG-ready indexing over institutional content with complete traceability.
 
-**SIKDS** is a web application designed to manage the sensitive document sharing.
+# Tech Stack
 
-## Technology Stack
+| Layer | Technology | Version |
+|---|---|---|
+| Framework | Laravel | 13 |
+| Language | PHP | 8.3 |
+| Database | PostgreSQL + pgvector | 18 + 0.8.2 |
+| Cache & Queue | Redis | 8.6 |
+| Object Storage | SeaweedFS | 4.02 |
+| Frontend | Tailwind CSS + Alpine.js | 4.2 + 3.15 |
+| Queue Monitor | Laravel Horizon | latest |
+| AI / RAG | Laravel AI SDK (Prism) | latest |
 
-This project is built using the following core technologies:
+# Prerequisites
 
--   **Framework**: [Laravel 12.x](https://laravel.com)
--   **Frontend**: [Livewire](https://livewire.laravel.com)
--   **Styling**: [Tailwind CSS v4](https://tailwindcss.com) & [Flowbite](https://flowbite.com)
--   **Interactivity**: [Alpine.js](https://alpinejs.dev)
--   **Theme**: Custom Tailwind theme with [Select2](https://select2.org) integration.
+- Docker Desktop
+- Git
 
-## Prerequisites
+# Setup — Step by Step
 
-Ensure you have the following installed on your local machine:
+1. Clone the repository.
+   ```bash
+   git clone <repository-url>
+   cd sikds
+   ```
 
--   **PHP**: 8.2 or higher
--   **Node.js**: LTS version recommended
--   **Composer**: Dependency manager for PHP
+2. Create local environment file.
+   ```bash
+   cp .env.example .env
+   ```
 
-## Installation
+3. Fill in required `.env` values.
+   - Mandatory for local dev:
+     - `DB_PASSWORD`
+     - `AWS_ACCESS_KEY_ID`
+     - `AWS_SECRET_ACCESS_KEY`
+    - `CLIENT_ID`
+    - `CLIENT_SECRET`
+   - Can stay default for local dev:
+     - `APP_*`, `DB_*` (except password), `REDIS_*`, `QUEUE_CONNECTION`, `CACHE_STORE`, `SESSION_DRIVER`
+     - `AWS_BUCKET`, `AWS_ENDPOINT`, `AWS_USE_PATH_STYLE_ENDPOINT`
+     - `MAIL_*`, `HORIZON_*`, `SEAWEED_*_PORT`
 
-1.  **Clone the repository**:
-    ```bash
-    git clone <repository_url>
-    cd prix
-    ```
+4. Start all services.
+   ```bash
+   docker compose up -d
+   ```
 
-2.  **Install PHP dependencies**:
-    ```bash
-    composer install
-    ```
+5. Generate app key.
+   ```bash
+   docker compose exec app php artisan key:generate
+   ```
 
-3.  **Install Node.js dependencies**:
-    ```bash
-    npm install
-    ```
+6. Run migrations.
+   ```bash
+   docker compose exec app php artisan migrate
+   ```
 
-4.  **Environment Configuration**:
-    Copy the example environment file and configure your database settings:
-    ```bash
-    cp .env.example .env
-    php artisan key:generate
-    ```
-    *Update the `.env` file with your database credentials (DB_HOST, DB_DATABASE, DB_USERNAME, DB_PASSWORD).*
+7. Run production-safe seeders.
+   ```bash
+   docker compose exec app php artisan db:seed
+   ```
 
-5.  **Database Migration**:
-    Run the migrations to set up the database schema:
-    ```bash
-    php artisan migrate
-    ```
+8. Create local dev admin account.
+   ```bash
+   docker compose exec app php artisan db:seed --class=DevSeeder
+   ```
 
-## Development
+9. Create storage symlink.
+   ```bash
+   docker compose exec app php artisan storage:link
+   ```
 
-To start the local development server, which runs both the Laravel server and Vite for asset bundling:
+10. Build frontend assets (Vite runs inside Docker).
+   ```bash
+   docker compose exec app npm install
+   docker compose exec app npm run dev
+   ```
+
+11. Open the app.
+   - http://localhost
+
+# Authentication
+
+## SSO Login
+
+SSO users authenticate through the ministry identity provider and are auto-provisioned on first successful login using their ministry email profile.
+
+## Dev Login
+
+Use `http://localhost/login/local` with `admin@mesrs.dz / password`. This route is enabled only when `APP_ENV=local`.
+
+# Queue & Horizon
 
 ```bash
-composer run dev
+docker compose exec app php artisan horizon
 ```
-*Alternatively, you can run them separately:*
+
+Visit `http://localhost/horizon` to monitor jobs. Access is restricted to Super Admin or users with `audit.view`.
+
+# Running Tests
+
 ```bash
-php artisan serve
-npm run dev
+docker compose exec app php artisan test
 ```
-
-## Key Features
-
--   **Project Management**: Detailed views for project submissions including Stages, TRL, and Innovation summaries.
--   **Team & Participants**: Management of establishiments and team members associated with a project.
--   **Evaluation**: Workflow for establishments to review, accept/reject, and provide observations on candidatures.
--   **Tabbed Interface**: Organized data presentation using a responsive tabbed layout.
-
-## Documentation
-
-For more detailed information, please refer to the documentation in the `docs/` directory:
-
--   [Architecture Overview](docs/ARCHITECTURE.md)
--   [Contribution Guidelines](docs/GUIDELINES.md)
