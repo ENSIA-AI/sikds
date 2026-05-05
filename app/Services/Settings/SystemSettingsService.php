@@ -6,9 +6,12 @@ namespace App\Services\Settings;
 
 use App\Domain\Settings\Models\SystemSetting;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Cache;
 
 class SystemSettingsService
 {
+    public const CACHE_KEY = 'system_settings.all';
+
     public function defaults(): array
     {
         return [
@@ -33,25 +36,25 @@ class SystemSettingsService
 
     public function all(): array
     {
-        $defaults = $this->defaults();
-        $rows = SystemSetting::query()->get(['key', 'value']);
+        return Cache::rememberForever(self::CACHE_KEY, function (): array {
+            $defaults = $this->defaults();
+            $rows = SystemSetting::query()->get(['key', 'value']);
 
-        foreach ($rows as $row) {
-            $value = $row->value;
-            if (! is_array($value)) {
-                continue;
+            foreach ($rows as $row) {
+                $value = $row->value;
+                if (! is_array($value)) {
+                    continue;
+                }
+                Arr::set($defaults, $row->key, $value['value'] ?? null);
             }
-            Arr::set($defaults, $row->key, $value['value'] ?? null);
-        }
 
-        return $defaults;
+            return $defaults;
+        });
     }
 
     public function get(string $key, mixed $fallback = null): mixed
     {
-        $all = $this->all();
-
-        return Arr::get($all, $key, $fallback);
+        return Arr::get($this->all(), $key, $fallback);
     }
 
     public function updateSection(string $section, array $payload, int $userId): void
@@ -66,6 +69,13 @@ class SystemSettingsService
                 ]
             );
         }
+
+        self::flush();
+    }
+
+    public static function flush(): void
+    {
+        Cache::forget(self::CACHE_KEY);
     }
 }
 
