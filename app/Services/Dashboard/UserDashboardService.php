@@ -98,12 +98,13 @@ class UserDashboardService
     public function recentDownloadsForUser(User $user, int $limit = 5): array
     {
         return DownloadLog::query()
+            ->with(['document:id,title,reference_number'])
             ->where('user_id', $user->id)
             ->orderByDesc('downloaded_at')
             ->limit($limit)
-            ->get(['document_id', 'downloaded_at'])
-            ->map(function ($log): array {
-                $document = Document::query()->find($log->document_id);
+            ->get(['id', 'document_id', 'downloaded_at'])
+            ->map(function (DownloadLog $log): array {
+                $document = $log->document;
 
                 return [
                     'title' => $document?->title ?? 'Document',
