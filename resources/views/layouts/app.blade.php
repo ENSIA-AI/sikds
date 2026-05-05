@@ -34,7 +34,7 @@
 
                 <div class="sikds-header-title">
                     <h1 class="sikds-page-title">{{ $pageTitle }}</h1>
-                    <p class="sikds-page-subtitle">{!! $pageSubtitle !!}</p>
+                    <p class="sikds-page-subtitle">{{ $pageSubtitle }}</p>
                 </div>
 
                 <button
