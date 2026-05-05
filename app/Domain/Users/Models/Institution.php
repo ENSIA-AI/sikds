@@ -7,6 +7,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Users\Models;
 
+use App\Services\LookupCacheService;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -91,5 +92,12 @@ class Institution extends Model
     protected static function newFactory(): Factory
     {
         return \Database\Factories\Domain\Users\Models\InstitutionFactory::new();
+    }
+
+    protected static function booted(): void
+    {
+        $flush = static fn () => LookupCacheService::flushInstitutions();
+        static::saved($flush);
+        static::deleted($flush);
     }
 }

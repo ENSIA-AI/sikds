@@ -7,6 +7,7 @@
 declare(strict_types=1);
 namespace App\Domain\Users\Models;
 
+use App\Services\LookupCacheService;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Spatie\Permission\Contracts\Permission as PermissionContract;
@@ -66,5 +67,12 @@ class Permission extends SpatiePermission
         }
 
         return $permission;
+    }
+
+    protected static function booted(): void
+    {
+        $flush = static fn () => LookupCacheService::flushPermissions();
+        static::saved($flush);
+        static::deleted($flush);
     }
 }

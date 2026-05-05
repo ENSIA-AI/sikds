@@ -8,6 +8,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Users\Models;
 
+use App\Services\LookupCacheService;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -84,5 +85,12 @@ class Role extends SpatieRole
     protected static function newFactory(): Factory
     {
         return \Database\Factories\Domain\Users\Models\RoleFactory::new();
+    }
+
+    protected static function booted(): void
+    {
+        $flush = static fn () => LookupCacheService::flushRoles();
+        static::saved($flush);
+        static::deleted($flush);
     }
 }

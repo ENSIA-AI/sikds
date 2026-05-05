@@ -9,13 +9,12 @@ use App\Domain\Users\Actions\CreateUserAction;
 use App\Domain\Users\Actions\DeactivateUserAction;
 use App\Domain\Users\Actions\SyncUserPermissionsAction;
 use App\Domain\Users\Actions\UpdateUserAction;
-use App\Domain\Users\Models\Institution;
-use App\Domain\Users\Models\Permission;
 use App\Domain\Users\Models\Role;
 use App\Domain\Users\Models\User;
 use App\Http\Requests\StoreUserRequest;
 use App\Http\Requests\SyncUserPermissionsRequest;
 use App\Http\Requests\UpdateUserRequest;
+use App\Services\LookupCacheService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -30,6 +29,7 @@ final class UserController extends Controller
         private readonly SyncUserPermissionsAction $syncUserPermissionsAction,
         private readonly DeactivateUserAction $deactivateUserAction,
         private readonly ActivateUserAction $activateUserAction,
+        private readonly LookupCacheService $lookups,
     ) {
     }
 
@@ -91,27 +91,10 @@ final class UserController extends Controller
             ->paginate(20)
             ->withQueryString();
 
-        $institutions = Institution::query()
-            ->where('is_active', true)
-            ->orderBy('name')
-            ->get();
-
-        $roles = Role::query()
-            ->orderBy('is_system_role', 'desc')
-            ->orderBy('name')
-            ->get();
-
-        $rolesForUi = Role::query()
-            ->with(['permissions' => fn ($q) => $q->orderBy('category')->orderBy('name')])
-            ->orderBy('is_system_role', 'desc')
-            ->orderBy('name')
-            ->get();
-
-        $permissionsGrouped = Permission::query()
-            ->orderBy('category')
-            ->orderBy('name')
-            ->get()
-            ->groupBy('category');
+        $institutions = $this->lookups->activeInstitutions();
+        $roles = $this->lookups->roles();
+        $rolesForUi = $this->lookups->rolesWithPermissions();
+        $permissionsGrouped = $this->lookups->permissionsGroupedByCategory();
 
         $stats = [
             // Keep stats consistent with current filters/search (same dataset as table, without pagination).
@@ -151,28 +134,10 @@ final class UserController extends Controller
         $this->authorize('user.manage');
         $this->authorize('user.assign.permissions');
 
-        $institutions = Institution::query()
-            ->where('is_active', true)
-            ->orderBy('type', 'desc')
-            ->orderBy('name')
-            ->get();
-
-        $roles = Role::query()
-            ->withCount('permissions')
-            ->orderBy('is_system_role', 'desc')
-            ->orderBy('name')
-            ->get();
-
-        $permissions = Permission::query()
-            ->orderBy('category')
-            ->orderBy('name')
-            ->get()
-            ->groupBy('category');
-
         return view('users.create', [
-            'institutions' => $institutions,
-            'roles' => $roles,
-            'permissions' => $permissions,
+            'institutions' => $this->lookups->activeInstitutionsByType(),
+            'roles' => $this->lookups->rolesWithPermissionCount(),
+            'permissions' => $this->lookups->permissionsGroupedByCategory(),
         ]);
     }
 
@@ -248,15 +213,9 @@ final class UserController extends Controller
     {
         $this->authorize('user.manage');
 
-        $institutions = Institution::query()
-            ->where('is_active', true)
-            ->orderBy('type', 'desc')
-            ->orderBy('name')
-            ->get();
-
         return view('users.edit', [
             'user' => $user,
-            'institutions' => $institutions,
+            'institutions' => $this->lookups->activeInstitutionsByType(),
         ]);
     }
 
@@ -301,18 +260,8 @@ final class UserController extends Controller
         $this->authorize('user.manage');
         $this->authorize('user.assign.permissions');
 
-        $roles = Role::query()
-            ->withCount('permissions')
-            ->with('permissions:id,name,code,category')
-            ->orderBy('is_system_role', 'desc')
-            ->orderBy('name')
-            ->get();
-
-        $allPermissions = Permission::query()
-            ->orderBy('category')
-            ->orderBy('name')
-            ->get()
-            ->groupBy('category');
+        $roles = $this->lookups->rolesWithPermissionDetails();
+        $allPermissions = $this->lookups->permissionsGroupedByCategory();
 
         $user->load('roles');
 
