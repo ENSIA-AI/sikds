@@ -54,7 +54,14 @@ final class StoreInstitutionRequest extends FormRequest
             'contact_email' => ['required', 'string', 'email:rfc', 'max:255'],
             'contact_phone' => ['nullable', 'string', 'max:50', 'regex:/^[\d\s+().-]{8,32}$/'],
             'address' => ['nullable', 'string', 'max:2000'],
-            'logo' => ['nullable', 'file', 'mimes:jpg,jpeg,png,gif,webp,svg', 'max:4096'],
+            'logo' => [
+                'nullable',
+                'image',
+                'mimes:jpg,jpeg,png,gif,webp',
+                'mimetypes:image/jpeg,image/png,image/gif,image/webp',
+                'max:2048',
+                'dimensions:max_width=2000,max_height=2000',
+            ],
             'type' => ['sometimes', 'string', Rule::in(['ministry', 'university'])],
         ];
     }
@@ -65,8 +72,11 @@ final class StoreInstitutionRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'logo.mimes' => 'Le logo doit être un fichier de type: jpg, jpeg, png, gif, webp ou svg.',
-            'logo.max' => 'Le logo ne doit pas dépasser 4 Mo.',
+            'logo.image' => 'Le logo doit être une image valide.',
+            'logo.mimes' => 'Le logo doit être un fichier de type: jpg, jpeg, png, gif ou webp.',
+            'logo.mimetypes' => 'Le contenu du fichier ne correspond pas à une image autorisée.',
+            'logo.max' => 'Le logo ne doit pas dépasser 2 Mo.',
+            'logo.dimensions' => 'Le logo ne doit pas dépasser 2000 × 2000 pixels.',
         ];
     }
 }
