@@ -30,9 +30,9 @@ Route::get('/auth/redirect', function (SsoService $ssoService) {
     }
 
     return $ssoService->redirectToProvider(request());
-})->name('sso.redirect');
+})->middleware('throttle:sso')->name('sso.redirect');
 
-Route::get('/callback', function (SsoService $ssoService) {
+Route::middleware('throttle:sso')->get('/callback', function (SsoService $ssoService) {
     try {
         $user = $ssoService->handleCallback(request());
 
@@ -113,5 +113,7 @@ Route::get('/user', function () {
 // Local development login — not available in production
 if (app()->environment('local')) {
     Route::get('/login/local', [LocalLoginController::class, 'showLoginForm'])->name('login.local');
-    Route::post('/login/local', [LocalLoginController::class, 'login'])->name('login.local.post');
+    Route::post('/login/local', [LocalLoginController::class, 'login'])
+        ->middleware('throttle:login')
+        ->name('login.local.post');
 }
