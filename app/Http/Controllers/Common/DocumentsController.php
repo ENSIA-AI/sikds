@@ -108,7 +108,6 @@ class DocumentsController
     {
         /** @var User $user */
         $user = Auth::user();
-        abort_if(! $this->canPreview($user), 403, 'Permission document.view.all requise pour la prévisualisation.');
 
         $resolved = $this->resolveDocument($document);
 
@@ -130,7 +129,6 @@ class DocumentsController
     {
         /** @var User $user */
         $user = Auth::user();
-        abort_if(! $user->can('document.edit'), 403, 'Permission document.edit requise.');
 
         $resolved = $this->resolveDocument($document);
 

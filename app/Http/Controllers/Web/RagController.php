@@ -18,10 +18,6 @@ class RagController extends Controller
 {
     public function index(): View
     {
-        /** @var \App\Domain\Users\Models\User $user */
-        $user = Auth::user();
-        abort_if(! $user->can('rag.query'), 403, 'Accès refusé. Permission rag.query requise.');
-
         return view('rag.index');
     }
 
@@ -29,7 +25,6 @@ class RagController extends Controller
     {
         /** @var \App\Domain\Users\Models\User $user */
         $user = Auth::user();
-        abort_if(! $user->can('rag.query'), 403, 'Accès refusé. Permission rag.query requise.');
 
         $validated = $request->validate([
             'question' => ['required', 'string', 'min:3', 'max:500'],

@@ -103,8 +103,24 @@ final class UserController extends Controller
             'inactive_users' => (clone $statsBase)->where('is_active', false)->count(),
         ];
 
+        // Preload direct (custom) permissions for the current page in one query,
+        // avoiding N+1 – one extra JOIN instead of one query per user row.
+        $pageUserIds = collect($users->items())->pluck('id')->all();
+        $directPermissionIdsByUser = DB::table('model_has_permissions')
+            ->whereIn('model_id', $pageUserIds)
+            ->where('model_type', (new User)->getMorphClass())
+            ->select(['model_id', 'permission_id'])
+            ->get()
+            ->groupBy('model_id')
+            ->map(fn ($rows) => $rows->pluck('permission_id')->map(fn ($id): int => (int) $id)->values()->all());
+
         $userRowPayloads = collect($users->items())->mapWithKeys(
-            fn (User $u): array => [$u->id => $this->userPayloadForTable($u)]
+            fn (User $u): array => [
+                $u->id => $this->userPayloadForTable(
+                    $u,
+                    $directPermissionIdsByUser->get($u->id, []),
+                ),
+            ]
         )->all();
 
         return view('users', [
@@ -378,11 +394,21 @@ final class UserController extends Controller
     }
 
     /**
+     * Serialize a user row for the JS table payload.
+     *
+     * @param  array<int>  $preloadedDirectPermissionIds  Pre-fetched direct permission IDs
+     *                                                    (avoids a per-row DB query).
      * @return array<string, mixed>
      */
-    private function userPayloadForTable(User $user): array
+    private function userPayloadForTable(User $user, array $preloadedDirectPermissionIds = []): array
     {
         $user->loadMissing(['institution:id,name,code', 'roles:id,name,slug']);
+
+        // Use pre-fetched IDs when available; fall back to live query (used for
+        // single-user refreshes after create / activate / deactivate).
+        $directPermIds = $preloadedDirectPermissionIds !== []
+            ? $preloadedDirectPermissionIds
+            : $user->getDirectPermissions()->pluck('id')->map(fn ($id): int => (int) $id)->values()->all();
 
         return [
             'id' => $user->id,
@@ -402,7 +428,7 @@ final class UserController extends Controller
                 'name' => $r->name,
                 'slug' => $r->slug,
             ])->values()->all(),
-            'custom_permission_ids' => $user->getDirectPermissions()->pluck('id')->values()->all(),
+            'custom_permission_ids' => $directPermIds,
         ];
     }
 }

@@ -7,17 +7,12 @@ namespace App\Http\Controllers\Web;
 use App\Http\Controllers\Controller;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class NotificationsController extends Controller
 {
     public function index(Request $request): View
     {
-        /** @var \App\Domain\Users\Models\User $user */
-        $user = Auth::user();
-        abort_if(! $user->can('audit.view'), 403, 'Accès refusé. Permission audit.view requise.');
-
         $query = DB::table('notifications as n')
             ->leftJoin('users as u', 'u.id', '=', 'n.recipient_user_id')
             ->leftJoin('documents as d', 'd.id', '=', 'n.document_id')

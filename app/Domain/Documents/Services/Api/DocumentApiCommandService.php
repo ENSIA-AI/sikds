@@ -101,6 +101,11 @@ class DocumentApiCommandService
         $this->authorization->assertPermission($user, 'document.edit');
 
         $document = Document::withTrashed()->findOrFail($id);
+
+        // Ensure the user can only edit documents from their own institution
+        // unless they have document.view.all (Super Admin / global editor).
+        $this->authorization->assertInstitutionScope($user, $document);
+
         if ($document->status === 'soft_deleted') {
             abort(Response::HTTP_UNPROCESSABLE_ENTITY, 'Impossible de modifier un document supprimé.');
         }
@@ -204,6 +209,8 @@ class DocumentApiCommandService
         $this->authorization->assertPermission($user, 'document.publish');
 
         $document = Document::withTrashed()->findOrFail($id);
+        $this->authorization->assertInstitutionScope($user, $document);
+
         if ($document->status !== 'draft') {
             abort(Response::HTTP_UNPROCESSABLE_ENTITY, 'Seuls les documents brouillons peuvent être publiés.');
         }
@@ -232,6 +239,8 @@ class DocumentApiCommandService
         $this->authorization->assertPermission($user, 'document.publish');
 
         $document = Document::withTrashed()->findOrFail($id);
+        $this->authorization->assertInstitutionScope($user, $document);
+
         if ($document->status !== 'active') {
             abort(Response::HTTP_UNPROCESSABLE_ENTITY, 'Seuls les documents actifs peuvent être archivés.');
         }
@@ -255,6 +264,8 @@ class DocumentApiCommandService
         $this->authorization->assertPermission($user, 'document.delete');
 
         $document = Document::withTrashed()->findOrFail($id);
+        $this->authorization->assertInstitutionScope($user, $document);
+
         if ($document->status === 'soft_deleted') {
             abort(Response::HTTP_UNPROCESSABLE_ENTITY, 'Le document est déjà supprimé.');
         }
