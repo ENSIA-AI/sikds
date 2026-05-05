@@ -1,6 +1,6 @@
 @extends('layouts.app')
 @section('page_title', 'Mes notifications')
-@section('page_subtitle', 'Documents publiés ou mis à jour qui vous concernent')
+@section('page_subtitle', 'Documents publiés, mis à jour ou partagés qui vous concernent')
 @section('content')
     @php
         /** @var \App\Domain\Notifications\Services\UserNotificationService $service */
