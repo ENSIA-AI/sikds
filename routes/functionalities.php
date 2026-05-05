@@ -4,6 +4,7 @@ use App\Http\Controllers\Common\DashboardController;
 use App\Http\Controllers\Common\DocumentsController;
 use App\Http\Controllers\Common\TagsController;
 use App\Http\Controllers\Api\DocumentsApiController;
+use App\Http\Controllers\Web\DocumentForwardController;
 use App\Http\Controllers\Web\DownloadController;
 use App\Http\Controllers\Web\IndexingController;
 use App\Http\Controllers\Web\AuditController;
@@ -43,6 +44,12 @@ Route::middleware(['auth'])
         // Document Download
         Route::get('/documents/{id}/download', [DownloadController::class, 'download'])
             ->name('documents.download');
+
+        // Forward / share a document to another active user.
+        Route::get('/documents/forward/users/search', [DocumentForwardController::class, 'searchUsers'])
+            ->name('documents.forward.search-users');
+        Route::post('/documents/{id}/forward', [DocumentForwardController::class, 'store'])
+            ->name('documents.forward.store');
 
         // RAG
         Route::get('/rag', [RagController::class, 'index'])

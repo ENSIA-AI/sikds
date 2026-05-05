@@ -53,6 +53,42 @@ class DocumentNotificationService
     }
 
     /**
+     * Create the single-recipient notification for a forwarded document and queue
+     * its email. Always creates the row (even when the email channel is disabled
+     * via system settings) so the recipient sees the in-app notification — only
+     * the SMTP step is gated by `notifications.document_forwarded_enabled`.
+     */
+    public function notifyDocumentForwarded(Document $document, User $recipient, User $sender): Notification
+    {
+        $emailEnabled = (bool) $this->settings->get('notifications.document_forwarded_enabled', true);
+
+        $notification = Notification::query()->create([
+            'type' => 'document.forwarded',
+            'recipient_user_id' => $recipient->id,
+            'document_id' => $document->id,
+            'email_sent_at' => null,
+            'email_status' => $emailEnabled ? 'pending' : 'skipped',
+            'email_error' => null,
+            'metadata' => [
+                'reference_number' => $document->reference_number,
+                'document_title' => $document->title,
+                'description' => $document->description,
+                'sender_user_id' => $sender->id,
+                'sender_full_name' => $sender->full_name,
+                'sender_email' => $sender->email,
+                'tags' => $this->tagPayload($document),
+            ],
+            'created_at' => now(),
+        ]);
+
+        if ($emailEnabled && $recipient->email !== null && $recipient->email !== '') {
+            SendNotificationEmailJob::dispatch($notification->id)->onQueue('notifications');
+        }
+
+        return $notification;
+    }
+
+    /**
      * @return array<int, array{name: string, category: ?string, color: ?string}>
      */
     private function tagPayload(Document $document): array

@@ -33,6 +33,14 @@
                 <span>Modifier</span>
             </a>
             @endif
+            @if ($canForward ?? false)
+            <button type="button"
+                    class="sikds-doc-action-btn sikds-doc-action-btn--default"
+                    @click="$dispatch('open-forward-modal', { forwardUrl: @js(route('documents.forward.store', $document['id'])), reference: @js($document['reference']), title: @js($document['title']) })">
+                <i class="fa-solid fa-share-from-square"></i>
+                <span>Transférer</span>
+            </button>
+            @endif
             @if ($canPublish && $document['status'] === 'draft')
             <button type="button" class="sikds-doc-action-btn sikds-doc-action-btn--default" @click="performAction(urls.publish, 'POST', 'Document publié.')">
                 <i :class="loading ? 'fa-solid fa-spinner fa-spin' : 'fa-solid fa-bullhorn'"></i>
@@ -504,5 +512,9 @@
 </script>
 
 @include('documents.partials.download_modal')
+
+@if ($canForward ?? false)
+    @include('documents.partials.forward_modal')
+@endif
 
 @endsection

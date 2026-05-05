@@ -23,6 +23,7 @@ class PermissionsSeeder extends Seeder
             ['code' => 'document.delete', 'category' => 'documents', 'description' => 'Supprimer des documents.'],
             ['code' => 'document.restore', 'category' => 'documents', 'description' => 'Restaurer un document supprimé.'],
             ['code' => 'document.publish', 'category' => 'documents', 'description' => 'Publier un document.'],
+            ['code' => 'document.forward', 'category' => 'documents', 'description' => 'Transférer un document à un autre utilisateur.'],
             ['code' => 'distribution.manage', 'category' => 'distribution', 'description' => 'Gérer la distribution des documents.'],
             ['code' => 'tag.assign', 'category' => 'tags', 'description' => 'Assigner des étiquettes aux documents.'],
             ['code' => 'tag.manage', 'category' => 'tags', 'description' => 'Gérer les étiquettes.'],
