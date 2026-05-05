@@ -6,6 +6,8 @@ namespace App\Jobs\Notifications;
 
 use App\Domain\Audit\Models\AuditLog;
 use App\Domain\Notifications\Models\Notification;
+use App\Domain\Users\Models\User;
+use App\Mail\DocumentForwardedMail;
 use App\Mail\DocumentPublishedMail;
 use App\Mail\DocumentUpdatedMail;
 use Illuminate\Bus\Queueable;
@@ -71,6 +73,11 @@ class SendNotificationEmailJob implements ShouldQueue
                     is_string($metadata['change_summary'] ?? null) ? $metadata['change_summary'] : null,
                     $tags,
                 ),
+                'document.forwarded' => new DocumentForwardedMail(
+                    $document,
+                    $recipient,
+                    $this->resolveSender($metadata),
+                ),
                 default => null,
             };
 
@@ -129,6 +136,33 @@ class SendNotificationEmailJob implements ShouldQueue
 
             throw $e;
         }
+    }
+
+    /**
+     * Hydrate the sender (forwarder) for the forwarded mail. Falls back to a
+     * lightweight, non-persisted User instance if the original sender row has
+     * been deleted, so the email still renders something meaningful.
+     *
+     * @param  array<string, mixed>  $metadata
+     */
+    private function resolveSender(array $metadata): User
+    {
+        $senderId = isset($metadata['sender_user_id']) ? (int) $metadata['sender_user_id'] : 0;
+        if ($senderId > 0) {
+            $sender = User::query()->find($senderId);
+            if ($sender !== null) {
+                return $sender;
+            }
+        }
+
+        $fallback = new User();
+        $fallback->forceFill([
+            'id' => $senderId,
+            'full_name' => is_string($metadata['sender_full_name'] ?? null) ? $metadata['sender_full_name'] : '',
+            'email' => is_string($metadata['sender_email'] ?? null) ? $metadata['sender_email'] : '',
+        ]);
+
+        return $fallback;
     }
 }
 

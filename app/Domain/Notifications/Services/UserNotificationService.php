@@ -15,6 +15,7 @@ class UserNotificationService
     public const TYPE_LABELS = [
         'document.published' => 'Nouveau document publié',
         'document.updated' => 'Document mis à jour',
+        'document.forwarded' => 'Document partagé',
     ];
 
     /**
@@ -68,10 +69,13 @@ class UserNotificationService
     {
         $documentTitle = $notification->document?->title ?? ($notification->metadata['document_title'] ?? null);
         $titleSegment = $documentTitle ? " : « {$documentTitle} »" : '';
+        $senderName = $notification->metadata['sender_full_name'] ?? $notification->metadata['sender_email'] ?? null;
+        $senderSegment = is_string($senderName) && $senderName !== '' ? " par {$senderName}" : '';
 
         return match ($notification->type) {
             'document.published' => 'Un nouveau document a été publié' . $titleSegment . '.',
             'document.updated' => 'Un document a été mis à jour' . $titleSegment . '.',
+            'document.forwarded' => 'Un document vous a été partagé' . $senderSegment . $titleSegment . '.',
             default => self::TYPE_LABELS[$notification->type] ?? $notification->type,
         };
     }

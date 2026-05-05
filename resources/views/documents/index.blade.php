@@ -302,6 +302,11 @@
                                                 <i class="fa-solid fa-download"></i>
                                             </button>
                                             @break
+                                        @case('forward')
+                                            <button type="button" class="sikds-docs-action-btn" title="Transférer" aria-label="Transférer" @click="$dispatch('open-forward-modal', { forwardUrl: @js($doc['forward_url']), reference: @js($doc['reference']), title: @js($doc['title']) })">
+                                                <i class="fa-solid fa-share-from-square"></i>
+                                            </button>
+                                            @break
                                         @case('publish')
                                             <button type="button" class="sikds-docs-action-btn" title="Publier" aria-label="Publier" @click="performAction(@js($doc['publish_url']), 'POST', 'Document publié.')">
                                                 <i :class="loading ? 'fa-solid fa-spinner fa-spin' : 'fa-solid fa-paper-plane'"></i>
@@ -476,5 +481,9 @@
     </script>
 
     @include('documents.partials.download_modal')
+
+    @if (! empty($canForward))
+        @include('documents.partials.forward_modal')
+    @endif
 
 @endsection

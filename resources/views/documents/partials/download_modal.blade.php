@@ -19,7 +19,8 @@
                 x-transition:leave="ease-in duration-200"
                 x-transition:leave-start="opacity-100"
                 x-transition:leave-end="opacity-0"
-                class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"
+                class="fixed inset-0 transition-opacity"
+                style="background-color: rgba(10, 10, 10, 0.35);"
                 aria-hidden="true"
                 @click="open = false"
             ></div>
@@ -63,7 +64,10 @@
                 <div class="bg-gray-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
                     <button
                         type="button"
-                        class="inline-flex w-full justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 sm:ml-3 sm:w-auto sm:text-sm"
+                        class="inline-flex w-full justify-center rounded-md border border-transparent px-4 py-2 text-base font-medium text-white shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 sm:ml-3 sm:w-auto sm:text-sm"
+                        style="background-color: var(--sikds-primary);"
+                        @mouseenter="$el.style.backgroundColor='var(--sikds-primary-dark)'"
+                        @mouseleave="$el.style.backgroundColor='var(--sikds-primary)'"
                         @click="confirmDownload()"
                         :disabled="downloading"
                     >

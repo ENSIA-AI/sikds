@@ -89,6 +89,7 @@ class DocumentsController
             'filters' => $filters,
             'availableTags' => $this->availableTags(),
             'canPreview' => $this->canPreview($user),
+            'canForward' => $this->canForward($user),
         ]);
     }
 
@@ -118,6 +119,10 @@ class DocumentsController
             'canDelete' => $user->can('document.delete'),
             'canPublish' => $user->can('document.publish'),
             'canRestore' => $user->can('document.restore'),
+            'canForward' => $resolved->status === 'active'
+                && ! $resolved->trashed()
+                && $this->canForward($user)
+                && $resolved->isAccessibleBy($user),
         ]);
     }
 
@@ -186,6 +191,9 @@ class DocumentsController
         if ($user->can('document.edit')) {
             $actions[] = 'edit';
         }
+        if ($document->status === 'active' && ! $document->trashed() && $this->canForward($user)) {
+            $actions[] = 'forward';
+        }
         if ($document->status === 'active' && $user->can('document.publish')) {
             $actions[] = 'archive';
         }
@@ -231,6 +239,7 @@ class DocumentsController
             'restore_url' => route('api.documents.restore', $document->id),
             'publish_url' => route('api.documents.publish', $document->id),
             'archive_url' => route('api.documents.archive', $document->id),
+            'forward_url' => route('documents.forward.store', $document->id),
         ];
     }
 
@@ -334,6 +343,7 @@ class DocumentsController
             'restore_url' => route('api.documents.restore', $document->id),
             'publish_url' => route('api.documents.publish', $document->id),
             'archive_url' => route('api.documents.archive', $document->id),
+            'forward_url' => route('documents.forward.store', $document->id),
         ];
     }
 
@@ -511,6 +521,11 @@ class DocumentsController
     private function canPreview(User $user): bool
     {
         return $user->can('document.view.all');
+    }
+
+    private function canForward(User $user): bool
+    {
+        return $user->can('document.forward');
     }
 
     private function excerptDescription(?string $html): string
