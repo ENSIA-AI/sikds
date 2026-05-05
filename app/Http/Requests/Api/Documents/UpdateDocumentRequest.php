@@ -25,7 +25,7 @@ class UpdateDocumentRequest extends FormRequest
             'issue_date' => ['sometimes', 'required', 'date'],
             'effective_date' => ['sometimes', 'nullable', 'date'],
             'expiration_date' => ['sometimes', 'nullable', 'date'],
-            'target_audience' => ['sometimes', 'required', 'in:all,specific_institutions,specific_roles'],
+            'target_audience' => ['sometimes', 'required', 'in:all,specific_institutions,specific_roles,specific_users'],
             'target_institution_ids' => ['nullable', 'array'],
             'target_institution_ids.*' => ['integer', 'exists:institutions,id'],
             'target_role_ids' => ['nullable', 'array'],
@@ -48,6 +48,9 @@ class UpdateDocumentRequest extends FormRequest
             }
             if ($audience === 'specific_roles' && empty($this->input('target_role_ids', []))) {
                 $validator->errors()->add('target_role_ids', 'Rôles cibles requis.');
+            }
+            if ($audience === 'specific_users' && empty($this->input('target_user_ids', []))) {
+                $validator->errors()->add('target_user_ids', 'Utilisateurs cibles requis.');
             }
 
             $issue = $this->filled('issue_date') ? strtotime((string) $this->input('issue_date')) : false;

@@ -33,7 +33,7 @@ class Document extends Model
         'expiration_date',
         'status',          // draft, active, archived, soft_deleted
         'indexing_status', // pending, processing, indexed, failed
-        'target_audience', // all, specific_institutions, specific_roles
+        'target_audience', // all, specific_institutions, specific_roles, specific_users
         'version_number',
         'uploaded_by',
     ];
@@ -88,7 +88,7 @@ class Document extends Model
 
     /**
      * Determines whether the given user is authorised to access this document.
-     * Priority: document.view.all > audience=all > specific_institutions > specific_roles.
+     * Priority: document.view.all > audience=all > specific_institutions > specific_roles > direct user target.
      */
     public function isAccessibleBy(User $user): bool
     {

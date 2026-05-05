@@ -28,7 +28,7 @@ class StoreDocumentsRequest extends FormRequest
             'documents_meta.*.issue_date' => ['required', 'date'],
             'documents_meta.*.effective_date' => ['nullable', 'date'],
             'documents_meta.*.expiration_date' => ['nullable', 'date'],
-            'documents_meta.*.target_audience' => ['required', 'in:all,specific_institutions,specific_roles'],
+            'documents_meta.*.target_audience' => ['required', 'in:all,specific_institutions,specific_roles,specific_users'],
             'documents_meta.*.target_institution_ids' => ['nullable', 'array'],
             'documents_meta.*.target_institution_ids.*' => ['integer', 'exists:institutions,id'],
             'documents_meta.*.target_role_ids' => ['nullable', 'array'],
@@ -61,6 +61,9 @@ class StoreDocumentsRequest extends FormRequest
                 }
                 if ($audience === 'specific_roles' && empty($meta['target_role_ids'])) {
                     $validator->errors()->add($label, 'Rôles cibles requis pour ce document.');
+                }
+                if ($audience === 'specific_users' && empty($meta['target_user_ids'])) {
+                    $validator->errors()->add($label, 'Utilisateurs cibles requis pour ce document.');
                 }
 
                 $issue = isset($meta['issue_date']) ? strtotime((string) $meta['issue_date']) : false;

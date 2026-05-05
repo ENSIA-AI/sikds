@@ -162,7 +162,7 @@ test('documents api list returns only assigned documents for non super admin', f
         'created_at' => now(),
     ]);
 
-    $docDirect = createDocument($uploader, ['status' => 'active', 'target_audience' => 'specific_roles']);
+    $docDirect = createDocument($uploader, ['status' => 'active', 'target_audience' => 'specific_users']);
     DB::table('document_user_targets')->insert([
         'document_id' => $docDirect->id,
         'user_id' => $user->id,
@@ -267,6 +267,38 @@ test('document upload creates draft document and stores file', function () {
     expect($doc->indexing_status)->toBe('pending');
     expect($doc->file_path)->not->toBe('');
     Storage::disk((string) config('filesystems.documents_disk'))->assertExists($doc->file_path);
+});
+
+test('document upload supports specific users audience', function () {
+    $uploader = User::factory()->create();
+    grantPermission($uploader, 'document.create');
+    grantPermission($uploader, 'tag.assign');
+    $this->actingAs($uploader);
+
+    $targetUser = User::factory()->create();
+    $tagId = seedDocumentsTestTag();
+
+    $payload = [
+        'files' => [fakePdfUpload('specific-user.pdf')],
+        'documents_meta' => [[
+            'title' => 'Doc spécifique utilisateur',
+            'description' => 'Visible uniquement pour un utilisateur ciblé.',
+            'issue_date' => now()->toDateString(),
+            'effective_date' => now()->toDateString(),
+            'expiration_date' => now()->addDay()->toDateString(),
+            'target_audience' => 'specific_users',
+            'target_user_ids' => [$targetUser->id],
+            'tag_ids' => [$tagId],
+        ]],
+    ];
+
+    $response = $this->post('/api/documents', $payload)
+        ->assertCreated()
+        ->assertJsonPath('documents.0.status', 'draft');
+
+    $docId = (int) $response->json('documents.0.id');
+    expect(DB::table('documents')->where('id', $docId)->value('target_audience'))->toBe('specific_users');
+    expect(DB::table('document_user_targets')->where('document_id', $docId)->where('user_id', $targetUser->id)->exists())->toBeTrue();
 });
 
 test('document upload requires at least one tag', function () {

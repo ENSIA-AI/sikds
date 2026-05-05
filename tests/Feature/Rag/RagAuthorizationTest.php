@@ -84,7 +84,7 @@ test('rag authorization includes role and direct-user targeted active indexed do
 
     $docAll = ragCreateDocument($uploader, ['target_audience' => 'all']);
     $docRole = ragCreateDocument($uploader, ['target_audience' => 'specific_roles']);
-    $docDirect = ragCreateDocument($uploader, ['target_audience' => 'specific_roles']);
+    $docDirect = ragCreateDocument($uploader, ['target_audience' => 'specific_users']);
     $docOtherRole = ragCreateDocument($uploader, ['target_audience' => 'specific_roles']);
     $docNotIndexed = ragCreateDocument($uploader, ['target_audience' => 'all', 'indexing_status' => 'pending']);
     $docArchived = ragCreateDocument($uploader, ['target_audience' => 'all', 'status' => 'archived']);
@@ -124,7 +124,7 @@ test('rag authorized ids match visible active indexed documents', function () {
 
     $docInst = ragCreateDocument($uploader, ['target_audience' => 'specific_institutions']);
     $docRole = ragCreateDocument($uploader, ['target_audience' => 'specific_roles']);
-    $docDirect = ragCreateDocument($uploader, ['target_audience' => 'specific_roles']);
+    $docDirect = ragCreateDocument($uploader, ['target_audience' => 'specific_users']);
     $docDraft = ragCreateDocument($uploader, ['status' => 'draft', 'indexing_status' => 'failed']);
 
     DB::table('document_institution_targets')->insert([

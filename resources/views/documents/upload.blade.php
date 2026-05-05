@@ -11,6 +11,7 @@
         availableTags: @js($availableTags),
         institutions: @js($institutions),
         roles: @js($roles),
+        targetUsers: @js($targetUsers),
     })"
     x-effect="ensureMetaForIndex(currentFileIdx)"
     class="sikds-upload"
@@ -265,6 +266,14 @@
                     <span class="sikds-upload-radio-desc">Sélectionner les rôles</span>
                 </span>
             </label>
+            <label class="sikds-upload-radio">
+                <input :id="'audience-users-' + currentFileIdx" :name="'audience_' + currentFileIdx" value="specific_users" type="radio" x-model="documentsMeta[currentFileIdx].target_audience">
+                <span class="sikds-upload-radio-mark"></span>
+                <span class="sikds-upload-radio-content">
+                    <span class="sikds-upload-radio-title">Utilisateurs spécifiques</span>
+                    <span class="sikds-upload-radio-desc">Sélectionner les utilisateurs (prioritaire)</span>
+                </span>
+            </label>
         </div>
 
         <div x-show="currentMeta().target_audience === 'specific_institutions'" x-cloak class="sikds-doc-edit-target-grid" style="margin-top: 16px;">
@@ -281,6 +290,15 @@
                 <label class="sikds-docs-filter-check">
                     <input :id="'role-' + currentFileIdx + '-' + role.id" :name="'role_' + currentFileIdx + '[]'" type="checkbox" :checked="currentMeta().target_role_ids.includes(role.id)" @change="toggleCurrentSelection('target_role_ids', role.id)">
                     <span x-text="role.name"></span>
+                </label>
+            </template>
+        </div>
+
+        <div x-show="currentMeta().target_audience === 'specific_users'" x-cloak class="sikds-doc-edit-target-grid" style="margin-top: 16px;">
+            <template x-for="targetUser in targetUsers" :key="targetUser.id">
+                <label class="sikds-docs-filter-check">
+                    <input :id="'target-user-' + currentFileIdx + '-' + targetUser.id" :name="'target_user_' + currentFileIdx + '[]'" type="checkbox" :checked="currentMeta().target_user_ids.includes(targetUser.id)" @change="toggleCurrentSelection('target_user_ids', targetUser.id)">
+                    <span x-text="targetUser.name + (targetUser.email ? ' (' + targetUser.email + ')' : '')"></span>
                 </label>
             </template>
         </div>
@@ -305,6 +323,7 @@ function uploadPage(config) {
         availableTags: config.availableTags,
         institutions: config.institutions,
         roles: config.roles,
+        targetUsers: config.targetUsers,
         mode: 'single',
         files: [],
         documentsMeta: [],
@@ -332,6 +351,7 @@ function uploadPage(config) {
                 target_audience: 'all',
                 target_institution_ids: [],
                 target_role_ids: [],
+                target_user_ids: [],
                 tag_ids: [],
             };
         },
@@ -518,6 +538,9 @@ function uploadPage(config) {
                 });
                 (meta.target_role_ids || []).forEach((id, targetIdx) => {
                     formData.append(`documents_meta[${idx}][target_role_ids][${targetIdx}]`, id);
+                });
+                (meta.target_user_ids || []).forEach((id, targetIdx) => {
+                    formData.append(`documents_meta[${idx}][target_user_ids][${targetIdx}]`, id);
                 });
             });
 

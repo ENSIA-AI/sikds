@@ -77,7 +77,7 @@ class DocumentsController
         }
 
         $documents = $query
-            ->with(['tags', 'targetInstitutions', 'targetRoles'])
+            ->with(['tags', 'targetInstitutions', 'targetRoles', 'targetUsers'])
             ->orderByDesc('issue_date')
             ->paginate(15)
             ->withQueryString()
@@ -99,6 +99,7 @@ class DocumentsController
             'availableTags' => $this->availableTags(),
             'institutions' => $this->availableInstitutions(),
             'roles' => $this->availableRoles(),
+            'targetUsers' => $this->availableTargetUsers(),
         ]);
     }
 
@@ -134,6 +135,7 @@ class DocumentsController
             'availableTags' => $this->availableTags(),
             'institutions' => $this->availableInstitutions(),
             'roles' => $this->availableRoles(),
+            'targetUsers' => $this->availableTargetUsers(),
             'canPublish' => $user->can('document.publish'),
         ]);
     }
@@ -146,7 +148,7 @@ class DocumentsController
             ? $query->findOrFail((int) $document)
             : $query->where('reference_number', $document)->firstOrFail();
 
-        $resolved->loadMissing(['uploader', 'targetInstitutions', 'targetRoles']);
+        $resolved->loadMissing(['uploader', 'targetInstitutions', 'targetRoles', 'targetUsers']);
 
         return $resolved;
     }
@@ -355,6 +357,7 @@ class DocumentsController
             'tag_ids' => DB::table('document_tags')->where('document_id', $document->id)->pluck('tag_id')->map(fn ($id): int => (int) $id)->all(),
             'target_institution_ids' => $document->targetInstitutions()->pluck('institutions.id')->map(fn ($id): int => (int) $id)->all(),
             'target_role_ids' => $document->targetRoles()->pluck('roles.id')->map(fn ($id): int => (int) $id)->all(),
+            'target_user_ids' => $document->targetUsers()->pluck('users.id')->map(fn ($id): int => (int) $id)->all(),
             'update_url' => route('api.documents.update', $document->id),
             'show_url' => route('documents.show', $document->id),
             'publish_url' => route('api.documents.publish', $document->id),
@@ -394,6 +397,22 @@ class DocumentsController
             ->map(fn (Role $role): array => [
                 'id' => $role->id,
                 'name' => $role->name,
+            ])
+            ->all();
+    }
+
+    private function availableTargetUsers(): array
+    {
+        return User::query()
+            ->active()
+            ->orderBy('full_name')
+            ->orderBy('username')
+            ->orderBy('email')
+            ->get(['id', 'full_name', 'username', 'email'])
+            ->map(fn (User $user): array => [
+                'id' => (int) $user->id,
+                'name' => (string) ($user->full_name ?: $user->username ?: $user->email),
+                'email' => (string) $user->email,
             ])
             ->all();
     }
@@ -462,6 +481,9 @@ class DocumentsController
             'all' => 'Toutes les institutions',
             'specific_institutions' => $document->targetInstitutions->pluck('name')->filter()->join(', ') ?: 'Institutions spécifiques',
             'specific_roles' => $document->targetRoles->pluck('name')->filter()->join(', ') ?: 'Rôles spécifiques',
+            'specific_users' => $document->targetUsers->map(
+                fn (User $user): string => (string) ($user->full_name ?: $user->username ?: $user->email)
+            )->filter()->join(', ') ?: 'Utilisateurs spécifiques',
             default => 'Non renseigné',
         };
     }
@@ -477,6 +499,7 @@ class DocumentsController
                 'Toutes les institutions' => 'all',
                 'Universités', 'Institutions spécifiques' => 'specific_institutions',
                 'Cabinet du Ministre', 'Rôles spécifiques' => 'specific_roles',
+                'Utilisateurs spécifiques' => 'specific_users',
                 default => null,
             })
             ->filter()

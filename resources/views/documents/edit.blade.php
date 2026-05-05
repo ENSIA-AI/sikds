@@ -10,6 +10,7 @@
         availableTags: @js($availableTags),
         institutions: @js($institutions),
         roles: @js($roles),
+        targetUsers: @js($targetUsers),
         csrfToken: @js(csrf_token()),
         canPublish: @js($canPublish),
     })"
@@ -88,6 +89,7 @@
                             <option value="all">Toutes les institutions</option>
                             <option value="specific_institutions">Institutions spécifiques</option>
                             <option value="specific_roles">Rôles spécifiques</option>
+                            <option value="specific_users">Utilisateurs spécifiques</option>
                         </select>
                         <i class="fa-solid fa-angle-down"></i>
                     </div>
@@ -107,6 +109,15 @@
                         <label class="sikds-docs-filter-check">
                             <input type="checkbox" :checked="form.target_role_ids.includes(role.id)" @change="toggleSelection('target_role_ids', role.id)">
                             <span x-text="role.name"></span>
+                        </label>
+                    </template>
+                </div>
+
+                <div x-show="form.target_audience === 'specific_users'" x-cloak class="sikds-doc-edit-target-grid">
+                    <template x-for="targetUser in targetUsers" :key="targetUser.id">
+                        <label class="sikds-docs-filter-check">
+                            <input type="checkbox" :checked="form.target_user_ids.includes(targetUser.id)" @change="toggleSelection('target_user_ids', targetUser.id)">
+                            <span x-text="targetUser.name + (targetUser.email ? ' (' + targetUser.email + ')' : '')"></span>
                         </label>
                     </template>
                 </div>
@@ -229,6 +240,7 @@
             availableTags: config.availableTags,
             institutions: config.institutions,
             roles: config.roles,
+            targetUsers: config.targetUsers,
             canPublish: config.canPublish,
             form: {
                 title: config.document.title ?? '',
@@ -236,6 +248,7 @@
                 target_audience: config.document.audience ?? 'all',
                 target_institution_ids: [...(config.document.target_institution_ids ?? [])],
                 target_role_ids: [...(config.document.target_role_ids ?? [])],
+                target_user_ids: [...(config.document.target_user_ids ?? [])],
                 tag_ids: [...(config.document.tag_ids ?? [])],
                 issue_date: config.document.issue_date ?? '',
                 effective_date: config.document.effective_date ?? '',
@@ -280,6 +293,7 @@
                 this.form.tag_ids.forEach((id, idx) => formData.append(`tag_ids[${idx}]`, id));
                 this.form.target_institution_ids.forEach((id, idx) => formData.append(`target_institution_ids[${idx}]`, id));
                 this.form.target_role_ids.forEach((id, idx) => formData.append(`target_role_ids[${idx}]`, id));
+                this.form.target_user_ids.forEach((id, idx) => formData.append(`target_user_ids[${idx}]`, id));
                 if (this.newFile) {
                     formData.append('file', this.newFile);
                 }

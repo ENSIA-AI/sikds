@@ -193,7 +193,7 @@ CREATE TABLE documents (
     CONSTRAINT chk_indexing_status
         CHECK (indexing_status IN ('pending', 'processing', 'indexed', 'failed')),
     CONSTRAINT chk_target_audience
-        CHECK (target_audience IN ('all', 'specific_institutions', 'specific_roles')),
+        CHECK (target_audience IN ('all', 'specific_institutions', 'specific_roles', 'specific_users')),
     CONSTRAINT chk_document_dates
         CHECK (
             (effective_date IS NULL OR effective_date >= issue_date) AND
