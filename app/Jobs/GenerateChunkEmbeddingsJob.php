@@ -6,7 +6,7 @@ namespace App\Jobs;
 
 use App\Domain\Documents\Models\Document;
 use App\Models\DocumentChunk;
-use App\Services\Rag\JinaEmbeddingService;
+use App\Services\Rag\Contracts\EmbeddingServiceInterface;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -16,7 +16,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
 /**
- * Generates embeddings for all chunks missing vectors, batching requests to Jina,
+ * Generates embeddings for all chunks missing vectors, batching provider requests,
  * and updates the pgvector column. Dispatches finalization when done.
  */
 class GenerateChunkEmbeddingsJob implements ShouldQueue
@@ -33,7 +33,7 @@ class GenerateChunkEmbeddingsJob implements ShouldQueue
         $this->onQueue('indexing');
     }
 
-    public function handle(JinaEmbeddingService $embeddings): void
+    public function handle(EmbeddingServiceInterface $embeddings): void
     {
         $document = Document::find($this->documentId);
         if (! $document || $document->deleted_at !== null) {
@@ -87,10 +87,10 @@ class GenerateChunkEmbeddingsJob implements ShouldQueue
 
             FinalizeDocumentIndexJob::dispatch($document->id)->onQueue('indexing');
         } catch (\Throwable $e) {
-            // Jina token rate limiting: back off without marking the whole document as failed.
+            // Rate limiting: back off without marking the whole document as failed.
             $msg = $e->getMessage();
             if (str_contains($msg, 'HTTP 429') || str_contains($msg, 'RATE_TOKEN_LIMIT_EXCEEDED')) {
-                $this->release((int) config('rag.jina.backoff_429', 75));
+                $this->release((int) config('rag.embedding.backoff_429', 75));
 
                 return;
             }
@@ -107,9 +107,9 @@ class GenerateChunkEmbeddingsJob implements ShouldQueue
      */
     protected function tokensPerCallBudget(): float
     {
-        $tpm = (float) config('rag.jina.tpm_limit');
-        $headroom = (float) config('rag.jina.rate_headroom');
-        $rpm = (float) max(1, (int) config('rag.jina.rpm_limit'));
+        $tpm = (float) config('rag.embedding.tpm_limit');
+        $headroom = (float) config('rag.embedding.rate_headroom');
+        $rpm = (float) max(1, (int) config('rag.embedding.rpm_limit'));
 
         return max(1.0, ($tpm * $headroom) / $rpm);
     }
@@ -119,8 +119,8 @@ class GenerateChunkEmbeddingsJob implements ShouldQueue
      */
     protected function embeddingDispatchDelaySeconds(): int
     {
-        $rpm = (float) config('rag.jina.rpm_limit');
-        $headroom = (float) config('rag.jina.rate_headroom');
+        $rpm = (float) config('rag.embedding.rpm_limit');
+        $headroom = (float) config('rag.embedding.rate_headroom');
         $effectiveRpm = max(0.001, $rpm * $headroom);
 
         return max(1, min(60, (int) ceil(60 / $effectiveRpm)));

@@ -714,7 +714,7 @@
                         refused = Boolean(payload.refused);
                     }
 
-                    if (String(answer).trim() === 'INSUFFICIENT_CONTEXT' || refused) {
+                    if (String(answer).trim() === 'INSUFFICIENT_CONTEXT') {
                         answer = 'Je n ai pas assez de contexte fiable dans les documents indexes pour repondre avec precision. Reformulez avec des termes plus exacts ou une section specifique.';
                     }
 
