@@ -71,6 +71,16 @@
     "test": [
       "@php artisan config:clear --ansi",
       "@php artisan test"
+    ],
+    "i18n:scan": [
+      "@php artisan i18n:scan"
+    ],
+    "i18n:lint": [
+      "@php artisan i18n:lint"
+    ],
+    "i18n:check": [
+      "@php artisan i18n:scan --check",
+      "@php artisan i18n:lint"
     ]
   },
   "extra": {

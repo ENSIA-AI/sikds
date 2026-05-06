@@ -1,5 +1,9 @@
+@php
+    $appLocale = app()->getLocale();
+    $isRtl = in_array($appLocale, (array) config('languages.rtl', ['ar']), true);
+@endphp
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html lang="{{ str_replace('_', '-', $appLocale) }}" dir="{{ $isRtl ? 'rtl' : 'ltr' }}">
 <head>
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta charset="utf-8">
@@ -14,8 +18,8 @@
 </head>
 <body class="sikds-app-body">
     @php
-        $pageTitle = trim($__env->yieldContent('page_title')) ?: 'Tableau de Bord';
-        $pageSubtitle = trim($__env->yieldContent('page_subtitle')) ?: "Aperçu de l'activité du système SIKDS";
+        $pageTitle = html_entity_decode(trim($__env->yieldContent('page_title')), ENT_QUOTES | ENT_HTML5, 'UTF-8') ?: 'Tableau de Bord';
+        $pageSubtitle = html_entity_decode(trim($__env->yieldContent('page_subtitle')), ENT_QUOTES | ENT_HTML5, 'UTF-8') ?: "Aperçu de l'activité du système SIKDS";
         $authUser = auth()->user();
         $userRole = $authUser?->roles?->pluck('name')->first() ?? 'Utilisateur';
         $userName = $authUser?->full_name ?? $authUser?->name ?? $authUser?->email ?? 'Utilisateur';
@@ -55,6 +59,7 @@
                         <p class="sikds-user-role">{{ $userRole }}</p>
                         <p class="sikds-user-name">{{ $userName }}</p>
                     </div>
+                    @include('layouts.partials.language-switcher')
                     @include('layouts.partials.notification-bell')
                     <div class="relative">
                         <button

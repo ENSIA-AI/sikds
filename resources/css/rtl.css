@@ -1,0 +1,45 @@
+/*
+ * RTL overrides for Arabic.
+ *
+ * Strategy: rely on logical CSS properties (margin-inline, padding-inline,
+ * inset-inline, text-align: start/end) wherever possible. This file only
+ * patches places where the existing layout uses physical left/right values
+ * that do not flip automatically.
+ *
+ * Tailwind v4 supports logical utilities (ms-*, me-*, ps-*, pe-*, start-*, end-*).
+ * Prefer those in new templates instead of adding rules here.
+ */
+
+[dir="rtl"] body {
+    font-family: 'Inter', 'Noto Sans Arabic', ui-sans-serif, system-ui, sans-serif;
+}
+
+[dir="rtl"] .sikds-sidebar {
+    left: auto;
+    right: 0;
+}
+
+[dir="rtl"] .sikds-sidebar-close {
+    left: 0.75rem;
+    right: auto;
+}
+
+[dir="rtl"] .sikds-main-wrap {
+    margin-left: 0;
+    margin-right: var(--sikds-sidebar-width, 16rem);
+}
+
+[dir="rtl"] .sikds-decor-wrap {
+    transform: scaleX(-1);
+}
+
+[dir="rtl"] #sikds-chatbot-widget {
+    right: auto;
+    left: 1rem;
+}
+
+@media (min-width: 640px) {
+    [dir="rtl"] #sikds-chatbot-widget {
+        left: 1.5rem;
+    }
+}
