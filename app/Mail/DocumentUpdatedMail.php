@@ -39,7 +39,11 @@ class DocumentUpdatedMail extends Mailable
     public function build(): self
     {
         return $this
-            ->subject("Document mis à jour — {$this->document->reference_number} (v{$this->previousVersion} → v{$this->newVersion})")
+            ->subject(__('Document mis à jour — :reference (v:from → v:to)', [
+                'reference' => $this->document->reference_number,
+                'from' => $this->previousVersion,
+                'to' => $this->newVersion,
+            ]))
             ->view('emails.document-updated')
             ->text('emails.document-updated-text');
     }

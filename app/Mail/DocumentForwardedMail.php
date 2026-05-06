@@ -32,7 +32,10 @@ class DocumentForwardedMail extends Mailable
         $senderName = $this->sender->full_name ?: $this->sender->email;
 
         return $this
-            ->subject("Document partagé par {$senderName} — {$this->document->reference_number}")
+            ->subject(__('Document partagé par :sender — :reference', [
+                'sender' => $senderName,
+                'reference' => $this->document->reference_number,
+            ]))
             ->view('emails.document-forwarded')
             ->text('emails.document-forwarded-text');
     }

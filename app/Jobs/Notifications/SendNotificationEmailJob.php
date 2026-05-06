@@ -85,7 +85,14 @@ class SendNotificationEmailJob implements ShouldQueue
                 throw new \RuntimeException('Type de notification non supporté: '.$type);
             }
 
-            Mail::to($recipient->email)->send($mailable);
+            // Honor the recipient's preferred locale if set; otherwise fall back to the
+            // app default. Without ->locale(), queued mailables use whatever locale the
+            // worker happens to have, which in a multilingual deployment is wrong.
+            $recipientLocale = property_exists($recipient, 'locale') && is_string($recipient->locale)
+                ? $recipient->locale
+                : (string) config('app.locale');
+
+            Mail::to($recipient->email)->locale($recipientLocale)->send($mailable);
 
             $notification->email_status = 'sent';
             $notification->email_sent_at = now();

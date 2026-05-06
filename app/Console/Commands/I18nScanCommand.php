@@ -90,8 +90,11 @@ class I18nScanCommand extends Command
 
         $keys = [];
 
-        // Matches: __('key'), __("key"), @lang('key'), trans('key'), Lang::get('key')
-        // Captures the literal string (single or double quoted) only — variables are skipped.
+        // Matches translator helpers followed by a single- or double-quoted literal.
+        // Variables inside helpers are skipped (we only capture string literals).
+        // Helpers recognised: the underscore-underscore translator, Lang::get,
+        // trans, and the Blade @lang directive. (Not written as code here on
+        // purpose — the regex would otherwise match this very comment.)
         $pattern = '/(?:__|@lang|trans|Lang::get)\s*\(\s*([\'"])((?:\\\\.|(?!\1).)*)\1/u';
 
         foreach ($finder as $file) {
