@@ -4,11 +4,16 @@ declare(strict_types=1);
 
 namespace App\Services\Rag;
 
+use App\Services\Rag\Contracts\TokenEstimatorInterface;
+
 /**
  * Cleans extracted PDF text and splits it into token-bounded overlapping chunks.
  */
 class DocumentChunker
 {
+    public function __construct(
+        protected TokenEstimatorInterface $tokenEstimator,
+    ) {}
     /**
      * @param  array<int, array{page:int, text:string}>  $pages
      * @return array<int, array{content:string, token_count:int, metadata:array{page:int, section_heading:?string, document_title:string, chunk_index:int}}>
@@ -23,7 +28,7 @@ class DocumentChunker
 
         $chunks = [];
         $chunkIndex = 0;
-        $prevTokens = [];
+        $overlapText = '';
         $prevPage = null;
 
         foreach ($blocks as $block) {
@@ -33,10 +38,10 @@ class DocumentChunker
                 continue;
             }
 
-            if ($prevPage !== null && $page !== $prevPage && $prevTokens !== []) {
+            if ($prevPage !== null && $page !== $prevPage && $overlapText !== '') {
                 $halfTokens = $maxTokens / 2;
-                if ($this->estimateTokenCount(implode(' ', $prevTokens)) >= $halfTokens) {
-                    $prevTokens = [];
+                if ($this->estimateTokenCount($overlapText) >= $halfTokens) {
+                    $overlapText = '';
                 }
             }
             $prevPage = $page;
@@ -49,10 +54,10 @@ class DocumentChunker
                     continue;
                 }
 
-                $subTokens = $this->tokenizeApprox($sub);
-                $windowTokens = $prevTokens === [] ? $subTokens : array_merge($prevTokens, $subTokens);
+                $content = $overlapText === ''
+                    ? $sub
+                    : trim($overlapText . ' ' . $sub);
 
-                $content = trim(implode(' ', $windowTokens));
                 $tokenCount = $this->estimateTokenCount($content);
 
                 if ($tokenCount >= $minTokens) {
@@ -70,7 +75,7 @@ class DocumentChunker
                     $chunkIndex++;
                 }
 
-                $prevTokens = array_slice($subTokens, max(0, count($subTokens) - $overlapTokens));
+                $overlapText = $this->extractOverlapTail($sub, $overlapTokens);
             }
         }
 
@@ -135,7 +140,7 @@ class DocumentChunker
             return [$segment];
         }
 
-        $sentences = preg_split("/(?<=[\\.!\\?])\\s+/", trim($segment)) ?: [];
+        $sentences = preg_split('/(?<=[.!?\x{061F}\x{06D4}\x{0964}\x{203C}\x{2047}\x{2048}\x{2049}])\s+/u', trim($segment)) ?: [];
         $out = [];
         $buf = '';
 
@@ -163,20 +168,34 @@ class DocumentChunker
 
     protected function estimateTokenCount(string $text): int
     {
-        // TODO: swap for a proper tokenizer (tiktoken-like) later.
-        return (int) ceil(mb_strlen($text, 'UTF-8') / 4);
+        return $this->tokenEstimator->estimate($text);
     }
 
     /**
-     * @return array<int, string>
+     * Extract the trailing portion of text worth approximately $targetTokens tokens.
+     * This replaces the old word-array-based overlap with a token-budget-consistent approach.
      */
-    protected function tokenizeApprox(string $text): array
+    protected function extractOverlapTail(string $text, int $targetTokens): string
     {
-        $text = trim(preg_replace('/\s+/', ' ', $text) ?? $text);
-        if ($text === '') {
-            return [];
+        if ($targetTokens <= 0 || $text === '') {
+            return '';
         }
 
-        return explode(' ', $text);
+        // Walk backwards through words, accumulating until we reach the token budget.
+        $words = preg_split('/\s+/', trim($text), -1, PREG_SPLIT_NO_EMPTY) ?: [];
+        if ($words === []) {
+            return '';
+        }
+
+        $tail = '';
+        for ($i = count($words) - 1; $i >= 0; $i--) {
+            $candidate = $tail === '' ? $words[$i] : ($words[$i] . ' ' . $tail);
+            if ($this->estimateTokenCount($candidate) > $targetTokens && $tail !== '') {
+                break;
+            }
+            $tail = $candidate;
+        }
+
+        return $tail;
     }
 }

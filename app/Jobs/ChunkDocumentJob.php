@@ -73,6 +73,18 @@ class ChunkDocumentJob implements ShouldQueue
                 DocumentChunk::insert($batch);
             }
 
+            // Populate tsvector for BM25 hybrid search (French + English + simple for Arabic).
+            if (DB::getDriverName() === 'pgsql') {
+                DB::statement(<<<'SQL'
+                    UPDATE document_chunks
+                    SET search_vector =
+                        setweight(to_tsvector('french', coalesce(content, '')), 'A') ||
+                        setweight(to_tsvector('english', coalesce(content, '')), 'B') ||
+                        setweight(to_tsvector('simple', coalesce(content, '')), 'C')
+                    WHERE document_id = ? AND search_vector IS NULL
+                SQL, [$document->id]);
+            }
+
             Cache::forget($cacheKey);
 
             GenerateChunkEmbeddingsJob::dispatch($document->id)->onQueue('indexing');

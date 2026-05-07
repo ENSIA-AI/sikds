@@ -1,37 +1,93 @@
 <?php
+
 return [
+    'api_key' => env('RAG_API_KEY', ''),
+
     'authorization' => [
-        // Local/dev escape hatch: when false, RAG will search across all indexed+active documents
-        // (still requires `rag.query` permission on the route).
         'enforce' => env('RAG_ENFORCE_AUTH', true),
     ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Chunking
+    |--------------------------------------------------------------------------
+    */
     'chunking' => [
-        'max_tokens' => (int) env('CHUNK_MAX_TOKENS', env('RAG_CHUNK_MAX_TOKENS', 400)),
-        'overlap_tokens' => (int) env('CHUNK_OVERLAP_TOKENS', env('RAG_CHUNK_OVERLAP_TOKENS', 60)),
+        'max_tokens' => (int) env('CHUNK_MAX_TOKENS', 400),
+        'overlap_tokens' => (int) env('CHUNK_OVERLAP_TOKENS', 60),
         'min_tokens' => (int) env('CHUNK_MIN_TOKENS', 50),
     ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Embedding
+    |--------------------------------------------------------------------------
+    |
+    | Any OpenAI-compatible embeddings endpoint.
+    | Set the URL, model, API key, and vector dimensions for your provider.
+    |
+    */
     'embedding' => [
-        'model' => 'jina-embeddings-v5-text-small',
-        'dimensions' => 1024,
-        'batch_size' => (int) env('EMBEDDING_BATCH_SIZE', env('RAG_EMBED_BATCH_SIZE', 32)),
-        'passage_task' => 'retrieval.passage',
-        'query_task' => 'retrieval.query',
+        'base_url' => env('RAG_EMBEDDING_URL', ''),
+        'api_key' => env('RAG_EMBEDDING_API_KEY') ?: env('RAG_API_KEY', ''),
+        'model' => env('RAG_EMBEDDING_MODEL', ''),
+        'dimensions' => (int) env('RAG_EMBEDDING_DIMS', 1024),
+        'batch_size' => (int) env('RAG_EMBEDDING_BATCH_SIZE', env('EMBEDDING_BATCH_SIZE', 32)),
+        'timeout' => (int) env('RAG_EMBEDDING_TIMEOUT', 60),
+        // Optional task hints for providers that support them.
+        'passage_task' => env('RAG_EMBEDDING_PASSAGE_TASK', ''),
+        'query_task' => env('RAG_EMBEDDING_QUERY_TASK', ''),
+        'rpm_limit' => (int) env('RAG_EMBEDDING_RPM', 100),
+        'tpm_limit' => (int) env('RAG_EMBEDDING_TPM', 100000),
+        'rate_headroom' => (float) env('RAG_EMBEDDING_RATE_HEADROOM', 0.80),
+        'backoff_429' => (int) env('RAG_EMBEDDING_BACKOFF_429', 75),
     ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Reranking
+    |--------------------------------------------------------------------------
+    |
+    | Any OpenAI-compatible rerank endpoint.
+    |
+    */
     'reranking' => [
-        'model' => 'jina-reranker-v3',
-        'top_n' => 6,
+        'base_url' => env('RAG_RERANKER_URL', ''),
+        'api_key' => env('RAG_RERANKER_API_KEY') ?: env('RAG_API_KEY', ''),
+        'model' => env('RAG_RERANKER_MODEL', ''),
+        'top_n' => (int) env('RAG_RERANKER_TOP_N', 6),
+        'timeout' => (int) env('RAG_RERANKER_TIMEOUT', 60),
     ],
+
     'retrieval' => [
-        'candidate_pool' => 20,
-        'min_confidence' => 0.70,
+        'candidate_pool' => (int) env('RAG_CANDIDATE_POOL', 20),
+        'min_confidence' => (float) env('RAG_MIN_CONFIDENCE', 0.10),
     ],
-    'jina' => [
-        'base_url' => 'https://api.jina.ai/v1',
-        'api_key' => env('JINA_API_KEY'),
-        'timeout' => (int) env('JINA_TIMEOUT', 30),
-        'rpm_limit' => (int) env('JINA_RPM_LIMIT', 100),
-        'tpm_limit' => (int) env('JINA_TPM_LIMIT', 100000),
-        'rate_headroom' => (float) env('JINA_RATE_HEADROOM', 0.80),
-        'backoff_429' => (int) env('JINA_BACKOFF_429', 75),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Hybrid Search (Dense + BM25 via RRF)
+    |--------------------------------------------------------------------------
+    |
+    | When enabled, both semantic (pgvector) and lexical (tsvector) searches
+    | are run and merged using Reciprocal Rank Fusion before reranking.
+    |
+    */
+    'hybrid' => [
+        'enabled' => (bool) env('RAG_HYBRID_SEARCH', true),
+        'rrf_k' => (int) env('RAG_RRF_K', 60),
+        'bm25_candidate_pool' => (int) env('RAG_BM25_POOL', 20),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | LLM (generation)
+    |--------------------------------------------------------------------------
+    */
+    'llm' => [
+        'provider' => env('RAG_LLM_PROVIDER', 'groq'),
+        'model' => env('RAG_LLM_MODEL', 'llama-3.3-70b-versatile'),
+        'api_key' => env('LLM_API_KEY', ''),
+        'url' => env('RAG_LLM_URL', ''),
     ],
 ];
