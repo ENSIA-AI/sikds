@@ -43,35 +43,50 @@ class DocumentApiAuthorizationService
         abort_if(! $user->can($permission), Response::HTTP_FORBIDDEN, "Permission {$permission} requise.");
     }
 
+    /**
+     * SRS §3.1 / §7.2: soft-deleted documents are reviewed and restored only by the seeded
+     * system Super Administrateur — not by other users who hold document.restore (peers included).
+     * Route middleware still requires can:document.restore; super admins typically satisfy it via
+     * RolesSeeder (all permissions). AuthServiceProvider Gate::before is optional (not in
+     * bootstrap/providers.php), so the permission must exist on the role for middleware to pass.
+     */
     public function assertCanRestore(User $user): void
     {
-        $this->assertPermission($user, 'document.restore');
+        if (! $user->hasRole('Super Administrateur')) {
+            abort(
+                Response::HTTP_FORBIDDEN,
+                'Seul un super administrateur peut restaurer un document supprimé.'
+            );
+        }
     }
 
     /**
-     * Enforce institution scope on mutating document actions.
+     * Whether the user may perform institution-scoped mutations (edit, publish,
+     * archive, delete, forward, restore) on this document apart from permission checks.
      *
-     * Users with `document.view.all` (typically Super Admin) bypass this check.
-     * All other users may only act on documents uploaded by their own institution,
-     * unless the document was uploaded by themselves.
+     * Restore also calls this after {@see assertCanRestore}; actors without
+     * `document.view.all` must be the uploader or share the uploader’s institution.
      */
-    public function assertInstitutionScope(User $user, Document $document): void
+    public function isInstitutionScopedActionAllowed(User $user, Document $document): bool
     {
-        // Super Admins / full-view users are not restricted by institution.
         if ($this->canUseViewAll($user)) {
-            return;
+            return true;
         }
 
-        // The uploader themselves can always act on their own document.
         if ((int) $document->uploaded_by === (int) $user->id) {
-            return;
+            return true;
         }
 
-        // Load uploader institution if not already eager-loaded.
         $document->loadMissing('uploader');
         $uploaderInstitutionId = $document->uploader?->institution_id;
 
-        if ($uploaderInstitutionId === null || (int) $uploaderInstitutionId !== (int) $user->institution_id) {
+        return $uploaderInstitutionId !== null
+            && (int) $uploaderInstitutionId === (int) $user->institution_id;
+    }
+
+    public function assertInstitutionScope(User $user, Document $document): void
+    {
+        if (! $this->isInstitutionScopedActionAllowed($user, $document)) {
             abort(
                 Response::HTTP_FORBIDDEN,
                 'Vous ne pouvez modifier que des documents de votre institution.'

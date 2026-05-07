@@ -69,4 +69,12 @@ class DocumentForwardException extends RuntimeException
             Response::HTTP_UNPROCESSABLE_ENTITY,
         );
     }
+
+    public static function institutionScopeDenied(): self
+    {
+        return new self(
+            'Vous ne pouvez transférer que des documents de votre institution (ou dont vous êtes l’auteur).',
+            Response::HTTP_FORBIDDEN,
+        );
+    }
 }

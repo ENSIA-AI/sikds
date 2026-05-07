@@ -1,5 +1,25 @@
 <?php
 
+/**
+ * Authenticated application routes (loaded from routes/web.php).
+ *
+ * Permission middleware convention :
+ * - `can:permission.name` — Laravel `AuthorizeMiddleware` + Spatie; uses `$user->can(...)`.
+ *   This is the default for feature routes below (maps to `App\Domain\Users\Models\Permission`).
+ * - `permission:…`, `role:…`, `role_or_permission:…` — Spatie aliases registered in
+ *   `bootstrap/app.php`; use when you need Spatie’s middleware specifically.
+ * - Document read vs write: list/index visibility uses OR logic (`document.view.all` |
+ *   `document.view.own_institution` | `document.view.assigned`) inside controllers/services.
+ *   Mutations (API and forward) additionally require institution scope via
+ *   `DocumentApiAuthorizationService::assertInstitutionScope()` unless the user has
+ *   `document.view.all`, is the uploader, or shares the uploader’s institution.
+ *   Restore: `assertCanRestore()` limits actors to Super Administrateur (SRS §3.1 / §7.2), and
+ *   `assertInstitutionScope()` applies like other mutations (`document.view.all`, uploader, or
+ *   same institution as uploader).
+ *
+ * @see \App\Domain\Documents\Services\Api\DocumentApiAuthorizationService
+ */
+
 use App\Http\Controllers\Common\DashboardController;
 use App\Http\Controllers\Common\DocumentsController;
 use App\Http\Controllers\Common\TagsController;
@@ -33,15 +53,18 @@ Route::middleware(['auth'])
         Route::get('/documents', [DocumentsController::class, 'index'])
             ->name('documents.index');
 
-        // Permission: document.view.all (preview requires full visibility)
-        Route::get('/documents/{document}', [DocumentsController::class, 'show'])
-            ->middleware('can:document.view.all')
-            ->name('documents.show');
+        // Static paths must be registered before `/documents/{document}` so `upload` is not
+        // captured as a document id (which would hit `show` + document.view.all → 403).
 
         // Permission: document.create
         Route::get('/documents/upload', [DocumentsController::class, 'create'])
             ->middleware('can:document.create')
             ->name('documents.create');
+
+        // Permission: document.view.all (preview requires full visibility)
+        Route::get('/documents/{document}', [DocumentsController::class, 'show'])
+            ->middleware('can:document.view.all')
+            ->name('documents.show');
 
         // Permission: document.edit
         Route::get('/documents/{document}/edit', [DocumentsController::class, 'edit'])
@@ -123,9 +146,9 @@ Route::middleware(['auth'])
         });
 
         // ── Documents API ──────────────────────────────────────────────────────
-        // Fine-grained permission checks delegated to DocumentApiAuthorizationService;
-        // route-level middleware enforces the minimum bar (any authenticated user must
-        // have at least one document permission to reach these endpoints).
+        // Read: `DocumentApiQueryService` asserts list/preview permissions internally.
+        // Write: each route adds `can:document.*` middleware; commands call
+        // `DocumentApiAuthorizationService::assertInstitutionScope()` where applicable.
         Route::prefix('api/documents')->name('api.documents.')->group(function () {
             // Read endpoints – OR-logic (view.all | own_institution | assigned) enforced in service
             Route::get('/', [DocumentsApiController::class, 'index'])->name('index');
@@ -154,6 +177,9 @@ Route::middleware(['auth'])
             Route::delete('/{id}', [DocumentsApiController::class, 'destroy'])
                 ->middleware('can:document.delete')
                 ->name('destroy');
+            // SRS §3.1 / §7.2: Super Administrateur–only in assertCanRestore(); can:document.restore is the route gate
+            // (super admin satisfies it via seeded permissions; peers with only document.restore are blocked in service).
+            // Restore also uses assertInstitutionScope() like update/delete unless view.all / uploader / same institution.
             Route::post('/{id}/restore', [DocumentsApiController::class, 'restore'])
                 ->middleware('can:document.restore')
                 ->name('restore');

@@ -116,7 +116,7 @@ final class UserController extends Controller
 
         $userRowPayloads = collect($users->items())->mapWithKeys(
             fn (User $u): array => [
-                $u->id => $this->userPayloadForTable(
+                $u->id => $this->userTableRowPayload(
                     $u,
                     $directPermissionIdsByUser->get($u->id, []),
                 ),
@@ -404,12 +404,19 @@ final class UserController extends Controller
     {
         $user->loadMissing(['institution:id,name,code', 'roles:id,name,slug']);
 
-        // Use pre-fetched IDs when available; fall back to live query (used for
-        // single-user refreshes after create / activate / deactivate).
         $directPermIds = $preloadedDirectPermissionIds !== []
             ? $preloadedDirectPermissionIds
             : $user->getDirectPermissions()->pluck('id')->map(fn ($id): int => (int) $id)->values()->all();
 
+        return $this->userTableRowPayload($user, $directPermIds);
+    }
+
+    /**
+     * @param  array<int>  $directPermIds
+     * @return array<string, mixed>
+     */
+    private function userTableRowPayload(User $user, array $directPermIds): array
+    {
         return [
             'id' => $user->id,
             'full_name' => $user->full_name,

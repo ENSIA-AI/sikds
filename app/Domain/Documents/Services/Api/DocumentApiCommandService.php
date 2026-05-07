@@ -289,6 +289,8 @@ class DocumentApiCommandService
         $this->authorization->assertCanRestore($user);
 
         $document = Document::withTrashed()->findOrFail($id);
+        $this->authorization->assertInstitutionScope($user, $document);
+
         if ($document->status !== 'soft_deleted') {
             abort(Response::HTTP_UNPROCESSABLE_ENTITY, 'Ce document n\'est pas en état supprimé.');
         }

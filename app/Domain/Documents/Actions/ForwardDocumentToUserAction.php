@@ -7,6 +7,7 @@ namespace App\Domain\Documents\Actions;
 use App\Domain\Audit\Services\AuditService;
 use App\Domain\Documents\Exceptions\DocumentForwardException;
 use App\Domain\Documents\Models\Document;
+use App\Domain\Documents\Services\Api\DocumentApiAuthorizationService;
 use App\Domain\Documents\Models\DocumentUserTarget;
 use App\Domain\Notifications\Models\Notification;
 use App\Domain\Users\Models\User;
@@ -27,6 +28,7 @@ final class ForwardDocumentToUserAction
     public function __construct(
         private readonly AuditService $audit,
         private readonly DocumentNotificationService $notifications,
+        private readonly DocumentApiAuthorizationService $documentAuthorization,
     ) {}
 
     /**
@@ -110,6 +112,10 @@ final class ForwardDocumentToUserAction
 
         if (! $document->isAccessibleBy($actor)) {
             throw DocumentForwardException::notViewable();
+        }
+
+        if (! $this->documentAuthorization->isInstitutionScopedActionAllowed($actor, $document)) {
+            throw DocumentForwardException::institutionScopeDenied();
         }
     }
 

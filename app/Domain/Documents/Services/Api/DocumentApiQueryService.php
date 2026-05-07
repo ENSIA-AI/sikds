@@ -24,7 +24,7 @@ class DocumentApiQueryService
 
         $includeDeleted = filter_var($request->query('include_deleted', false), FILTER_VALIDATE_BOOL);
         $query = Document::query();
-        if ($includeDeleted && $this->authorization->isSuperAdmin($user)) {
+        if ($includeDeleted && $this->authorization->canUseViewAll($user)) {
             $query->withTrashed();
         }
 

@@ -3,8 +3,8 @@
 use App\Domain\Documents\Models\Document;
 use App\Domain\Institutions\Models\Institution;
 use App\Domain\Users\Models\User;
-use App\Models\Permission;
-use App\Models\Role;
+use App\Domain\Users\Models\Permission;
+use App\Domain\Users\Models\Role;
 use Illuminate\Support\Str;
 use Spatie\Permission\PermissionRegistrar;
 
@@ -236,7 +236,9 @@ test('document edit page includes cancel confirmation alert', function () {
 });
 
 test('authenticated users can access the document upload page', function () {
-    $this->actingAs(User::factory()->create());
+    $user = User::factory()->create();
+    webGrantPermission($user, 'document.create');
+    $this->actingAs($user);
 
     $response = $this->get(route('documents.create'));
 
