@@ -8,6 +8,7 @@ use App\Domain\Audit\Models\AuditLog;
 use App\Domain\Documents\Models\Document;
 use App\Domain\Documents\Models\DocumentVersion;
 use App\Domain\Documents\Models\DownloadLog;
+use App\Domain\Documents\Services\Api\DocumentApiAuthorizationService;
 use App\Domain\Institutions\Models\Institution;
 use App\Domain\Users\Models\User;
 use App\Models\Role;
@@ -20,6 +21,10 @@ use Illuminate\View\View;
 
 class DocumentsController
 {
+    public function __construct(
+        private readonly DocumentApiAuthorizationService $documentAuth,
+    ) {}
+
     public function index(Request $request): View
     {
         /** @var User $user */
@@ -108,21 +113,23 @@ class DocumentsController
     {
         /** @var User $user */
         $user = Auth::user();
-        abort_if(! $this->canPreview($user), 403, 'Permission document.view.all requise pour la prévisualisation.');
 
         $resolved = $this->resolveDocument($document);
+
+        $instScope = $this->documentAuth->isInstitutionScopedActionAllowed($user, $resolved);
 
         return view('documents.show', [
             'activeNav' => 'documents',
             'document' => $this->mapDetailDocument($resolved),
-            'canEdit' => $user->can('document.edit'),
-            'canDelete' => $user->can('document.delete'),
-            'canPublish' => $user->can('document.publish'),
-            'canRestore' => $user->can('document.restore'),
+            'canEdit' => $user->can('document.edit') && $instScope,
+            'canDelete' => $user->can('document.delete') && $instScope,
+            'canPublish' => $user->can('document.publish') && $instScope,
+            'canRestore' => $this->mayRestoreSoftDeletedDocument($user),
             'canForward' => $resolved->status === 'active'
                 && ! $resolved->trashed()
                 && $this->canForward($user)
-                && $resolved->isAccessibleBy($user),
+                && $resolved->isAccessibleBy($user)
+                && $instScope,
         ]);
     }
 
@@ -130,9 +137,9 @@ class DocumentsController
     {
         /** @var User $user */
         $user = Auth::user();
-        abort_if(! $user->can('document.edit'), 403, 'Permission document.edit requise.');
 
         $resolved = $this->resolveDocument($document);
+        $this->documentAuth->assertInstitutionScope($user, $resolved);
 
         return view('documents.edit', [
             'activeNav' => 'documents',
@@ -141,7 +148,8 @@ class DocumentsController
             'institutions' => $this->availableInstitutions(),
             'roles' => $this->availableRoles(),
             'targetUsers' => $this->availableTargetUsers(),
-            'canPublish' => $user->can('document.publish'),
+            'canPublish' => $user->can('document.publish')
+                && $this->documentAuth->isInstitutionScopedActionAllowed($user, $resolved),
         ]);
     }
 
@@ -181,27 +189,29 @@ class DocumentsController
 
         $uiStatus = $document->status === 'soft_deleted' ? 'deleted' : $document->status;
 
+        $instScope = $this->documentAuth->isInstitutionScopedActionAllowed($user, $document);
+
         $actions = ['download'];
-        if ($document->status === 'draft' && $user->can('document.publish')) {
+        if ($document->status === 'draft' && $user->can('document.publish') && $instScope) {
             $actions[] = 'publish';
         }
         if ($this->canPreview($user)) {
             $actions[] = 'view';
         }
-        if ($user->can('document.edit')) {
+        if ($user->can('document.edit') && $instScope) {
             $actions[] = 'edit';
         }
-        if ($document->status === 'active' && ! $document->trashed() && $this->canForward($user)) {
+        if ($document->status === 'active' && ! $document->trashed() && $this->canForward($user) && $instScope) {
             $actions[] = 'forward';
         }
-        if ($document->status === 'active' && $user->can('document.publish')) {
+        if ($document->status === 'active' && $user->can('document.publish') && $instScope) {
             $actions[] = 'archive';
         }
         if ($document->status === 'soft_deleted') {
-            if ($user->can('document.restore')) {
+            if ($this->mayRestoreSoftDeletedDocument($user)) {
                 $actions[] = 'restore';
             }
-        } elseif ($user->can('document.delete')) {
+        } elseif ($user->can('document.delete') && $instScope) {
             $actions[] = 'delete';
         }
 
@@ -535,6 +545,14 @@ class DocumentsController
     private function canForward(User $user): bool
     {
         return $user->can('document.forward');
+    }
+
+    /**
+     * SRS §3.1 / §7.2: only the system Super Administrateur may restore soft-deleted documents.
+     */
+    private function mayRestoreSoftDeletedDocument(User $user): bool
+    {
+        return $user->hasRole('Super Administrateur');
     }
 
     private function excerptDescription(?string $html): string

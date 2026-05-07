@@ -11,7 +11,7 @@ use App\Domain\Institutions\Models\Institution;
 use App\Domain\Notifications\Models\Notification;
 use App\Domain\Users\Models\User;
 use App\Jobs\Notifications\SendNotificationEmailJob;
-use App\Models\Permission;
+use App\Domain\Users\Models\Permission;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Str;
@@ -337,6 +337,41 @@ it('only returns active users from the search endpoint, excluding the current us
     expect($ids)->toContain($active->id);
     expect($ids)->not->toContain($inactive->id);
     expect($ids)->not->toContain($actor->id);
+});
+
+it('rejects forwarding when the actor is outside the uploader institution', function (): void {
+    $instA = Institution::query()->firstOrCreate(
+        ['code' => 'FWD-SCOPE-A'],
+        ['name' => 'Forward Scope A', 'type' => 'university', 'domain' => 'fwd-a.test']
+    );
+    $instB = Institution::query()->firstOrCreate(
+        ['code' => 'FWD-SCOPE-B'],
+        ['name' => 'Forward Scope B', 'type' => 'university', 'domain' => 'fwd-b.test']
+    );
+
+    $uploader = User::factory()->create(['institution_id' => $instA->id]);
+    $sender = User::factory()->create(['institution_id' => $instB->id]);
+    fwdGrantPermission($sender, 'document.forward');
+    fwdGrantPermission($sender, 'document.view.assigned');
+
+    $document = fwdMakeDocument($uploader, ['target_audience' => 'specific_users']);
+    DB::table('document_user_targets')->insert([
+        'document_id' => $document->id,
+        'user_id' => $sender->id,
+        'created_at' => now(),
+    ]);
+
+    $recipient = User::factory()->create();
+
+    $this->actingAs($sender);
+    $this->postJson(route('documents.forward.store', $document->id), [
+        'recipient_id' => $recipient->id,
+    ])->assertForbidden();
+
+    expect(DB::table('document_user_targets')
+        ->where('document_id', $document->id)
+        ->where('user_id', $recipient->id)
+        ->exists())->toBeFalse();
 });
 
 it('throws a typed exception when the action is called with permission denied', function (): void {

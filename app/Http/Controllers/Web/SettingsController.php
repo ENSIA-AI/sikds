@@ -20,10 +20,6 @@ class SettingsController extends Controller
 
     public function index(Request $request): View
     {
-        /** @var \App\Domain\Users\Models\User $user */
-        $user = Auth::user();
-        abort_if(! $user->can('audit.view'), 403, 'Accès refusé. Permission audit.view requise.');
-
         $managed = $this->systemSettings->all();
 
         return view('settings.index', [
@@ -36,7 +32,6 @@ class SettingsController extends Controller
     {
         /** @var \App\Domain\Users\Models\User $user */
         $user = Auth::user();
-        abort_if(! $user->can('audit.view'), 403, 'Accès refusé. Permission audit.view requise.');
 
         $section = (string) $request->input('section');
         abort_unless(in_array($section, ['notifications', 'audit', 'watermark'], true), 422, 'Section invalide.');
