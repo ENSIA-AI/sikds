@@ -10,6 +10,7 @@ namespace App\Providers;
 use App\Domain\Users\Models\User;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 use Illuminate\Support\Facades\Gate;
+use Spatie\Permission\Exceptions\PermissionDoesNotExist;
 
 class AuthServiceProvider extends ServiceProvider
 {
@@ -27,13 +28,22 @@ class AuthServiceProvider extends ServiceProvider
 
         // Define gates for all permissions
         // This allows using: Gate::allows('role.create')
-        Gate::before(function (User $user, string $ability) {
+        Gate::before(function ($user, $ability): ?bool {
+            if (! $user instanceof User || ! is_string($ability)) {
+                return null;
+            }
+
             if ($user->hasRole('Super Administrateur')) {
                 return true;
             }
 
-            // Check if user has the permission
-            return $user->hasPermissionTo($ability) ? true : null;
+            try {
+                return $user->hasPermissionTo($ability) ? true : null;
+            } catch (PermissionDoesNotExist) {
+                return null;
+            } catch (\Throwable) {
+                return null;
+            }
         });
     }
 }

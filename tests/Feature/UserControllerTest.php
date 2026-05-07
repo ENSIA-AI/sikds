@@ -29,11 +29,12 @@ beforeEach(function () {
         'is_system_role' => false,
     ]);
 
+    // Spatie + `authorize('user.view.all')` expect `permissions.name` (or matching `code`) to equal the gate slug.
     $permissions = [
-        Permission::factory()->create(['code' => 'user.view.all', 'name' => 'View All Users', 'category' => 'users']),
-        Permission::factory()->create(['code' => 'user.manage', 'name' => 'Manage Users', 'category' => 'users']),
-        Permission::factory()->create(['code' => 'user.assign.permissions', 'name' => 'Assign Permissions', 'category' => 'users']),
-        Permission::factory()->create(['code' => 'user.deactivate', 'name' => 'Deactivate Users', 'category' => 'users']),
+        Permission::factory()->create(['code' => 'user.view.all', 'name' => 'user.view.all', 'category' => 'users']),
+        Permission::factory()->create(['code' => 'user.manage', 'name' => 'user.manage', 'category' => 'users']),
+        Permission::factory()->create(['code' => 'user.assign.permissions', 'name' => 'user.assign.permissions', 'category' => 'users']),
+        Permission::factory()->create(['code' => 'user.deactivate', 'name' => 'user.deactivate', 'category' => 'users']),
     ];
 
     $this->adminRole->permissions()->attach(collect($permissions)->pluck('id'));
@@ -152,12 +153,14 @@ test('it can sort users alphabetically', function () {
 
     $response = $this->get(route('users.index', ['sort' => 'name', 'direction' => 'asc']));
 
-    $content = $response->getContent();
-
-    $ahmedPos = strpos($content, 'Ahmed Ali');
-    $zaraPos = strpos($content, 'Zara Ahmed');
-
-    expect($ahmedPos)->toBeLessThan($zaraPos);
+    $response->assertOk();
+    $paginator = $response->viewData('users');
+    $names = collect($paginator->items())->pluck('full_name')->values()->all();
+    $ahmedIdx = array_search('Ahmed Ali', $names, true);
+    $zaraIdx = array_search('Zara Ahmed', $names, true);
+    expect($ahmedIdx)->not->toBeFalse()
+        ->and($zaraIdx)->not->toBeFalse()
+        ->and($ahmedIdx)->toBeLessThan($zaraIdx);
 });
 
 test('it creates user via json', function () {

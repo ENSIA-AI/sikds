@@ -8,6 +8,8 @@
  *   This is the default for feature routes below (maps to `App\Domain\Users\Models\Permission`).
  * - `permission:…`, `role:…`, `role_or_permission:…` — Spatie aliases registered in
  *   `bootstrap/app.php`; use when you need Spatie’s middleware specifically.
+ * - `App\Providers\AuthServiceProvider` (see `bootstrap/providers.php`) registers
+ *   `Gate::before`: **Super Administrateur** passes every `can:…` check; others use Spatie permissions.
  * - Document read vs write: list/index visibility uses OR logic (`document.view.all` |
  *   `document.view.own_institution` | `document.view.assigned`) inside controllers/services.
  *   Mutations (API and forward) additionally require institution scope via
@@ -102,9 +104,7 @@ Route::middleware(['auth'])
         });
 
         // ── Indexing monitor ───────────────────────────────────────────────────
-        // Permission: indexing.manage OR role "Super Administrateur"
-        // Note: combined check (permission OR role) is enforced inside IndexingController
-        // so that Super Admins always retain access even before their role is seeded.
+        // Permission: indexing.manage (Super Administrateur also passes via AuthServiceProvider::Gate::before).
         Route::get('/indexing', [IndexingController::class, 'index'])->name('indexing.index');
         Route::post('/indexing/{document}/retry', [IndexingController::class, 'retry'])->name('indexing.retry');
 
@@ -177,8 +177,8 @@ Route::middleware(['auth'])
             Route::delete('/{id}', [DocumentsApiController::class, 'destroy'])
                 ->middleware('can:document.delete')
                 ->name('destroy');
-            // SRS §3.1 / §7.2: Super Administrateur–only in assertCanRestore(); can:document.restore is the route gate
-            // (super admin satisfies it via seeded permissions; peers with only document.restore are blocked in service).
+            // SRS §3.1 / §7.2: assertCanRestore() is Super Administrateur–only; can:document.restore is route middleware
+            // (super admin passes via Gate::before / seeded permissions; peers with only document.restore are blocked in service).
             // Restore also uses assertInstitutionScope() like update/delete unless view.all / uploader / same institution.
             Route::post('/{id}/restore', [DocumentsApiController::class, 'restore'])
                 ->middleware('can:document.restore')

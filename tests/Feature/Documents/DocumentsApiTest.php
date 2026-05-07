@@ -41,8 +41,8 @@ function ensureSuperAdmin(User $user): void
         ['name' => 'Super Administrateur', 'guard_name' => 'web'],
         ['slug' => 'super-admin', 'is_system_role' => true]
     );
-    // Super-admin role + document.restore for can:document.restore (AuthServiceProvider is not
-    // in bootstrap/providers.php). assertCanRestore() enforces hasRole('Super Administrateur') only.
+    // Super-admin role + document.restore: assertCanRestore() requires the role; middleware uses can:document.restore
+    // (Super Admin passes via Gate::before and/or explicit permissions below).
     grantPermission($user, 'document.view.all');
     grantPermission($user, 'document.restore');
     $role->givePermissionTo(['document.view.all', 'document.restore']);

@@ -44,11 +44,9 @@ class DocumentApiAuthorizationService
     }
 
     /**
-     * SRS §3.1 / §7.2: soft-deleted documents are reviewed and restored only by the seeded
-     * system Super Administrateur — not by other users who hold document.restore (peers included).
-     * Route middleware still requires can:document.restore; super admins typically satisfy it via
-     * RolesSeeder (all permissions). AuthServiceProvider Gate::before is optional (not in
-     * bootstrap/providers.php), so the permission must exist on the role for middleware to pass.
+     * SRS §3.1 / §7.2: restoration is reserved for Super Administrateur. Route middleware still
+     * uses can:document.restore; super admins typically pass via App\Providers\AuthServiceProvider
+     * Gate::before (when registered) and/or seeded permissions on the role.
      */
     public function assertCanRestore(User $user): void
     {
@@ -61,11 +59,9 @@ class DocumentApiAuthorizationService
     }
 
     /**
-     * Whether the user may perform institution-scoped mutations (edit, publish,
-     * archive, delete, forward, restore) on this document apart from permission checks.
-     *
-     * Restore also calls this after {@see assertCanRestore}; actors without
-     * `document.view.all` must be the uploader or share the uploader’s institution.
+     * Institution-scoped mutations: edit, publish, archive, delete, forward, restore — after
+     * permission and (for restore) role checks — unless view.all, uploader, or same institution
+     * as uploader.
      */
     public function isInstitutionScopedActionAllowed(User $user, Document $document): bool
     {
@@ -94,4 +90,3 @@ class DocumentApiAuthorizationService
         }
     }
 }
-
