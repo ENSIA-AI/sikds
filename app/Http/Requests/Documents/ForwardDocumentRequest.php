@@ -29,9 +29,9 @@ class ForwardDocumentRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'recipient_id.required' => 'Veuillez sélectionner un destinataire.',
-            'recipient_id.integer' => 'Identifiant de destinataire invalide.',
-            'recipient_id.exists' => 'Le destinataire sélectionné est introuvable.',
+            'recipient_id.required' => __('Veuillez sélectionner un destinataire.'),
+            'recipient_id.integer' => __('Identifiant de destinataire invalide.'),
+            'recipient_id.exists' => __('Le destinataire sélectionné est introuvable.'),
         ];
     }
 }

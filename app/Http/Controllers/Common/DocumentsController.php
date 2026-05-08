@@ -261,11 +261,11 @@ class DocumentsController
             ->orderByDesc('downloaded_at')
             ->get()
             ->map(function (DownloadLog $download, int $index): array {
-                $name = $download->user?->full_name ?? $download->user?->name ?? 'Utilisateur inconnu';
-                $email = $download->user?->email ?? 'Email indisponible';
+                $name = $download->user?->full_name ?? $download->user?->name ?? __('Utilisateur inconnu');
+                $email = $download->user?->email ?? __('Email indisponible');
 
                 return [
-                    'title' => 'Téléchargement #'.($index + 1),
+                    'title' => __('Téléchargement #').($index + 1),
                     'meta' => $name.' • '.$email.' • '.$download->downloaded_at?->format('d/m/Y H:i'),
                     'uuid' => $download->watermark_uuid,
                 ];
@@ -323,7 +323,7 @@ class DocumentsController
                     'status' => null,
                     'status_class' => null,
                     'meta' => ($version->created_at?->format('d/m/Y') ?? '-').' • '.$this->formatBytes((int) (DB::table('documents')->where('id', $version->document_id)->value('file_size') ?? 0)),
-                    'description' => (string) ($metadata['description'] ?? 'Version archivée'),
+                    'description' => (string) ($metadata['description'] ?? __('Version archivée')),
                 ];
             })
             ->values();
@@ -333,7 +333,7 @@ class DocumentsController
             'status' => 'Actuelle',
             'status_class' => 'sikds-doc-pill--current',
             'meta' => $this->formatDate($document->updated_at).' • '.$this->formatBytes((int) $document->file_size),
-            'description' => $document->description ?: 'Version courante du document.',
+            'description' => $document->description ?: __('Version courante du document.'),
         ]])->concat($archivedVersions)->all();
 
         return [
@@ -341,9 +341,9 @@ class DocumentsController
             'title' => $document->title,
             'reference' => $document->reference_number,
             'status' => $document->status === 'soft_deleted' ? 'deleted' : $document->status,
-            'description' => $document->description ?: 'Aucune description fournie.',
+            'description' => $document->description ?: __('Aucune description fournie.'),
             'tags' => $this->documentTags($document->id),
-            'institution' => $document->uploader?->institution?->name ?? 'Non renseignée',
+            'institution' => $document->uploader?->institution?->name ?? __('Non renseignée'),
             'issue_date' => $this->formatDate($document->issue_date),
             'effective_date' => $this->formatDate($document->effective_date),
             'expiry_date' => $this->formatDate($document->expiration_date),
@@ -351,7 +351,7 @@ class DocumentsController
             'downloads' => count($downloadHistory),
             'version' => 'v'.$document->version_number,
             'file_name' => basename((string) $document->file_path),
-            'file_type' => 'PDF',
+            'file_type' => __('PDF'),
             'file_size' => $this->formatBytes((int) $document->file_size),
             'versions' => $versions,
             'download_history' => $downloadHistory,
@@ -380,7 +380,7 @@ class DocumentsController
             'status' => $document->status,
             'status_label' => $this->statusLabel($document->status),
             'file_name' => basename((string) $document->file_path),
-            'file_type' => 'PDF',
+            'file_type' => __('PDF'),
             'version' => 'v'.$document->version_number,
             'tags' => $this->documentTags($document->id),
             'tag_ids' => DB::table('document_tags')->where('document_id', $document->id)->pluck('tag_id')->map(fn ($id): int => (int) $id)->all(),
@@ -507,13 +507,13 @@ class DocumentsController
     private function formatAudience(Document $document): string
     {
         return match ($document->target_audience) {
-            'all' => 'Toutes les institutions',
-            'specific_institutions' => $document->targetInstitutions->pluck('name')->filter()->join(', ') ?: 'Institutions spécifiques',
-            'specific_roles' => $document->targetRoles->pluck('name')->filter()->join(', ') ?: 'Rôles spécifiques',
+            'all' => __('Toutes les institutions'),
+            'specific_institutions' => $document->targetInstitutions->pluck('name')->filter()->join(', ') ?: __('Institutions spécifiques'),
+            'specific_roles' => $document->targetRoles->pluck('name')->filter()->join(', ') ?: __('Rôles spécifiques'),
             'specific_users' => $document->targetUsers->map(
                 fn (User $user): string => (string) ($user->full_name ?: $user->username ?: $user->email)
-            )->filter()->join(', ') ?: 'Utilisateurs spécifiques',
-            default => 'Non renseigné',
+            )->filter()->join(', ') ?: __('Utilisateurs spécifiques'),
+            default => __('Non renseigné'),
         };
     }
 
@@ -574,7 +574,7 @@ class DocumentsController
     private function formatBytes(int $bytes): string
     {
         if ($bytes <= 0) {
-            return '0 B';
+            return __('0 B');
         }
 
         $units = ['B', 'KB', 'MB', 'GB'];
@@ -587,10 +587,10 @@ class DocumentsController
     private function statusLabel(string $status): string
     {
         return match ($status) {
-            'active' => 'Actif',
-            'draft' => 'Brouillon',
-            'archived' => 'Archivé',
-            'soft_deleted' => 'Supprimé',
+            'active' => __('Actif'),
+            'draft' => __('Brouillon'),
+            'archived' => __('Archivé'),
+            'soft_deleted' => __('Supprimé'),
             default => ucfirst($status),
         };
     }

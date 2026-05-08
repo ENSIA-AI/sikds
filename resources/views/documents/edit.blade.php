@@ -1,6 +1,6 @@
 @extends('layouts.app')
-@section('page_title', 'Gestion des Documents')
-@section('page_subtitle', 'Gérer le cycle de vie des documents institutionnels')
+@section('page_title', __('Gestion des Documents'))
+@section('page_subtitle', __('Gérer le cycle de vie des documents institutionnels'))
 @section('content')
 
 <div
@@ -16,21 +16,21 @@
     })"
 >
     <div class="sikds-doc-edit-topbar">
-        <x-back-link :href="$document['show_url']" label="Retour au document" class="sikds-doc-back" />
+        <x-back-link :href="$document['show_url']" :label="__('Retour au document')" class="sikds-doc-back" />
         <div class="sikds-doc-edit-top-actions">
             <button type="button" class="sikds-doc-edit-btn sikds-doc-edit-btn--cancel" @click="showCancelModal = true">
                 <i class="fa-solid fa-xmark"></i>
-                <span>Annuler</span>
+                <span>{{ __('Annuler') }}</span>
             </button>
             <template x-if="canPublish && form.status === 'draft'">
                 <button type="button" class="sikds-doc-edit-btn" @click="publish()" :disabled="submitting">
                     <i :class="submitting ? 'fa-solid fa-spinner fa-spin' : 'fa-solid fa-bullhorn'"></i>
-                    <span>Publier</span>
+                    <span>{{ __('Publier') }}</span>
                 </button>
             </template>
             <button type="button" class="sikds-doc-edit-btn sikds-doc-edit-btn--save" @click="submit()" :disabled="submitting">
                 <i :class="submitting ? 'fa-solid fa-spinner fa-spin' : 'fa-regular fa-floppy-disk'"></i>
-                <span>Enregistrer</span>
+                <span>{{ __('Enregistrer') }}</span>
             </button>
         </div>
     </div>
@@ -38,10 +38,10 @@
     <div x-show="errorList.length" x-cloak class="sikds-toast sikds-toast--danger" role="alert">
         <span class="sikds-toast-icon"><i class="fa-solid fa-circle-exclamation"></i></span>
         <div class="sikds-toast-body">
-            <p class="sikds-toast-title">Action impossible</p>
+            <p class="sikds-toast-title">{{ __('Action impossible') }}</p>
             <p class="sikds-toast-message" x-text="errorList[0]"></p>
         </div>
-        <button type="button" @click="errorList = []" class="sikds-toast-dismiss" aria-label="Fermer">
+        <button type="button" @click="errorList = []" class="sikds-toast-dismiss" aria-label="{{ __('Fermer') }}">
             <i class="fa-solid fa-xmark"></i>
         </button>
     </div>
@@ -49,47 +49,47 @@
     <div x-show="successMessage" x-cloak class="sikds-toast sikds-toast--success" role="status">
         <span class="sikds-toast-icon"><i class="fa-solid fa-circle-check"></i></span>
         <div class="sikds-toast-body">
-            <p class="sikds-toast-title">Opération réussie</p>
+            <p class="sikds-toast-title">{{ __('Opération réussie') }}</p>
             <p class="sikds-toast-message" x-text="successMessage"></p>
         </div>
-        <button type="button" @click="successMessage = ''" class="sikds-toast-dismiss" aria-label="Fermer">
+        <button type="button" @click="successMessage = ''" class="sikds-toast-dismiss" aria-label="{{ __('Fermer') }}">
             <i class="fa-solid fa-xmark"></i>
         </button>
     </div>
 
     <div class="sikds-doc-edit-heading">
-        <h2 class="sikds-doc-edit-title">Modifier le Document</h2>
-        <p class="sikds-doc-edit-sub">Document ID: {{ $document['id'] }}</p>
+        <h2 class="sikds-doc-edit-title">{{ __('Modifier le Document') }}</h2>
+        <p class="sikds-doc-edit-sub">{{ __('Document ID:') }} {{ $document['id'] }}</p>
     </div>
 
     <div class="sikds-doc-edit-grid">
         <div class="sikds-doc-edit-left">
             <section class="sikds-doc-edit-card">
-                <h3 class="sikds-doc-edit-card-title">Informations Générales</h3>
+                <h3 class="sikds-doc-edit-card-title">{{ __('Informations Générales') }}</h3>
 
                 <label class="sikds-doc-edit-label">
-                    <span><i class="fa-regular fa-file-lines"></i> Titre du Document</span>
+                    <span><i class="fa-regular fa-file-lines"></i> {{ __('Titre du Document') }}</span>
                     <input type="text" class="sikds-doc-edit-input" x-model="form.title">
                 </label>
 
                 <label class="sikds-doc-edit-label">
-                    <span><i class="fa-regular fa-file-lines"></i> Référence</span>
+                    <span><i class="fa-regular fa-file-lines"></i> {{ __('Référence') }}</span>
                     <input type="text" class="sikds-doc-edit-input" value="{{ $document['reference'] }}" disabled>
                 </label>
 
                 <label class="sikds-doc-edit-label">
-                    <span>Description</span>
+                    <span>{{ __('Description') }}</span>
                     <textarea class="sikds-doc-edit-textarea" x-model="form.description"></textarea>
                 </label>
 
                 <label class="sikds-doc-edit-label">
-                    <span>Public Cible</span>
+                    <span>{{ __('Public Cible') }}</span>
                     <div class="sikds-doc-edit-select-wrap">
                         <select class="sikds-doc-edit-input sikds-doc-edit-select" x-model="form.target_audience">
-                            <option value="all">Toutes les institutions</option>
-                            <option value="specific_institutions">Institutions spécifiques</option>
-                            <option value="specific_roles">Rôles spécifiques</option>
-                            <option value="specific_users">Utilisateurs spécifiques</option>
+                            <option value="all">{{ __('Toutes les institutions') }}</option>
+                            <option value="specific_institutions">{{ __('Institutions spécifiques') }}</option>
+                            <option value="specific_roles">{{ __('Rôles spécifiques') }}</option>
+                            <option value="specific_users">{{ __('Utilisateurs spécifiques') }}</option>
                         </select>
                         <i class="fa-solid fa-angle-down"></i>
                     </div>
@@ -124,25 +124,25 @@
             </section>
 
             <section class="sikds-doc-edit-card">
-                <h3 class="sikds-doc-edit-card-title">Dates</h3>
+                <h3 class="sikds-doc-edit-card-title">{{ __('Dates') }}</h3>
                 <div class="sikds-doc-edit-dates-grid">
                     <label class="sikds-doc-edit-label">
-                        <span><i class="fa-regular fa-calendar"></i> Date d'Émission</span>
+                        <span><i class="fa-regular fa-calendar"></i> {{ __("Date d'Émission") }}</span>
                         <input type="date" class="sikds-doc-edit-input" x-model="form.issue_date">
                     </label>
 
                     <label class="sikds-doc-edit-label">
-                        <span><i class="fa-regular fa-calendar"></i> Date d'Effet</span>
+                        <span><i class="fa-regular fa-calendar"></i> {{ __("Date d'Effet") }}</span>
                         <input type="date" class="sikds-doc-edit-input" x-model="form.effective_date">
                     </label>
 
                     <label class="sikds-doc-edit-label">
-                        <span><i class="fa-regular fa-calendar"></i> Date d'Expiration</span>
+                        <span><i class="fa-regular fa-calendar"></i> {{ __("Date d'Expiration") }}</span>
                         <input type="date" class="sikds-doc-edit-input" x-model="form.expiry_date">
                     </label>
 
                     <label class="sikds-doc-edit-label">
-                        <span>Statut</span>
+                        <span>{{ __('Statut') }}</span>
                         <input type="text" class="sikds-doc-edit-input" :value="statusLabel()" disabled>
                     </label>
                 </div>
@@ -153,7 +153,7 @@
             <section class="sikds-doc-edit-card">
                 <h3 class="sikds-doc-edit-card-title sikds-doc-card-heading--with-icon">
                     <i class="fa-solid fa-tags"></i>
-                    Tags
+                    {{ __('Tags') }}
                 </h3>
                 <div class="sikds-doc-tags-wrap">
                     <template x-for="tag in availableTags" :key="tag.id">
@@ -170,32 +170,32 @@
             </section>
 
             <section class="sikds-doc-edit-card">
-                <h3 class="sikds-doc-edit-card-title">Fichier Actuel</h3>
+                <h3 class="sikds-doc-edit-card-title">{{ __('Fichier Actuel') }}</h3>
                 <div class="sikds-doc-edit-meta-block">
-                    <p class="sikds-doc-meta-label">Type de Fichier</p>
+                    <p class="sikds-doc-meta-label">{{ __('Type de Fichier') }}</p>
                     <p class="sikds-doc-meta-value">{{ $document['file_type'] }}</p>
                 </div>
                 <div class="sikds-doc-edit-meta-block">
-                    <p class="sikds-doc-meta-label">Nom du Fichier</p>
+                    <p class="sikds-doc-meta-label">{{ __('Nom du Fichier') }}</p>
                     <p class="sikds-doc-meta-value">{{ $document['file_name'] }}</p>
                 </div>
                 <div class="sikds-doc-edit-meta-block">
-                    <p class="sikds-doc-meta-label">Version Actuelle</p>
+                    <p class="sikds-doc-meta-label">{{ __('Version Actuelle') }}</p>
                     <p class="sikds-doc-meta-value">{{ $document['version'] }}</p>
                 </div>
             </section>
 
             <section class="sikds-doc-edit-card">
-                <h3 class="sikds-doc-edit-card-title">Nouvelle Version</h3>
+                <h3 class="sikds-doc-edit-card-title">{{ __('Nouvelle Version') }}</h3>
                 <button type="button" class="sikds-doc-edit-upload-zone" @click="$refs.fileInput.click()">
                     <i class="fa-solid fa-arrow-up-from-bracket"></i>
-                    <span x-text="newFile ? newFile.name : 'Télécharger une nouvelle version'"></span>
-                    <small>PDF (max 50 MB)</small>
+                    <span x-text="newFile ? newFile.name : @js(__('Télécharger une nouvelle version'))"></span>
+                    <small>{{ __('PDF (max 50 MB)') }}</small>
                 </button>
                 <input type="file" class="hidden" x-ref="fileInput" accept=".pdf" @change="pickFile($event)">
                 <div class="sikds-doc-edit-info-alert">
                     <i class="fa-solid fa-circle-info"></i>
-                    <span x-text="newFile ? 'Une nouvelle version sera créée lors de l’enregistrement.' : 'Téléversez un nouveau PDF uniquement si vous souhaitez créer une nouvelle version.'"></span>
+                    <span x-text="newFile ? @js(__('Une nouvelle version sera créée lors de l’enregistrement.')) : @js(__('Téléversez un nouveau PDF uniquement si vous souhaitez créer une nouvelle version.'))"></span>
                 </div>
             </section>
         </div>
@@ -203,7 +203,7 @@
 
     <div x-show="showCancelModal" x-transition.opacity class="sikds-doc-modal-overlay" @click.self="showCancelModal = false" x-cloak>
         <div class="sikds-doc-modal">
-            <button type="button" class="sikds-doc-modal-close" @click="showCancelModal = false" aria-label="Fermer">
+            <button type="button" class="sikds-doc-modal-close" @click="showCancelModal = false" aria-label="{{ __('Fermer') }}">
                 <i class="fa-solid fa-xmark"></i>
             </button>
 
@@ -212,21 +212,21 @@
                     <i class="fa-solid fa-circle-exclamation"></i>
                 </div>
                 <div>
-                    <h3 class="sikds-doc-modal-title">Annuler les Modifications</h3>
-                    <p class="sikds-doc-modal-subtitle">Modifications non enregistrées</p>
+                    <h3 class="sikds-doc-modal-title">{{ __('Annuler les Modifications') }}</h3>
+                    <p class="sikds-doc-modal-subtitle">{{ __('Modifications non enregistrées') }}</p>
                 </div>
             </div>
 
             <p class="sikds-doc-modal-text">
-                Êtes-vous sûr de vouloir annuler ? Toutes les modifications non enregistrées seront perdues.
+                {{ __('Êtes-vous sûr de vouloir annuler ? Toutes les modifications non enregistrées seront perdues.') }}
             </p>
 
             <div class="sikds-doc-modal-actions sikds-doc-modal-actions--cancel-edit">
                 <button type="button" class="sikds-doc-modal-btn sikds-doc-modal-btn--cancel sikds-doc-modal-btn--keep-edit" @click="showCancelModal = false">
-                    Continuer à modifier
+                    {{ __('Continuer à modifier') }}
                 </button>
                 <a href="{{ $document['show_url'] }}" class="sikds-doc-modal-btn sikds-doc-modal-btn--archive sikds-doc-modal-btn--discard">
-                    Annuler les modifications
+                    {{ __('Annuler les modifications') }}
                 </a>
             </div>
         </div>
@@ -235,6 +235,14 @@
 
 <script>
     function documentEditPage(config) {
+        const i18n = {
+            serverRedirectFields: @json(__('La requête a été redirigée par le serveur. Vérifiez les champs requis et votre session.')),
+            updateFailed: @json(__('La mise à jour a échoué.')),
+            updated: @json(__('Document mis à jour.')),
+            serverRedirectSession: @json(__('La requête a été redirigée par le serveur. Vérifiez votre session.')),
+            publishFailed: @json(__('Publication impossible.')),
+            published: @json(__('Document publié.')),
+        };
         return {
             showCancelModal: false,
             availableTags: config.availableTags,
@@ -270,10 +278,10 @@
             },
             statusLabel() {
                 return ({
-                    active: 'Actif',
-                    draft: 'Brouillon',
-                    archived: 'Archivé',
-                    soft_deleted: 'Supprimé',
+                    active: @js(__('Actif')),
+                    draft: @js(__('Brouillon')),
+                    archived: @js(__('Archivé')),
+                    soft_deleted: @js(__('Supprimé')),
                 })[this.form.status] ?? this.form.status;
             },
             async submit() {
@@ -312,19 +320,19 @@
                     });
 
                     if (response.redirected) {
-                        throw new Error('La requête a été redirigée par le serveur. Vérifiez les champs requis et votre session.');
+                        throw new Error(i18n.serverRedirectFields);
                     }
 
                     const payload = await response.json().catch(() => ({}));
                     if (!response.ok) {
-                        this.errorList = payload.errors ? Object.values(payload.errors).flat() : [payload.message || 'La mise à jour a échoué.'];
+                        this.errorList = payload.errors ? Object.values(payload.errors).flat() : [payload.message || i18n.updateFailed];
                         return;
                     }
 
-                    this.successMessage = payload.message || 'Document mis à jour.';
+                    this.successMessage = payload.message || i18n.updated;
                     setTimeout(() => window.location.href = config.document.show_url, 900);
                 } catch (error) {
-                    this.errorList = [error.message || 'La mise à jour a échoué.'];
+                    this.errorList = [error.message || i18n.updateFailed];
                 } finally {
                     this.submitting = false;
                 }
@@ -348,20 +356,20 @@
                     });
 
                     if (response.redirected) {
-                        throw new Error('La requête a été redirigée par le serveur. Vérifiez votre session.');
+                        throw new Error(i18n.serverRedirectSession);
                     }
 
                     const payload = await response.json().catch(() => ({}));
                     if (!response.ok) {
-                        this.errorList = [payload.message || 'Publication impossible.'];
+                        this.errorList = [payload.message || i18n.publishFailed];
                         return;
                     }
 
-                    this.successMessage = payload.message || 'Document publié.';
+                    this.successMessage = payload.message || i18n.published;
                     this.form.status = 'active';
                     setTimeout(() => window.location.href = config.document.show_url, 900);
                 } catch (error) {
-                    this.errorList = [error.message || 'Publication impossible.'];
+                    this.errorList = [error.message || i18n.publishFailed];
                 } finally {
                     this.submitting = false;
                 }

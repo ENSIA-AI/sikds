@@ -47,14 +47,14 @@
                         </div>
                         <div class="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left">
                             <h3 class="text-lg font-medium leading-6 text-gray-900" id="modal-title">
-                                Avertissement de traçabilité du document
+                                {{ __('Avertissement de traçabilité du document') }}
                             </h3>
                             <div class="mt-2">
                                 <p class="text-sm text-gray-500">
-                                    En poursuivant ce téléchargement, ce document officiel sera filigrané de manière permanente avec votre identité complète, votre institution et l'horodatage exact.
+                                    {{ __("En poursuivant ce téléchargement, ce document officiel sera filigrané de manière permanente avec votre identité complète, votre institution et l'horodatage exact.") }}
                                 </p>
                                 <p class="mt-2 text-sm font-semibold text-gray-500">
-                                    Vous êtes pleinement responsable de la conservation sécurisée de ce document. Toute diffusion non autorisée est strictement interdite.
+                                    {{ __('Vous êtes pleinement responsable de la conservation sécurisée de ce document. Toute diffusion non autorisée est strictement interdite.') }}
                                 </p>
                                 <p x-show="errorMessage" x-text="errorMessage" class="mt-2 text-sm font-semibold text-red-600"></p>
                             </div>
@@ -71,7 +71,7 @@
                         @click="confirmDownload()"
                         :disabled="downloading"
                     >
-                        <span x-text="downloading ? 'Téléchargement…' : 'J\'accepte, télécharger'"></span>
+                        <span x-text="downloading ? @js(__('Téléchargement...')) : @js(__("J'accepte, télécharger"))"></span>
                     </button>
                     <button
                         type="button"
@@ -79,7 +79,7 @@
                         @click="open = false"
                         :disabled="downloading"
                     >
-                        Annuler
+                        {{ __('Annuler') }}
                     </button>
                 </div>
             </div>
@@ -89,6 +89,10 @@
 
 <script>
     function downloadWarningModal() {
+        const i18n = {
+            defaultFilename: @json(__('document.pdf')),
+            downloadFailed: @json(__('Impossible de télécharger le document.')),
+        };
         return {
             open: false,
             downloadUrl: '',
@@ -103,7 +107,7 @@
                 const plainFilenameMatch = disposition.match(/filename=\s*(?:"([^"]+)"|([^;]+))/i);
                 const plainFilename = plainFilenameMatch?.[1] || plainFilenameMatch?.[2];
 
-                return (plainFilename || 'document.pdf').trim();
+                return (plainFilename || i18n.defaultFilename).trim();
             },
             async confirmDownload() {
                 if (!this.downloadUrl || this.downloading) {
@@ -133,7 +137,7 @@
                     }
 
                     if (!response.ok) {
-                        throw new Error('Impossible de télécharger le document.');
+                        throw new Error(i18n.downloadFailed);
                     }
 
                     const blob = await response.blob();
@@ -154,7 +158,7 @@
 
                     this.open = false;
                 } catch (error) {
-                    this.errorMessage = error?.message || 'Impossible de télécharger le document.';
+                    this.errorMessage = error?.message || i18n.downloadFailed;
                 } finally {
                     this.downloading = false;
                 }
