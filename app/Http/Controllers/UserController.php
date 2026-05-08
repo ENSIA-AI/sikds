@@ -170,14 +170,14 @@ final class UserController extends Controller
 
             if ($request->wantsJson()) {
                 return response()->json([
-                    'message' => "L'utilisateur « {$user->full_name} » a été créé avec succès.",
+                    'message' => __("L'utilisateur « {$name} » a été créé avec succès.", ['name' => $user->full_name]),
                     'user' => $this->userPayloadForTable($user->fresh(['institution', 'roles'])),
                 ], 201);
             }
 
             return redirect()
                 ->route('users.show', $user)
-                ->with('success', "L'utilisateur « {$user->full_name} » a été créé avec succès.");
+                ->with('success', __("L'utilisateur « {$name} » a été créé avec succès.", ['name' => $user->full_name]));
 
         } catch (\Exception $e) {
             if ($request->wantsJson()) {
@@ -188,7 +188,7 @@ final class UserController extends Controller
 
             return back()
                 ->withInput()
-                ->with('error', "Erreur : {$e->getMessage()}");
+                ->with('error', __('Erreur : :message', ['message' => $e->getMessage()]));
         }
     }
 
@@ -245,14 +245,14 @@ final class UserController extends Controller
 
             if ($request->wantsJson()) {
                 return response()->json([
-                    'message' => "L'utilisateur « {$user->full_name} » a été mis à jour.",
+                    'message' => __("L'utilisateur « {$name} » a été mis à jour.", ['name' => $user->full_name]),
                     'user' => $this->userPayloadForTable($user->fresh(['institution', 'roles'])),
                 ]);
             }
 
             return redirect()
                 ->route('users.show', $user)
-                ->with('success', "L'utilisateur « {$user->full_name} » a été mis à jour.");
+                ->with('success', __("L'utilisateur « {$name} » a été mis à jour.", ['name' => $user->full_name]));
 
         } catch (\Exception $e) {
             if ($request->wantsJson()) {
@@ -263,7 +263,7 @@ final class UserController extends Controller
 
             return back()
                 ->withInput()
-                ->with('error', "Erreur : {$e->getMessage()}");
+                ->with('error', __('Erreur : :message', ['message' => $e->getMessage()]));
         }
     }
 
@@ -310,14 +310,14 @@ final class UserController extends Controller
 
             if ($request->wantsJson()) {
                 return response()->json([
-                    'message' => "Les rôles et permissions de « {$updated->full_name} » ont été mis à jour.",
+                    'message' => __("Les rôles et permissions de « {$name} » ont été mis à jour.", ['name' => $updated->full_name]),
                     'user' => $this->userPayloadForTable($updated->fresh(['institution', 'roles'])),
                 ]);
             }
 
             return redirect()
                 ->route('users.show', $user)
-                ->with('success', "Les rôles et permissions de « {$user->full_name} » ont été mis à jour.");
+                ->with('success', __("Les rôles et permissions de « {$name} » ont été mis à jour.", ['name' => $user->full_name]));
 
         } catch (\Exception $e) {
             if ($request->wantsJson()) {
@@ -328,7 +328,7 @@ final class UserController extends Controller
 
             return back()
                 ->withInput()
-                ->with('error', "Erreur : {$e->getMessage()}");
+                ->with('error', __('Erreur : :message', ['message' => $e->getMessage()]));
         }
     }
 
@@ -346,12 +346,12 @@ final class UserController extends Controller
                 $fresh = $user->fresh(['institution', 'roles']);
 
                 return response()->json([
-                    'message' => "L'utilisateur « {$fresh->full_name} » a été désactivé.",
+                    'message' => __("L'utilisateur « {$name} » a été désactivé.", ['name' => $fresh->full_name]),
                     'user' => $this->userPayloadForTable($fresh),
                 ]);
             }
 
-            return back()->with('success', "L'utilisateur « {$user->full_name} » a été désactivé.");
+            return back()->with('success', __("L'utilisateur « {$name} » a été désactivé.", ['name' => $user->full_name]));
 
         } catch (\Exception $e) {
             if ($request->wantsJson()) {
@@ -360,7 +360,7 @@ final class UserController extends Controller
                 ], 422);
             }
 
-            return back()->with('error', "Erreur : {$e->getMessage()}");
+            return back()->with('error', __('Erreur : :message', ['message' => $e->getMessage()]));
         }
     }
 
@@ -376,12 +376,12 @@ final class UserController extends Controller
 
             if ($request->wantsJson()) {
                 return response()->json([
-                    'message' => "L'utilisateur « {$fresh->full_name} » a été réactivé.",
+                    'message' => __("L'utilisateur « {$name} » a été réactivé.", ['name' => $fresh->full_name]),
                     'user' => $this->userPayloadForTable($fresh),
                 ]);
             }
 
-            return back()->with('success', "L'utilisateur « {$user->full_name} » a été réactivé.");
+            return back()->with('success', __("L'utilisateur « {$name} » a été réactivé.", ['name' => $user->full_name]));
         } catch (\Exception $e) {
             if ($request->wantsJson()) {
                 return response()->json([
@@ -389,7 +389,7 @@ final class UserController extends Controller
                 ], 422);
             }
 
-            return back()->with('error', "Erreur : {$e->getMessage()}");
+            return back()->with('error', __('Erreur : :message', ['message' => $e->getMessage()]));
         }
     }
 

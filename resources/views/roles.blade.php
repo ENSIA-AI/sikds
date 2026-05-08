@@ -3,8 +3,8 @@
     $activeNav = 'roles';
 @endphp
 
-@section('page_title', 'Rôles')
-@section('page_subtitle', 'Gestion des rôles et leurs permissions')
+@section('page_title', __('Rôles'))
+@section('page_subtitle', __('Gestion des rôles et leurs permissions'))
 
 @push('scripts')
     @vite(['resources/js/pages/roles.js'])

@@ -3,8 +3,8 @@
     $activeNav = 'permissions';
 @endphp
 
-@section('page_title', 'Gérer les Permissions')
-@section('page_subtitle', 'Catalogue complet des permissions système organisé par catégorie')
+@section('page_title', __('Gérer les Permissions'))
+@section('page_subtitle', __('Catalogue complet des permissions système organisé par catégorie'))
 
 @push('scripts')
     @vite(['resources/js/pages/permissions.js'])

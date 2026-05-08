@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>SIKDS — Connexion</title>
+    <title>{{ __('SIKDS — Connexion') }}</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="antialiased">
@@ -30,7 +30,7 @@
             </div>
             <h1 class="text-2xl font-bold text-blue-900">SIKDS</h1>
             <p class="text-gray-400 text-sm text-center mt-1">
-                Système Institutionnel de Gestion Documentaire
+                {{ __('Système Institutionnel de Gestion Documentaire') }}
             </p>
         </div>
 
@@ -58,7 +58,7 @@
 
         <div>
             <p class="text-xs text-gray-400 uppercase tracking-wider text-center mb-3">
-                Authentification institutionnelle
+                {{ __('Authentification institutionnelle') }}
             </p>
             <a
                 href="{{ route('sso.redirect') }}"
@@ -68,7 +68,7 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                 </svg>
-                Continuer avec le SSO MESRS
+                {{ __('Continuer avec le SSO MESRS') }}
             </a>
         </div>
 
@@ -80,7 +80,7 @@
                 </div>
                 <div class="relative flex justify-center text-xs">
                     <span class="px-3 bg-white text-gray-400 uppercase tracking-wider">
-                        Développement local uniquement
+                        {{ __('Développement local uniquement') }}
                     </span>
                 </div>
             </div>
@@ -89,7 +89,7 @@
                 @csrf
 
                 <div>
-                    <label for="email" class="block text-sm font-medium text-gray-600 mb-1">Email</label>
+                    <label for="email" class="block text-sm font-medium text-gray-600 mb-1">{{ __('Email') }}</label>
                     <input
                         id="email"
                         name="email"
@@ -104,7 +104,7 @@
                 </div>
 
                 <div>
-                    <label for="password" class="block text-sm font-medium text-gray-600 mb-1">Mot de passe</label>
+                    <label for="password" class="block text-sm font-medium text-gray-600 mb-1">{{ __('Mot de passe') }}</label>
                     <input
                         id="password"
                         name="password"
@@ -118,7 +118,7 @@
                     type="submit"
                     class="w-full bg-gray-800 hover:bg-gray-700 text-white rounded-xl py-3 text-sm font-medium transition-colors"
                 >
-                    Connexion locale (développement)
+                    {{ __('Connexion locale (développement)') }}
                 </button>
             </form>
         </div>
@@ -127,7 +127,7 @@
     </div>
 
     <p class="absolute bottom-4 text-white text-xs opacity-40">
-        © 2026 MESRS — Usage strictement institutionnel
+        {{ __('© 2026 MESRS — Usage strictement institutionnel') }}
     </p>
 
 </div>

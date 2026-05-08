@@ -3,8 +3,8 @@
     $activeNav = 'users';
 @endphp
 
-@section('page_title', 'Utilisateurs')
-@section('page_subtitle', 'Gérer les accès et les permissions des utilisateurs')
+@section('page_title', __('Utilisateurs'))
+@section('page_subtitle', __('Gérer les accès et les permissions des utilisateurs'))
 
 @push('scripts')
     @vite(['resources/js/pages/utilisateurs.js'])
@@ -16,6 +16,13 @@
     class="mx-auto w-full max-w-full px-4 pb-10 sm:px-6"
     data-users-api-base="{{ url('/users') }}"
     data-users-can-deactivate="{{ auth()->user()?->can('user.deactivate') ? 1 : 0 }}"
+    data-i18n-network-error="{{ __('Erreur réseau.') }}"
+    data-i18n-generic-error="{{ __('Une erreur est survenue.') }}"
+    data-i18n-status-updated="{{ __('Statut mis à jour.') }}"
+    data-i18n-user-created="{{ __('Utilisateur créé.') }}"
+    data-i18n-user-updated="{{ __('Utilisateur mis à jour.') }}"
+    data-i18n-user-role-updated="{{ __('Utilisateur et rôle mis à jour.') }}"
+    data-i18n-required-fields="{{ __('Le nom, l’email et l’institution sont obligatoires.') }}"
 >
     <script type="application/json" id="users-roles-bootstrap">
         @json($rolesForUi)
