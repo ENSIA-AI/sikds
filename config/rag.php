@@ -6,6 +6,22 @@ return [
     'authorization' => [
         'enforce' => env('RAG_ENFORCE_AUTH', true),
     ],
+    /*
+    |--------------------------------------------------------------------------
+    | OCR (scanned PDF fallback)
+    |--------------------------------------------------------------------------
+    |
+    | Called when native text extraction yields too little text per page.
+    | Points to the Surya FastAPI microservice inside the Docker network.
+    |
+    */
+
+    'ocr' => [
+        'enabled'           => filter_var(env('RAG_OCR_ENABLED', true), FILTER_VALIDATE_BOOLEAN),
+        'url'               => env('OCR_SERVICE_URL', 'http://surya:8100'),
+        'timeout'           => (int) env('OCR_TIMEOUT', 300),
+        'min_chars_per_page'=> (int) env('OCR_MIN_CHARS_PER_PAGE', 50),
+    ],
 
     /*
     |--------------------------------------------------------------------------
@@ -29,10 +45,10 @@ return [
     */
     'embedding' => [
         'base_url' => env('RAG_EMBEDDING_URL', ''),
-        'api_key' => env('RAG_EMBEDDING_API_KEY') ?: env('RAG_API_KEY', ''),
+        'api_key' => env('RAG_EMBEDDING_API_KEY'),
         'model' => env('RAG_EMBEDDING_MODEL', ''),
         'dimensions' => (int) env('RAG_EMBEDDING_DIMS', 768),
-        'batch_size' => (int) env('RAG_EMBEDDING_BATCH_SIZE', env('EMBEDDING_BATCH_SIZE', 32)),
+        'batch_size' => (int) env('RAG_EMBEDDING_BATCH_SIZE', 32),
         'timeout' => (int) env('RAG_EMBEDDING_TIMEOUT', 60),
         // Optional task hints for providers that support them.
         'passage_task' => env('RAG_EMBEDDING_PASSAGE_TASK', ''),
@@ -92,5 +108,6 @@ return [
         'model' => env('RAG_LLM_MODEL', 'llama-3.3-70b-versatile'),
         'api_key' => env('LLM_API_KEY', ''),
         'url' => env('RAG_LLM_URL', ''),
+        'timeout' => (int) env('RAG_LLM_TIMEOUT',120),
     ],
 ];

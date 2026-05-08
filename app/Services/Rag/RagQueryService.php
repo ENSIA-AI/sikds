@@ -317,9 +317,14 @@ PROMPT;
 
         $provider = (string) config('rag.llm.provider', 'groq');
         $model = (string) config('rag.llm.model', 'llama-3.3-70b-versatile');
+        $timeout = max(1, (int) config('rag.llm.timeout', 120));
 
         $response = Prism::text()
             ->using($provider, $model, $this->llmProviderConfig())
+            ->withClientOptions([
+                'timeout' => $timeout,
+                'connect_timeout' => min($timeout, 30),
+            ])
             ->withSystemPrompt($system)
             ->withPrompt($userPrompt)
             ->asText();

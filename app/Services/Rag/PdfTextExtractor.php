@@ -1,13 +1,15 @@
 <?php
 declare(strict_types=1);
+
 namespace App\Services\Rag;
 
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use RuntimeException;
 use Smalot\PdfParser\Parser;
 
 class PdfTextExtractor
 {
-    // ✅ ADD: known install locations for Poppler on Debian/Ubuntu
     private const PDFTOTEXT_CANDIDATES = [
         '/usr/bin/pdftotext',
         '/usr/local/bin/pdftotext',
@@ -24,6 +26,23 @@ class PdfTextExtractor
 
     /** @return array<int, array{page:int, text:string}> */
     public function extract(string $filePath): array
+    {
+        $pages = $this->extractNative($filePath);
+
+        if ($this->isSparse($pages)) {
+            Log::info('PdfTextExtractor: sparse text detected, falling back to OCR', [
+                'file' => basename($filePath),
+            ]);
+            $pages = $this->extractWithOcr($filePath);
+        }
+
+        return $pages;
+    }
+
+    // ─── Native extraction ────────────────────────────────────────────────────
+
+    /** @return array<int, array{page:int, text:string}> */
+    private function extractNative(string $filePath): array
     {
         $fallback = $this->extractWithPdftotext($filePath);
         if ($fallback !== null) {
@@ -54,7 +73,6 @@ class PdfTextExtractor
     /** @return array<int, array{page:int, text:string}>|null */
     private function extractWithPdftotext(string $filePath): ?array
     {
-        // ✅ CHANGED: probe absolute paths instead of relying on PATH via which()
         $bin = $this->findBinary(self::PDFTOTEXT_CANDIDATES);
         if ($bin === null) {
             return null;
@@ -85,9 +103,64 @@ class PdfTextExtractor
         return $pages === [] ? null : $pages;
     }
 
+    // ─── OCR fallback ─────────────────────────────────────────────────────────
+
+    /** @return array<int, array{page:int, text:string}> */
+    private function extractWithOcr(string $filePath): array
+    {
+        if (! config('rag.ocr.enabled', true)) {
+            Log::warning('PdfTextExtractor: OCR is disabled, returning sparse native result.');
+            return [];
+        }
+
+        $url     = config('rag.ocr.url');
+        $timeout = config('rag.ocr.timeout', 300);
+
+        $b64 = base64_encode((string) file_get_contents($filePath));
+
+        $response = Http::timeout($timeout)
+            ->post($url . '/ocr', ['pdf_base64' => $b64]);
+
+        if ($response->failed()) {
+            throw new RuntimeException(
+                'OCR service error: ' . $response->status() . ' ' . $response->body()
+            );
+        }
+
+        return $response->json('pages') ?? [];
+    }
+
+    // ─── Sparseness check ─────────────────────────────────────────────────────
+
+    /** @param array<int, array{page:int, text:string}> $pages */
+    private function isSparse(array $pages): bool
+    {
+        if ($pages === []) {
+            return true;
+        }
+
+        $totalChars    = array_sum(array_map(fn(array $p) => strlen($p['text'] ?? ''), $pages));
+        $avgPerPage    = $totalChars / count($pages);
+        $minChars      = (int) config('rag.ocr.min_chars_per_page', 50);
+
+        return $avgPerPage < $minChars;
+    }
+
+    // ─── Helpers ──────────────────────────────────────────────────────────────
+
+    /** @param string[] $candidates */
+    private function findBinary(array $candidates): ?string
+    {
+        foreach ($candidates as $path) {
+            if (is_executable($path)) {
+                return $path;
+            }
+        }
+        return null;
+    }
+
     private function detectPageCount(string $filePath): ?int
     {
-        // ✅ CHANGED: same — probe absolute paths
         $bin = $this->findBinary(self::PDFINFO_CANDIDATES);
         if ($bin === null) {
             return null;
@@ -106,18 +179,6 @@ class PdfTextExtractor
         return $count > 0 ? $count : null;
     }
 
-    // ✅ NEW: replaces which() — no PATH needed, pure filesystem check
-    /** @param string[] $candidates */
-    private function findBinary(array $candidates): ?string
-    {
-        foreach ($candidates as $path) {
-            if (is_executable($path)) {
-                return $path;
-            }
-        }
-        return null;
-    }
-
     /** @param array<int, string> $cmd */
     private function run(array $cmd): ?string
     {
@@ -134,14 +195,13 @@ class PdfTextExtractor
         fclose($pipes[0]);
         $stdout = stream_get_contents($pipes[1]);
         fclose($pipes[1]);
-        fclose($pipes[2]); // ✅ drain stderr but don't use it for text output
+        fclose($pipes[2]);
         $exit = proc_close($proc);
 
         if ($exit !== 0) {
             return null;
         }
 
-        // ✅ CHANGED: empty string is valid output (blank page), but null/false is failure
         return is_string($stdout) ? $stdout : null;
     }
 }
