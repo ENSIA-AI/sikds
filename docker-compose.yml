@@ -68,6 +68,33 @@ services:
     networks:
       - sikds
 
+  embeddings:
+    image: michaelf34/infinity:latest
+    container_name: sikds-embeddings
+    restart: unless-stopped
+    profiles:
+      - prod # only starts when profile is active
+    command: >
+      v2
+      --model-id nomic-ai/nomic-embed-text-v2-moe
+      --dtype float16
+      --batch-size 32
+      --engine torch
+      --port 7997
+      --trust-remote-code
+    volumes:
+      - sikds_infinity_cache:/app/.cache
+    ports:
+      - "${EMBEDDINGS_PORT:-7997}:7997"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:7997/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 12 # model load takes ~60s on first boot, give it time
+      start_period: 60s
+    networks:
+      - sikds
+
   seaweed-master:
     image: chrislusf/seaweedfs:4.02
     container_name: sikds-seaweed-master
@@ -148,6 +175,9 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+      embeddings:
+        condition: service_healthy
+        required: false
     command: php artisan queue:work redis --queue=indexing,notifications,default --sleep=3 --tries=3 --timeout=300
     networks:
       - sikds
@@ -157,6 +187,7 @@ volumes:
   sikds_redis:
   sikds_seaweed_master:
   sikds_seaweed_volume:
+  sikds_infinity_cache:
 
 networks:
   sikds:

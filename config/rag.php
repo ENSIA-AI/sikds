@@ -31,7 +31,7 @@ return [
         'base_url' => env('RAG_EMBEDDING_URL', ''),
         'api_key' => env('RAG_EMBEDDING_API_KEY') ?: env('RAG_API_KEY', ''),
         'model' => env('RAG_EMBEDDING_MODEL', ''),
-        'dimensions' => (int) env('RAG_EMBEDDING_DIMS', 1024),
+        'dimensions' => (int) env('RAG_EMBEDDING_DIMS', 768),
         'batch_size' => (int) env('RAG_EMBEDDING_BATCH_SIZE', env('EMBEDDING_BATCH_SIZE', 32)),
         'timeout' => (int) env('RAG_EMBEDDING_TIMEOUT', 60),
         // Optional task hints for providers that support them.
@@ -41,6 +41,8 @@ return [
         'tpm_limit' => (int) env('RAG_EMBEDDING_TPM', 100000),
         'rate_headroom' => (float) env('RAG_EMBEDDING_RATE_HEADROOM', 0.80),
         'backoff_429' => (int) env('RAG_EMBEDDING_BACKOFF_429', 75),
+        'task_param' => env('RAG_EMBEDDING_TASK_PARAM', 'task_type'),
+        'task_mode' => env('RAG_EMBEDDING_TASK_MODE', 'param'), // 'param' or 'prefix'
     ],
 
     /*
