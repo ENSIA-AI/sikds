@@ -2,8 +2,8 @@
 @php
     $activeNav = 'chatbot';
 @endphp
-@section('page_title', 'Assistant')
-@section('page_subtitle', 'Votre assistant documentaire intelligent')
+@section('page_title', __('Assistant'))
+@section('page_subtitle', __('Votre assistant documentaire intelligent'))
 @section('content')
     <style>
         /* ── Reset & Shell ── */
@@ -443,34 +443,34 @@
 
                 {{-- Subtitle --}}
                 <p class="rag-welcome-sub">
-                    Je synthétise vos documents indexés et cite chaque source avec précision.
+                    {{ __('Je synthétise vos documents indexés et cite chaque source avec précision.') }}
                 </p>
 
                 {{-- Prompt cards --}}
                 <div class="rag-prompts">
                     <button class="rag-prompt-btn" type="button"
-                        data-prompt="Résume le cahier des charges en 6 points clés.">
+                        data-prompt="{{ __('Résume le cahier des charges en 6 points clés.') }}">
                         <div class="rag-prompt-icon"><i class="fa-solid fa-list-check"></i></div>
-                        <span class="rag-prompt-title">Points clés</span>
-                        <span class="rag-prompt-desc">Résumer les points essentiels du cahier des charges</span>
+                        <span class="rag-prompt-title">{{ __('Points clés') }}</span>
+                        <span class="rag-prompt-desc">{{ __('Résumer les points essentiels du cahier des charges') }}</span>
                     </button>
                     <button class="rag-prompt-btn" type="button"
-                        data-prompt="Quelles sont les exigences non fonctionnelles prioritaires ?">
+                        data-prompt="{{ __('Quelles sont les exigences non fonctionnelles prioritaires ?') }}">
                         <div class="rag-prompt-icon"><i class="fa-solid fa-gauge-high"></i></div>
-                        <span class="rag-prompt-title">Exigences non fonct.</span>
-                        <span class="rag-prompt-desc">Identifier les contraintes de performance et fiabilité</span>
+                        <span class="rag-prompt-title">{{ __('Exigences non fonct.') }}</span>
+                        <span class="rag-prompt-desc">{{ __('Identifier les contraintes de performance et fiabilité') }}</span>
                     </button>
                     <button class="rag-prompt-btn" type="button"
-                        data-prompt="Liste les acteurs du système et leurs responsabilités.">
+                        data-prompt="{{ __('Liste les acteurs du système et leurs responsabilités.') }}">
                         <div class="rag-prompt-icon"><i class="fa-solid fa-users"></i></div>
-                        <span class="rag-prompt-title">Acteurs &amp; rôles</span>
-                        <span class="rag-prompt-desc">Lister les acteurs du système et leurs responsabilités</span>
+                        <span class="rag-prompt-title">{{ __('Acteurs & rôles') }}</span>
+                        <span class="rag-prompt-desc">{{ __('Lister les acteurs du système et leurs responsabilités') }}</span>
                     </button>
                     <button class="rag-prompt-btn" type="button"
-                        data-prompt="Y a-t-il des contraintes de sécurité ou conformité mentionnées ?">
+                        data-prompt="{{ __('Y a-t-il des contraintes de sécurité ou conformité mentionnées ?') }}">
                         <div class="rag-prompt-icon"><i class="fa-solid fa-shield-halved"></i></div>
-                        <span class="rag-prompt-title">Sécurité / conformité</span>
-                        <span class="rag-prompt-desc">Chercher les contraintes réglementaires et sécuritaires</span>
+                        <span class="rag-prompt-title">{{ __('Sécurité / conformité') }}</span>
+                        <span class="rag-prompt-desc">{{ __('Chercher les contraintes réglementaires et sécuritaires') }}</span>
                     </button>
                 </div>
             </div>
@@ -486,18 +486,18 @@
                     class="rag-input"
                     rows="1"
                     maxlength="500"
-                    placeholder="Envoyez un message…"
+                    placeholder="{{ __('Envoyez un message…') }}"
                 ></textarea>
                 <div class="rag-composer-actions">
                     <div class="rag-left-actions">
                         <button id="rag-new-chat" type="button" class="rag-btn rag-btn--ghost">
-                            <i class="fa-solid fa-plus" style="font-size:.75rem;margin-right:.3rem"></i>Nouvelle discussion
+                            <i class="fa-solid fa-plus" style="font-size:.75rem;margin-right:.3rem"></i>{{ __('Nouvelle discussion') }}
                         </button>
-                        <span class="rag-hint">Entrée pour envoyer&nbsp;·&nbsp;Shift+Entrée pour une ligne</span>
+                        <span class="rag-hint">{{ __('Entrée pour envoyer · Shift+Entrée pour une ligne') }}</span>
                     </div>
                     <button id="rag-send" type="button" class="rag-btn rag-btn--primary">
                         <i class="fa-solid fa-paper-plane"></i>
-                        Envoyer
+                        {{ __('Envoyer') }}
                     </button>
                 </div>
             </div>
@@ -509,6 +509,23 @@
         /* ─── Config ─────────────────────────────────────────────── */
         const endpoint       = @json(route('rag.query'));
         const csrf           = @json(csrf_token());
+        const i18n = {
+            generating: @json(__('Génération…')),
+            send: @json(__('Envoyer')),
+            typewriter1: @json(__('Que souhaitez-vous explorer ?')),
+            typewriter2: @json(__('Comment puis-je vous aider ?')),
+            typewriter3: @json(__('Posez-moi une question sur vos docs.')),
+            typewriter4: @json(__('Cherchons ensemble dans vos documents.')),
+            serverErrorRetry: @json(__('Erreur serveur. Veuillez réessayer.')),
+            insufficientContext: @json(__('Je n\'ai pas assez de contexte fiable dans les documents indexés pour répondre avec précision. Reformulez avec des termes plus exacts ou une section spécifique.')),
+            noUsableAnswer: @json(__('Je n\'ai pas pu générer une réponse exploitable cette fois. Réessayez avec une question plus précise.')),
+            networkErrorRetry: @json(__('Erreur réseau. Veuillez réessayer.')),
+            document: @json(__('Document')),
+            sectionUnknown: @json(__('Section non précisée')),
+            excerptUnavailable: @json(__('Extrait indisponible.')),
+            page: @json(__('Page')),
+            relevance: @json(__('Pertinence')),
+        };
         const authUserId     = @json((int) auth()->id());
         const legacyKey      = 'sikds-rag-chat-v3';
         const storageKey     = `sikds-rag-chat-v3-user-${authUserId || 'guest'}`;
@@ -527,10 +544,10 @@
         /* ─── Typewriter welcome animation (loop) ────────────────── */
         (function initTypewriter() {
             const phrases = [
-                'Que souhaitez-vous explorer ?',
-                'Comment puis-je vous aider ?',
-                'Posez-moi une question sur vos docs.',
-                'Cherchons ensemble dans vos documents.',
+                i18n.typewriter1,
+                i18n.typewriter2,
+                i18n.typewriter3,
+                i18n.typewriter4,
             ];
             const textEl = document.getElementById('rag-typed-text');
             if (!textEl) return;
@@ -613,8 +630,8 @@
             sendBtn.disabled = value;
             inputEl.disabled = value;
             sendBtn.innerHTML = value
-                ? '<i class="fa-solid fa-spinner fa-spin"></i> Génération…'
-                : '<i class="fa-solid fa-paper-plane"></i> Envoyer';
+                ? '<i class="fa-solid fa-spinner fa-spin"></i> ' + i18n.generating
+                : '<i class="fa-solid fa-paper-plane"></i> ' + i18n.send;
         }
 
         function toggleWelcome() {
@@ -674,8 +691,8 @@
                 const citation = pickCitationForSentence(sentence, citations);
                 if (!citation) return escapeHtml(sentence);
 
-                const title   = String(citation.document_title || 'Document');
-                const section = String(citation.section_heading || 'Section non précisée');
+                const title   = String(citation.document_title || i18n.document);
+                const section = String(citation.section_heading || i18n.sectionUnknown);
                 const page    = Number(citation.page || 1);
                 const score   = Math.round(Number(citation.relevance_score || 0) * 100);
                 const chunk   = String(citation.chunk_text || citation.content || '').trim();
@@ -718,7 +735,7 @@
                 if (!target) return;
 
                 const data    = parseCitation(target.getAttribute('data-citation'));
-                const chunk   = String(data.chunk || '').trim() || 'Extrait indisponible.';
+                const chunk   = String(data.chunk || '').trim() || i18n.excerptUnavailable;
                 const score   = Math.min(100, Math.max(0, Number(data.score) || 0));
 
                 tooltipEl.innerHTML =
@@ -726,17 +743,17 @@
                     '<div class="rag-tt-header">' +
                         '<div class="rag-tt-icon"><i class="fa-solid fa-file-lines"></i></div>' +
                         '<div style="min-width:0">' +
-                            '<div class="rag-tt-title">' + escapeHtml(data.source || 'Document') + '</div>' +
+                            '<div class="rag-tt-title">' + escapeHtml(data.source || i18n.document) + '</div>' +
                             '<div class="rag-tt-section">§&nbsp;' + escapeHtml(data.section || '—') + '</div>' +
                         '</div>' +
                     '</div>' +
                     /* Meta */
                     '<div class="rag-tt-meta">' +
                         '<div class="rag-tt-pill">' +
-                            '<i class="fa-regular fa-file"></i>Page&nbsp;' + escapeHtml(String(data.page || '1')) +
+                            '<i class="fa-regular fa-file"></i>' + i18n.page + '&nbsp;' + escapeHtml(String(data.page || '1')) +
                         '</div>' +
                         '<div class="rag-tt-score">' +
-                            '<span class="rag-tt-score-label">Pertinence</span>' +
+                            '<span class="rag-tt-score-label">' + i18n.relevance + '</span>' +
                             '<div class="rag-tt-score-track">' +
                                 '<div class="rag-tt-score-fill" style="width:' + score + '%"></div>' +
                             '</div>' +
@@ -877,7 +894,7 @@
 
                 if (!response.ok) {
                     const payload = await response.json().catch(function () { return {}; });
-                    throw new Error(payload.message || 'Erreur serveur. Veuillez réessayer.');
+                    throw new Error(payload.message || i18n.serverErrorRetry);
                 }
 
                 const streamed = await streamIfAvailable(response);
@@ -890,10 +907,10 @@
                 }
 
                 if (String(answer).trim() === 'INSUFFICIENT_CONTEXT') {
-                    answer = `Je n'ai pas assez de contexte fiable dans les documents indexés pour répondre avec précision. Reformulez avec des termes plus exacts ou une section spécifique.`;
+                    answer = i18n.insufficientContext;
                 }
                 if (!answer.trim()) {
-                    answer = `Je n'ai pas pu générer une réponse exploitable cette fois. Réessayez avec une question plus précise.`;
+                    answer = i18n.noUsableAnswer;
                 }
 
                 const assistantNode = appendMessage('assistant', '', citations);
@@ -906,7 +923,7 @@
 
             } catch (error) {
                 typing.row.remove();
-                const message = error instanceof Error ? error.message : 'Erreur réseau. Veuillez réessayer.';
+                const message = error instanceof Error ? error.message : i18n.networkErrorRetry;
                 appendMessage('assistant', message, []);
                 saveMessage('assistant', message, []);
             } finally {

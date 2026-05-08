@@ -1,26 +1,26 @@
 @extends('layouts.app')
-@section('page_title', 'Notifications')
-@section('page_subtitle', 'Suivi des notifications email et de leur état de livraison')
+@section('page_title', __('Notifications'))
+@section('page_subtitle', __('Suivi des notifications email et de leur état de livraison'))
 @section('content')
     <script type="application/json" id="notifications-selected-types">@json(is_array(request('type')) ? request('type') : (request('type') ? [request('type')] : []))</script>
     <script type="application/json" id="notifications-selected-statuses">@json(is_array(request('status')) ? request('status') : (request('status') ? [request('status')] : []))</script>
     @php
         $typeLabels = [
-            'document.published' => 'Document publié',
-            'document.updated' => 'Document mis à jour',
-            'document.forwarded' => 'Document partagé',
+            'document.published' => __('Document publié'),
+            'document.updated' => __('Document mis à jour'),
+            'document.forwarded' => __('Document partagé'),
         ];
         $statusLabels = [
-            'sent' => 'Envoyé',
-            'pending' => 'En attente',
-            'failed' => 'Échec',
+            'sent' => __('Envoyé'),
+            'pending' => __('En attente'),
+            'failed' => __('Échec'),
         ];
         $filterLabelMap = [
-            'q' => 'Recherche',
-            'type' => 'Type',
-            'status' => 'Statut',
-            'date_from' => 'Du',
-            'date_to' => 'Au',
+            'q' => __('Recherche'),
+            'type' => __('Type'),
+            'status' => __('Statut'),
+            'date_from' => __('Du'),
+            'date_to' => __('Au'),
         ];
         $selectedTypes = is_array(request('type')) ? request('type') : (request('type') ? [request('type')] : []);
         $selectedStatuses = is_array(request('status')) ? request('status') : (request('status') ? [request('status')] : []);
@@ -41,28 +41,28 @@
 
             // Common local-dev misconfigurations (Mailpit / SMTP)
             if (str_contains($msg, 'Unsupported mail transport')) {
-                return "L'envoi email est indisponible (configuration SMTP incomplète). Vérifiez la configuration Mailpit et relancez le worker.";
+                return __("L'envoi email est indisponible (configuration SMTP incomplète). Vérifiez la configuration Mailpit et relancez le worker.");
             }
             if (str_contains($msg, 'Connection refused') || str_contains($msg, 'Could not connect')) {
-                return "Impossible de se connecter au serveur mail. Vérifiez que Mailpit est démarré et accessible.";
+                return __("Impossible de se connecter au serveur mail. Vérifiez que Mailpit est démarré et accessible.");
             }
             if (str_contains($msg, 'getaddrinfo') || str_contains($msg, 'Name or service not known')) {
-                return "Serveur mail introuvable. Vérifiez l'hôte SMTP (MAIL_HOST).";
+                return __("Serveur mail introuvable. Vérifiez l'hôte SMTP (MAIL_HOST).");
             }
             if (str_contains($msg, 'Authentication') || str_contains($msg, 'auth')) {
-                return "Échec d'authentification SMTP. Vérifiez les identifiants mail.";
+                return __("Échec d'authentification SMTP. Vérifiez les identifiants mail.");
             }
 
             // Default (still French, generic)
-            return "Échec lors de l'envoi de l'email. Veuillez réessayer ou contacter l'administrateur.";
+            return __("Échec lors de l'envoi de l'email. Veuillez réessayer ou contacter l'administrateur.");
         };
     @endphp
 
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-5 mb-6">
-        <x-stat-card icon="/bell-blue.svg" value="{{ number_format($stats['total']) }}" label="Total" trend="{{ $stats['total'] }}" iconStyle="filter: brightness(0) saturate(100%) invert(23%) sepia(66%) saturate(1400%) hue-rotate(210deg) brightness(95%) contrast(95%);" />
-        <x-stat-card icon="/upload-blue.svg" value="{{ number_format($stats['sent']) }}" label="Envoyés" trend="{{ $stats['sent'] }}" iconStyle="filter: brightness(0) saturate(100%) invert(23%) sepia(66%) saturate(1400%) hue-rotate(210deg) brightness(95%) contrast(95%);" />
-        <x-stat-card icon="/danger.svg" value="{{ number_format($stats['failed']) }}" label="En échec" trend="{{ $stats['failed'] }}" iconStyle="filter: brightness(0) saturate(100%) invert(23%) sepia(66%) saturate(1400%) hue-rotate(210deg) brightness(95%) contrast(95%);" />
-        <x-stat-card icon="/time-dark-blue.svg" value="{{ number_format($stats['pending']) }}" label="En attente" trend="{{ $stats['pending'] }}" iconStyle="filter: brightness(0) saturate(100%) invert(23%) sepia(66%) saturate(1400%) hue-rotate(210deg) brightness(95%) contrast(95%);" />
+        <x-stat-card icon="/bell-blue.svg" value="{{ number_format($stats['total']) }}" :label="__('Total')" trend="{{ $stats['total'] }}" iconStyle="filter: brightness(0) saturate(100%) invert(23%) sepia(66%) saturate(1400%) hue-rotate(210deg) brightness(95%) contrast(95%);" />
+        <x-stat-card icon="/upload-blue.svg" value="{{ number_format($stats['sent']) }}" :label="__('Envoyés')" trend="{{ $stats['sent'] }}" iconStyle="filter: brightness(0) saturate(100%) invert(23%) sepia(66%) saturate(1400%) hue-rotate(210deg) brightness(95%) contrast(95%);" />
+        <x-stat-card icon="/danger.svg" value="{{ number_format($stats['failed']) }}" :label="__('En échec')" trend="{{ $stats['failed'] }}" iconStyle="filter: brightness(0) saturate(100%) invert(23%) sepia(66%) saturate(1400%) hue-rotate(210deg) brightness(95%) contrast(95%);" />
+        <x-stat-card icon="/time-dark-blue.svg" value="{{ number_format($stats['pending']) }}" :label="__('En attente')" trend="{{ $stats['pending'] }}" iconStyle="filter: brightness(0) saturate(100%) invert(23%) sepia(66%) saturate(1400%) hue-rotate(210deg) brightness(95%) contrast(95%);" />
     </div>
 
     <div x-data="notificationFilters()" class="bg-white rounded-[14px] border shadow-sm mb-5" style="border-color:rgba(0,0,0,.1);">
@@ -74,7 +74,7 @@
                             class="h-10 w-full flex items-center gap-2 text-sm border border-[#e5e7eb] rounded-[8px] px-3 bg-white text-left focus:outline-none focus:border-[#1c398e] focus:ring-2 focus:ring-[#1c398e]/20 transition"
                             :class="{ 'border-[#1c398e] ring-2 ring-[#1c398e]/20': typeOpen }">
                         <i class="fa-solid fa-filter text-xs shrink-0" style="color:var(--sikds-muted)"></i>
-                        <span class="flex-1 truncate" x-text="selectedTypes.length ? selectedTypes.length + ' type(s)' : 'Tous les types'" :class="selectedTypes.length ? 'text-[#0a0a0a] font-medium' : 'text-[#717182]'"></span>
+                        <span class="flex-1 truncate" x-text="selectedTypes.length ? selectedTypes.length + ' ' + @js(__('type(s)')) : @js(__('Tous les types'))" :class="selectedTypes.length ? 'text-[#0a0a0a] font-medium' : 'text-[#717182]'"></span>
                         <i class="fa-solid fa-chevron-down text-[10px] shrink-0 transition-transform" :class="{ 'rotate-180': typeOpen }" style="color:var(--sikds-muted)"></i>
                     </button>
                     @if (count($selectedTypes) > 0)
@@ -99,7 +99,7 @@
                     <button type="button" @click="statusOpen = !statusOpen"
                             class="h-10 w-full flex items-center gap-2 text-sm border border-[#e5e7eb] rounded-[8px] px-3 bg-white text-left focus:outline-none focus:border-[#1c398e] focus:ring-2 focus:ring-[#1c398e]/20 transition"
                             :class="{ 'border-[#1c398e] ring-2 ring-[#1c398e]/20': statusOpen }">
-                        <span class="flex-1 truncate" x-text="selectedStatuses.length ? selectedStatuses.length + ' statut(s)' : 'Tous les statuts'" :class="selectedStatuses.length ? 'text-[#0a0a0a] font-medium' : 'text-[#717182]'"></span>
+                        <span class="flex-1 truncate" x-text="selectedStatuses.length ? selectedStatuses.length + ' ' + @js(__('statut(s)')) : @js(__('Tous les statuts'))" :class="selectedStatuses.length ? 'text-[#0a0a0a] font-medium' : 'text-[#717182]'"></span>
                         <i class="fa-solid fa-chevron-down text-[10px] shrink-0 transition-transform" :class="{ 'rotate-180': statusOpen }" style="color:var(--sikds-muted)"></i>
                     </button>
                     @if (count($selectedStatuses) > 0)
@@ -135,9 +135,9 @@
             {{-- Active filter chips --}}
             <div class="px-5 pb-4 flex flex-wrap items-center justify-between gap-3">
                 <div class="flex flex-wrap items-center gap-2 text-sm" style="color:var(--sikds-muted)">
-                    <span>Filtres actifs:</span>
+                    <span>{{ __('Filtres actifs:') }}</span>
                     @if ($nonEmptyFilters->isEmpty())
-                        <span class="inline-flex items-center rounded-full bg-[#f1f5f9] px-2.5 py-1 text-xs text-[#717182]">Aucun</span>
+                        <span class="inline-flex items-center rounded-full bg-[#f1f5f9] px-2.5 py-1 text-xs text-[#717182]">{{ __('Aucun') }}</span>
                     @else
                         @foreach ($nonEmptyFilters as $key => $value)
                             @php
@@ -175,11 +175,11 @@
                     <a href="{{ route('notifications.index') }}"
                        class="inline-flex items-center gap-1.5 px-4 py-2 text-sm border border-black/10 rounded-[10px] hover:bg-gray-50 transition-colors" style="color:var(--sikds-ink)">
                         <i class="fa-solid fa-rotate-left text-[10px]"></i>
-                        Réinitialiser
+                        {{ __('Réinitialiser') }}
                     </a>
                     <button type="submit" class="inline-flex items-center gap-1.5 px-5 py-2 text-sm font-semibold text-white rounded-[10px] transition hover:opacity-90" style="background-color:var(--sikds-primary);">
                         <i class="fa-solid fa-check text-[10px]"></i>
-                        Appliquer
+                        {{ __('Appliquer') }}
                     </button>
                 </div>
             </div>
@@ -191,12 +191,12 @@
             <table class="w-full text-sm">
                 <thead>
                     <tr class="border-b" style="border-color:rgba(0,0,0,.1);background:#f9f9fb;">
-                        <th class="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider" style="color:var(--sikds-muted)">Date</th>
-                        <th class="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider" style="color:var(--sikds-muted)">Type</th>
-                        <th class="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider" style="color:var(--sikds-muted)">Destinataire</th>
-                        <th class="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider" style="color:var(--sikds-muted)">Document</th>
-                        <th class="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider" style="color:var(--sikds-muted)">Statut email</th>
-                        <th class="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider" style="color:var(--sikds-muted)">Détail</th>
+                        <th class="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider" style="color:var(--sikds-muted)">{{ __('Date') }}</th>
+                        <th class="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider" style="color:var(--sikds-muted)">{{ __('Type') }}</th>
+                        <th class="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider" style="color:var(--sikds-muted)">{{ __('Destinataire') }}</th>
+                        <th class="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider" style="color:var(--sikds-muted)">{{ __('Document') }}</th>
+                        <th class="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider" style="color:var(--sikds-muted)">{{ __('Statut email') }}</th>
+                        <th class="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider" style="color:var(--sikds-muted)">{{ __('Détail') }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -218,22 +218,22 @@
                                 {{ $typeLabels[$notification->type] ?? $notification->type }}
                             </td>
                             <td class="px-4 py-3">
-                                <p class="font-semibold text-sm" style="color:var(--sikds-ink)">{{ $notification->recipient_name ?? 'Utilisateur supprimé' }}</p>
-                                <p class="text-xs" style="color:var(--sikds-muted)">{{ $notification->recipient_email ?? 'N/A' }}</p>
+                                <p class="font-semibold text-sm" style="color:var(--sikds-ink)">{{ $notification->recipient_name ?? __('Utilisateur supprimé') }}</p>
+                                <p class="text-xs" style="color:var(--sikds-muted)">{{ $notification->recipient_email ?? __('N/A') }}</p>
                             </td>
                             <td class="px-4 py-3">
-                                <p class="text-sm font-medium" style="color:var(--sikds-ink)">{{ $notification->document_title ?? 'N/A' }}</p>
+                                <p class="text-sm font-medium" style="color:var(--sikds-ink)">{{ $notification->document_title ?? __('N/A') }}</p>
                                 <p class="text-xs" style="color:var(--sikds-muted)">{{ $notification->document_reference ?? '-' }}</p>
                             </td>
                             <td class="px-4 py-3">
                                 <span class="sikds-status {{ $badgeClass }}">{{ $statusLabels[$status] ?? $status }}</span>
                                 @if ($notification->email_sent_at)
-                                    <p class="text-xs mt-1" style="color:var(--sikds-muted)">Envoyé: {{ \Illuminate\Support\Carbon::parse($notification->email_sent_at)->format('Y-m-d H:i') }}</p>
+                                    <p class="text-xs mt-1" style="color:var(--sikds-muted)">{{ __('Envoyé:') }} {{ \Illuminate\Support\Carbon::parse($notification->email_sent_at)->format('Y-m-d H:i') }}</p>
                                 @endif
                             </td>
                             <td class="px-4 py-3">
                                 <details>
-                                    <summary class="cursor-pointer text-xs font-medium" style="color:var(--sikds-primary)">Voir</summary>
+                                    <summary class="cursor-pointer text-xs font-medium" style="color:var(--sikds-primary)">{{ __('Voir') }}</summary>
                                     <div class="mt-2 space-y-2">
                                         @php
                                             $rawError = is_string($notification->email_error) ? $notification->email_error : null;
@@ -243,27 +243,27 @@
                                         @endphp
 
                                         @if ($status === 'sent')
-                                            <p class="text-xs" style="color:var(--sikds-muted)">Email envoyé avec succès.</p>
+                                            <p class="text-xs" style="color:var(--sikds-muted)">{{ __('Email envoyé avec succès.') }}</p>
                                         @elseif ($status === 'pending')
-                                            <p class="text-xs" style="color:var(--sikds-muted)">Email en attente de traitement par le worker.</p>
+                                            <p class="text-xs" style="color:var(--sikds-muted)">{{ __('Email en attente de traitement par le worker.') }}</p>
                                         @elseif ($status === 'failed')
-                                            <p class="text-xs text-red-600">{{ $friendly ?? "Échec lors de l'envoi de l'email." }}</p>
+                                            <p class="text-xs text-red-600">{{ $friendly ?? __('Échec lors de l\'envoi de l\'email.') }}</p>
                                         @endif
 
                                         @if (!empty($meta))
                                             <div class="text-xs rounded-[10px] border border-black/10 bg-gray-50 p-2">
-                                                <p class="font-semibold mb-1" style="color:var(--sikds-ink)">Données</p>
+                                                <p class="font-semibold mb-1" style="color:var(--sikds-ink)">{{ __('Données') }}</p>
                                                 <ul class="space-y-1" style="color:var(--sikds-muted)">
-                                                    @if(isset($meta['reference_number'])) <li>Référence: {{ $meta['reference_number'] }}</li> @endif
-                                                    @if(isset($meta['version_number'])) <li>Version: v{{ $meta['version_number'] }}</li> @endif
-                                                    @if(isset($meta['new_version'])) <li>Nouvelle version: v{{ $meta['new_version'] }}</li> @endif
+                                                    @if(isset($meta['reference_number'])) <li>{{ __('Référence:') }} {{ $meta['reference_number'] }}</li> @endif
+                                                    @if(isset($meta['version_number'])) <li>{{ __('Version:') }} v{{ $meta['version_number'] }}</li> @endif
+                                                    @if(isset($meta['new_version'])) <li>{{ __('Nouvelle version:') }} v{{ $meta['new_version'] }}</li> @endif
                                                 </ul>
                                             </div>
                                         @endif
 
                                         @if ($canViewTechnicalDetails && $rawError)
                                             <details class="mt-2">
-                                                <summary class="cursor-pointer text-xs font-medium" style="color:var(--sikds-primary)">Détails techniques</summary>
+                                                <summary class="cursor-pointer text-xs font-medium" style="color:var(--sikds-primary)">{{ __('Détails techniques') }}</summary>
                                                 <pre class="mt-2 text-xs bg-gray-50 border border-black/10 rounded-[8px] p-2 overflow-auto max-h-28">{{ $rawError }}</pre>
                                             </details>
                                         @endif
@@ -274,7 +274,7 @@
                     @empty
                         <tr>
                             <td colspan="6" class="px-5 py-14 text-center text-sm" style="color:var(--sikds-muted)">
-                                Aucune notification trouvée.
+                                {{ __('Aucune notification trouvée.') }}
                             </td>
                         </tr>
                     @endforelse
@@ -284,18 +284,18 @@
 
         <div class="px-5 py-4 border-t flex items-center justify-between" style="border-color:rgba(0,0,0,.1);">
             <p class="text-sm" style="color:var(--sikds-muted)">
-                Affichage de {{ $notifications->firstItem() ?? 0 }}-{{ $notifications->lastItem() ?? 0 }} sur {{ number_format($notifications->total()) }} notifications
+                {{ __('Affichage de') }} {{ $notifications->firstItem() ?? 0 }}-{{ $notifications->lastItem() ?? 0 }} {{ __('sur') }} {{ number_format($notifications->total()) }} {{ __('notifications') }}
             </p>
             <div class="flex items-center gap-2">
                 @if ($notifications->onFirstPage())
-                    <span class="px-4 py-1.5 text-sm border rounded-[10px] opacity-40 cursor-not-allowed" style="border-color:rgba(0,0,0,.1);color:var(--sikds-muted)">Précédent</span>
+                    <span class="px-4 py-1.5 text-sm border rounded-[10px] opacity-40 cursor-not-allowed" style="border-color:rgba(0,0,0,.1);color:var(--sikds-muted)">{{ __('Précédent') }}</span>
                 @else
-                    <a href="{{ $notifications->previousPageUrl() }}" class="px-4 py-1.5 text-sm border rounded-[10px] hover:bg-gray-50 transition-colors" style="border-color:rgba(0,0,0,.1);color:var(--sikds-ink)">Précédent</a>
+                    <a href="{{ $notifications->previousPageUrl() }}" class="px-4 py-1.5 text-sm border rounded-[10px] hover:bg-gray-50 transition-colors" style="border-color:rgba(0,0,0,.1);color:var(--sikds-ink)">{{ __('Précédent') }}</a>
                 @endif
                 @if ($notifications->hasMorePages())
-                    <a href="{{ $notifications->nextPageUrl() }}" class="px-4 py-1.5 text-sm border rounded-[10px] hover:bg-gray-50 transition-colors" style="border-color:rgba(0,0,0,.1);color:var(--sikds-ink)">Suivant</a>
+                    <a href="{{ $notifications->nextPageUrl() }}" class="px-4 py-1.5 text-sm border rounded-[10px] hover:bg-gray-50 transition-colors" style="border-color:rgba(0,0,0,.1);color:var(--sikds-ink)">{{ __('Suivant') }}</a>
                 @else
-                    <span class="px-4 py-1.5 text-sm border rounded-[10px] opacity-40 cursor-not-allowed" style="border-color:rgba(0,0,0,.1);color:var(--sikds-muted)">Suivant</span>
+                    <span class="px-4 py-1.5 text-sm border rounded-[10px] opacity-40 cursor-not-allowed" style="border-color:rgba(0,0,0,.1);color:var(--sikds-muted)">{{ __('Suivant') }}</span>
                 @endif
             </div>
         </div>

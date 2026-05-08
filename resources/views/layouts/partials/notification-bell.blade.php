@@ -11,7 +11,7 @@
         class="sikds-header-notif"
         aria-haspopup="menu"
         aria-expanded="false"
-        aria-label="Notifications"
+        aria-label="{{ __('Notifications') }}"
     >
         <span class="relative inline-flex">
             <i class="fa-regular fa-bell text-white text-[18px] leading-none" aria-hidden="true"></i>
@@ -27,29 +27,29 @@
         id="sikds-notification-bell-panel"
         class="hidden absolute right-0 top-full z-50 mt-2 w-[22rem] max-w-[calc(100vw-2rem)] origin-top-right rounded-2xl border border-slate-200 bg-white shadow-xl overflow-hidden"
         role="menu"
-        aria-label="Notiifications récentes"
+        aria-label="{{ __('Notifications récentes') }}"
     >
         <div class="flex items-center justify-between px-4 py-3 border-b border-slate-100">
-            <p class="text-sm font-semibold text-slate-900">Notifications</p>
+            <p class="text-sm font-semibold text-slate-900">{{ __('Notifications') }}</p>
             <button
                 type="button"
                 id="sikds-notification-bell-mark-all"
                 class="hidden text-xs font-medium text-[#1E3A8A] hover:underline disabled:opacity-50"
             >
-                Tout marquer comme lu
+                {{ __('Tout marquer comme lu') }}
             </button>
         </div>
 
         <div id="sikds-notification-bell-list" class="max-h-80 overflow-y-auto">
             <div class="px-4 py-10 text-center" id="sikds-notification-bell-empty">
                 <i class="fa-regular fa-bell-slash text-2xl text-slate-300"></i>
-                <p class="mt-2 text-sm text-slate-500">Aucune notification</p>
+                <p class="mt-2 text-sm text-slate-500">{{ __('Aucune notification') }}</p>
             </div>
         </div>
 
         <div class="border-t border-slate-100 bg-slate-50 px-4 py-3 text-center">
             <a href="{{ $inboxUrl }}" class="text-sm font-medium text-[#1E3A8A] hover:underline">
-                Voir toutes les notifications
+                {{ __('Voir toutes les notifications') }}
             </a>
         </div>
     </div>

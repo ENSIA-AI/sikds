@@ -5,7 +5,7 @@
     @php
         $activeNav = 'dashboard';
         $authUser = auth()->user();
-        $userName = $authUser?->full_name ?? $authUser?->name ?? $authUser?->email ?? 'Utilisateur';
+        $userName = $authUser?->full_name ?? $authUser?->name ?? $authUser?->email ?? __('Utilisateur');
         $canChat = $authUser?->can('rag.query') ?? false;
         $canSeeDocuments = $authUser && (
             $authUser->can('document.view.assigned')
@@ -45,7 +45,7 @@
                  style="border-color:rgba(0,0,0,.08);">
             <div class="px-6 py-5 border-b" style="border-color:rgba(0,0,0,.06);">
                 <h3 class="text-lg font-bold" style="color:var(--sikds-ink);">{{ __('Documents Récents') }}</h3>
-                <p class="text-xs mt-0.5" style="color:var(--sikds-muted);">Vos derniers documents consultés</p>
+                <p class="text-xs mt-0.5" style="color:var(--sikds-muted);">{{ __('Vos derniers documents consultés') }}</p>
             </div>
             <div class="flex-1 divide-y" style="border-color:rgba(0,0,0,.06);">
                 @forelse ($recentDocuments as $doc)
@@ -85,7 +85,7 @@
                  @focus.window="load()">
             <div class="px-6 py-5 border-b" style="border-color:rgba(0,0,0,.06);">
                 <h3 class="text-lg font-bold" style="color:var(--sikds-ink);">{{ __('Chats Récents') }}</h3>
-                <p class="text-xs mt-0.5" style="color:var(--sikds-muted);">Vos derniers chats</p>
+                <p class="text-xs mt-0.5" style="color:var(--sikds-muted);">{{ __('Vos derniers chats') }}</p>
             </div>
             <div class="flex-1 divide-y" style="border-color:rgba(0,0,0,.06);">
                 <template x-if="items.length > 0">
@@ -127,7 +127,7 @@
                     <h3 class="text-lg font-bold" style="color:var(--sikds-ink);">{{ __('Notifications récentes') }}</h3>
                     <p class="text-xs mt-0.5" style="color:var(--sikds-muted);">
                         @if ($unreadCount > 0)
-                            {{ $unreadCount }} notification{{ $unreadCount > 1 ? 's' : '' }} non lue{{ $unreadCount > 1 ? 's' : '' }}
+                            {{ trans_choice('{1} :count notification non lue|[2,*] :count notifications non lues', $unreadCount, ['count' => $unreadCount]) }}
                         @else
                             {{ __('Vous êtes à jour') }}
                         @endif
@@ -180,6 +180,12 @@
     @push('scripts')
         <script>
             function sikdsRecentChats(config) {
+                const i18n = {
+                    justNow: @json(__("à l'instant")),
+                    minutesAgo: @json(__('il y a :count min')),
+                    hoursAgo: @json(__('il y a :count h')),
+                    daysAgo: @json(__('il y a :count j')),
+                };
                 return {
                     items: [],
                     storageKey: 'sikds-chatbot-history-v2-' + (config.userId || 'guest'),
@@ -216,13 +222,13 @@
                     formatTime(ts) {
                         if (typeof ts !== 'number' || ts <= 0) return '';
                         const diffSec = Math.max(1, Math.floor((Date.now() - ts) / 1000));
-                        if (diffSec < 60) return "à l'instant";
+                        if (diffSec < 60) return i18n.justNow;
                         const min = Math.floor(diffSec / 60);
-                        if (min < 60) return 'il y a ' + min + ' min';
+                        if (min < 60) return i18n.minutesAgo.replace(':count', min);
                         const hr = Math.floor(min / 60);
-                        if (hr < 24) return 'il y a ' + hr + ' h';
+                        if (hr < 24) return i18n.hoursAgo.replace(':count', hr);
                         const day = Math.floor(hr / 24);
-                        return 'il y a ' + day + ' j';
+                        return i18n.daysAgo.replace(':count', day);
                     },
                 };
             }

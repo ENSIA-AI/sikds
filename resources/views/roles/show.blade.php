@@ -8,7 +8,7 @@
 @endphp
  
 @section('page_title', $role->name)
-@section('page_subtitle', 'Détails du rôle et ses permissions')
+@section('page_subtitle', __('Détails du rôle et ses permissions'))
  
 @section('content')
  
@@ -21,7 +21,7 @@
         <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" class="size-5">
             <path d="M19 12H5M12 19l-7-7 7-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
-        Retour aux rôles
+        {{ __('Retour aux rôles') }}
     </a>
  
     <div class="flex flex-wrap items-center gap-3">
@@ -34,7 +34,7 @@
                     <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                     <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
-                Modifier
+                {{ __('Modifier') }}
             </a>
         @endcan
  
@@ -50,7 +50,7 @@
                     <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" class="size-5">
                         <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                     </svg>
-                    Supprimer
+                    {{ __('Supprimer') }}
                 </button>
             </form>
         @endcan
@@ -101,12 +101,12 @@
                             <svg viewBox="0 0 8 8" fill="currentColor" class="size-2">
                                 <circle cx="4" cy="4" r="4"/>
                             </svg>
-                            Rôle système
+                            {{ __('Rôle système') }}
                         </span>
                     @endif
                 </div>
                 <div class="text-right">
-                    <p class="text-sm text-[#717182]">Permissions</p>
+                    <p class="text-sm text-[#717182]">{{ __('Permissions') }}</p>
                     <p class="text-2xl font-semibold text-[#0A0A0A]">{{ $role->permissions->count() }}</p>
                 </div>
             </div>
@@ -127,13 +127,13 @@
 {{-- Permissions Section --}}
 <div class="mb-6 rounded-[14px] border border-black/10 bg-white shadow-[0px_1px_2px_-1px_rgba(0,0,0,0.10),0px_1px_3px_0px_rgba(0,0,0,0.10)]">
     <div class="border-b border-black/10 px-6 py-4">
-        <h2 class="text-lg font-semibold text-[#0A0A0A]">Permissions Assignées</h2>
-        <p class="mt-1 text-sm text-[#717182]">Liste complète des permissions accordées à ce rôle</p>
+        <h2 class="text-lg font-semibold text-[#0A0A0A]">{{ __('Permissions Assignées') }}</h2>
+        <p class="mt-1 text-sm text-[#717182]">{{ __('Liste complète des permissions accordées à ce rôle') }}</p>
     </div>
  
     <div class="p-6">
         @if($role->permissions->isEmpty())
-            <p class="text-sm text-[#717182]">Aucune permission assignée à ce rôle.</p>
+            <p class="text-sm text-[#717182]">{{ __('Aucune permission assignée à ce rôle.') }}</p>
         @else
             <div class="flex flex-col gap-4">
             @foreach($permissionsToShow as $category => $permissions)
@@ -174,21 +174,21 @@
 {{-- Users with this Role --}}
 <div class="rounded-[14px] border border-black/10 bg-white shadow-[0px_1px_2px_-1px_rgba(0,0,0,0.10),0px_1px_3px_0px_rgba(0,0,0,0.10)]">
     <div class="border-b border-black/10 px-6 py-4">
-        <h2 class="text-lg font-semibold text-[#0A0A0A]">Utilisateurs avec ce Rôle</h2>
-        <p class="mt-1 text-sm text-[#717182]">{{ $role->users->count() }} utilisateur(s) assigné(s) à ce rôle</p>
+        <h2 class="text-lg font-semibold text-[#0A0A0A]">{{ __('Utilisateurs avec ce Rôle') }}</h2>
+        <p class="mt-1 text-sm text-[#717182]">{{ __(':count utilisateur(s) assigné(s) à ce rôle', ['count' => $role->users->count()]) }}</p>
     </div>
  
     <div class="p-6">
         @if($role->users->isEmpty())
-            <p class="text-sm text-[#717182]">Aucun utilisateur n'a ce rôle pour le moment.</p>
+            <p class="text-sm text-[#717182]">{{ __('Aucun utilisateur n\'a ce rôle pour le moment.') }}</p>
         @else
             <div class="overflow-x-auto">
                 <table class="w-full">
                     <thead>
                         <tr class="border-b border-black/10">
-                            <th class="pb-3 text-left text-sm font-semibold text-[#0A0A0A]">Nom</th>
-                            <th class="pb-3 text-left text-sm font-semibold text-[#0A0A0A]">Email</th>
-                            <th class="pb-3 text-left text-sm font-semibold text-[#0A0A0A]">Institution</th>
+                            <th class="pb-3 text-left text-sm font-semibold text-[#0A0A0A]">{{ __('Nom') }}</th>
+                            <th class="pb-3 text-left text-sm font-semibold text-[#0A0A0A]">{{ __('Email') }}</th>
+                            <th class="pb-3 text-left text-sm font-semibold text-[#0A0A0A]">{{ __('Institution') }}</th>
                             <!-- <th class="pb-3 text-right text-sm font-semibold text-[#0A0A0A]">Actions</th> -->
                         </tr>
                     </thead>
@@ -197,7 +197,7 @@
                             <tr class="border-b border-black/5 last:border-0">
                                 <td class="py-3 text-sm text-[#0A0A0A]">{{ $user->full_name }}</td>
                                 <td class="py-3 text-sm text-[#717182]">{{ $user->email }}</td>
-                                <td class="py-3 text-sm text-[#717182]">{{ $user->institution->name ?? 'N/A' }}</td>
+                                <td class="py-3 text-sm text-[#717182]">{{ $user->institution->name ?? __('N/A') }}</td>
                                 <td class="py-3 text-right">
                                     <!-- @can('user.view.all')
                                         <a
@@ -223,7 +223,7 @@
             type="submit"
             class="inline-flex h-11 items-center justify-center gap-2 rounded-[10px] bg-[#1E3A8A] px-6 text-sm font-medium text-white hover:bg-[#1E40AF]"
         >
-            Enregistrer les modifications
+            {{ __('Enregistrer les modifications') }}
         </button>
     </div>
 </form>
@@ -232,7 +232,7 @@
 @can('role.delete')
     <div id="delete-role-modal" class="sikds-doc-modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="delete-role-title">
         <div class="sikds-doc-modal">
-            <button type="button" id="close-delete-role-modal" class="sikds-doc-modal-close" aria-label="Fermer">
+            <button type="button" id="close-delete-role-modal" class="sikds-doc-modal-close" aria-label="{{ __('Fermer') }}">
                 <i class="fa-solid fa-xmark"></i>
             </button>
 
@@ -241,23 +241,23 @@
                     <i class="fa-regular fa-circle-exclamation"></i>
                 </div>
                 <div>
-                    <h3 id="delete-role-title" class="sikds-doc-modal-title">Supprimer le Rôle</h3>
-                    <p class="sikds-doc-modal-subtitle">Action irréversible</p>
+                    <h3 id="delete-role-title" class="sikds-doc-modal-title">{{ __('Supprimer le Rôle') }}</h3>
+                    <p class="sikds-doc-modal-subtitle">{{ __('Action irréversible') }}</p>
                 </div>
             </div>
 
             <p class="sikds-doc-modal-text">
-                Êtes-vous sûr de vouloir supprimer définitivement le rôle
+                {{ __('Êtes-vous sûr de vouloir supprimer définitivement le rôle') }}
                 "<strong>{{ $role->name }}</strong>" ?
             </p>
 
             <div class="sikds-doc-modal-actions">
                 <button type="button" id="cancel-delete-role-modal" class="sikds-doc-modal-btn sikds-doc-modal-btn--cancel">
-                    Annuler
+                    {{ __('Annuler') }}
                 </button>
                 <button type="button" id="confirm-delete-role-modal" class="sikds-doc-modal-btn sikds-doc-modal-btn--delete">
                     <i class="fa-regular fa-trash-can"></i>
-                    Supprimer
+                    {{ __('Supprimer') }}
                 </button>
             </div>
         </div>

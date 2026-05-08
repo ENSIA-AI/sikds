@@ -1,7 +1,7 @@
 @extends('layouts.app')
 @php($activeNav = 'tags')
-@section('page_title', 'Gestion des Tags')
-@section('page_subtitle', 'Organiser et catégoriser les documents')
+@section('page_title', __('Gestion des Tags'))
+@section('page_subtitle', __('Organiser et catégoriser les documents'))
 @section('content')
 
 <div x-data="tagsPage()"
@@ -27,12 +27,12 @@
     {{-- Toolbar --}}
     <div class="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
         <div class="min-w-0">
-            <h2 class="text-2xl sm:text-[28px] font-semibold sikds-ink leading-tight">Tags des Documents</h2>
-            <p class="mt-1 text-sm sikds-muted-text">Organiser et catégoriser les documents</p>
+            <h2 class="text-2xl sm:text-[28px] font-semibold sikds-ink leading-tight">{{ __('Tags des Documents') }}</h2>
+            <p class="mt-1 text-sm sikds-muted-text">{{ __('Organiser et catégoriser les documents') }}</p>
         </div>
         <button type="button" @click="openModal()" class="sikds-tags-btn-create shrink-0 self-start sm:self-auto">
             <i class="fa-solid fa-plus text-sm"></i>
-            <span>Créer un Tag</span>
+            <span>{{ __('Créer un Tag') }}</span>
         </button>
     </div>
 
@@ -55,15 +55,15 @@
                                 </div>
                                 <div>
                                     <p class="text-sm font-medium sikds-ink">{{ $tag->name }}</p>
-                                    <p class="text-xs sikds-muted-text">{{ $tag->documents_count }} document{{ $tag->documents_count !== 1 ? 's' : '' }}</p>
+                                    <p class="text-xs sikds-muted-text">{{ $tag->documents_count }} {{ $tag->documents_count !== 1 ? __('documents') : __('document') }}</p>
                                 </div>
                             </div>
                             <div class="sikds-tag-actions">
-                                <button type="button" class="sikds-tag-action-btn" title="Modifier"
+                                <button type="button" class="sikds-tag-action-btn" title="{{ __('Modifier') }}"
                                     @click="openEditModal({{ $tag->id }}, @js($tag->name), @js($tag->color ?? '#e0e7ff'), @js($tag->category), {{ $tag->documents_count }})">
                                     <i class="fa-regular fa-pen-to-square"></i>
                                 </button>
-                                <button type="button" class="sikds-tag-action-btn sikds-tag-action-btn--danger" title="Supprimer"
+                                <button type="button" class="sikds-tag-action-btn sikds-tag-action-btn--danger" title="{{ __('Supprimer') }}"
                                     @click="openDeleteModal({{ $tag->id }}, @js($tag->name), @js($tag->color ?? '#e0e7ff'), {{ $tag->documents_count }})">
                                     <i class="fa-regular fa-trash-can"></i>
                                 </button>
@@ -72,7 +72,7 @@
                     @endforeach
 
                     @if ($tags->isEmpty())
-                        <p class="text-sm sikds-muted-text py-2">Aucun tag dans cette catégorie.</p>
+                        <p class="text-sm sikds-muted-text py-2">{{ __('Aucun tag dans cette catégorie.') }}</p>
                     @endif
                 </div>
             </div>
@@ -80,7 +80,7 @@
 
         {{-- Custom tags panel --}}
         <div class="sikds-tag-panel">
-            <h3 class="sikds-tag-panel-title">Tags Personnalisés</h3>
+            <h3 class="sikds-tag-panel-title">{{ __('Tags Personnalisés') }}</h3>
             <div class="mt-4 space-y-3">
                 @forelse ($customTags as $tag)
                     <div class="sikds-tag-row group">
@@ -93,22 +93,22 @@
                             </div>
                             <div>
                                 <p class="text-sm font-medium sikds-ink">{{ $tag->name }}</p>
-                                <p class="text-xs sikds-muted-text">{{ $tag->documents_count }} document{{ $tag->documents_count !== 1 ? 's' : '' }}</p>
+                                <p class="text-xs sikds-muted-text">{{ $tag->documents_count }} {{ $tag->documents_count !== 1 ? __('documents') : __('document') }}</p>
                             </div>
                         </div>
                         <div class="sikds-tag-actions">
-                            <button type="button" class="sikds-tag-action-btn" title="Modifier"
+                            <button type="button" class="sikds-tag-action-btn" title="{{ __('Modifier') }}"
                                 @click="openEditModal({{ $tag->id }}, @js($tag->name), @js($tag->color ?? '#e0e7ff'), @js($tag->category), {{ $tag->documents_count }})">
                                 <i class="fa-regular fa-pen-to-square"></i>
                             </button>
-                            <button type="button" class="sikds-tag-action-btn sikds-tag-action-btn--danger" title="Supprimer"
+                            <button type="button" class="sikds-tag-action-btn sikds-tag-action-btn--danger" title="{{ __('Supprimer') }}"
                                 @click="openDeleteModal({{ $tag->id }}, @js($tag->name), @js($tag->color ?? '#e0e7ff'), {{ $tag->documents_count }})">
                                 <i class="fa-regular fa-trash-can"></i>
                             </button>
                         </div>
                     </div>
                 @empty
-                    <p class="text-sm sikds-muted-text py-2">Aucun tag personnalisé.</p>
+                    <p class="text-sm sikds-muted-text py-2">{{ __('Aucun tag personnalisé.') }}</p>
                 @endforelse
             </div>
         </div>
@@ -137,11 +137,11 @@
 
             <div class="sikds-modal-header">
                 <div>
-                    <h3 class="sikds-modal-title" x-text="editId ? 'Modifier le Tag' : 'Créer un Tag'"></h3>
+                    <h3 class="sikds-modal-title" x-text="editId ? i18n.editTagTitle : i18n.createTagTitle"></h3>
                     <p class="sikds-modal-subtitle"
-                       x-text="editId ? 'Modifier les informations du tag' : 'Ajouter un nouveau tag au système'"></p>
+                       x-text="editId ? i18n.editTagSubtitle : i18n.createTagSubtitle"></p>
                 </div>
-                <button type="button" @click="closeModal()" class="sikds-modal-close" aria-label="Fermer">
+                <button type="button" @click="closeModal()" class="sikds-modal-close" aria-label="{{ __('Fermer') }}">
                     <i class="fa-solid fa-xmark"></i>
                 </button>
             </div>
@@ -158,14 +158,14 @@
                 {{-- Name field --}}
                 <div class="sikds-form-group">
                     <label class="sikds-form-label">
-                        Nom du tag <span class="text-red-500">*</span>
+                        {{ __('Nom du tag') }} <span class="text-red-500">*</span>
                     </label>
                     <input type="text"
                            name="name"
                            :value="form.name"
                            @input="form.name = $event.target.value; validateName()"
                            :class="errors.name ? 'sikds-form-input is-error' : 'sikds-form-input'"
-                           placeholder="Ex : Urgent, Rapport..."
+                           placeholder="{{ __('Ex : Urgent, Rapport...') }}"
                            autocomplete="off"
                            required>
                     <div x-show="errors.name" x-cloak class="sikds-form-error-pill">
@@ -176,17 +176,17 @@
 
                 {{-- Category field --}}
                 <div class="sikds-form-group">
-                    <label class="sikds-form-label">Catégorie</label>
+                    <label class="sikds-form-label">{{ __('Catégorie') }}</label>
                     <div :class="errors.category ? 'sikds-select-wrap is-error' : 'sikds-select-wrap'"
                          :data-empty="form.category === '' ? 'true' : 'false'">
                         <select x-model="form.category"
                                 @change="onCategoryChange()"
                                 class="sikds-form-select-native">
-                            <option value="">Sélectionner une catégorie</option>
+                            <option value="">{{ __('Sélectionner une catégorie') }}</option>
                             <template x-for="c in existingCategories" :key="c">
                                 <option :value="c" x-text="categoryLabels[c] || c"></option>
                             </template>
-                            <option value="__new__">+ Nouvelle catégorie…</option>
+                            <option value="__new__">{{ __('+ Nouvelle catégorie…') }}</option>
                         </select>
                     </div>
 
@@ -195,7 +195,7 @@
                                x-model="form.newCategory"
                                @input="validateCategory()"
                                :class="errors.category ? 'sikds-form-input is-error' : 'sikds-form-input'"
-                               placeholder="Nom de la nouvelle catégorie"
+                               placeholder="{{ __('Nom de la nouvelle catégorie') }}"
                                maxlength="50"
                                autocomplete="off">
                     </div>
@@ -215,7 +215,7 @@
 
                 {{-- Color picker --}}
                 <div class="sikds-form-group" style="margin-bottom:0;margin-top:2px">
-                    <label class="sikds-form-label">Couleur du badge</label>
+                    <label class="sikds-form-label">{{ __('Couleur du badge') }}</label>
 
                     <div class="sikds-color-picker">
                         {{-- Spectrum square --}}
@@ -261,18 +261,18 @@
                 <div class="sikds-modal-usage" x-show="editId && editDocCount > 0" x-cloak>
                     <i class="fa-solid fa-circle-info"></i>
                     <span>
-                        Ce tag est utilisé dans
+                        {{ __('Ce tag est utilisé dans') }}
                         <strong x-text="editDocCount"></strong>
-                        <span x-text="editDocCount > 1 ? 'documents' : 'document'"></span>
+                        <span x-text="editDocCount > 1 ? i18n.documents : i18n.document"></span>
                     </span>
                 </div>
 
                 <div class="sikds-modal-footer">
-                    <button type="button" @click="closeModal()" class="sikds-modal-btn-cancel">Annuler</button>
+                    <button type="button" @click="closeModal()" class="sikds-modal-btn-cancel">{{ __('Annuler') }}</button>
                     <button type="submit"
                             class="sikds-modal-btn-confirm"
                             :disabled="!!(errors.name || errors.color || errors.category)"
-                            x-text="editId ? 'Enregistrer' : 'Créer le Tag'">
+                            x-text="editId ? i18n.save : i18n.createTag">
                     </button>
                 </div>
             </form>
@@ -299,7 +299,7 @@
              x-transition:leave-start="opacity-100 scale-100 translate-y-0"
              x-transition:leave-end="opacity-0 scale-95 translate-y-1">
 
-            <button type="button" @click="closeDeleteModal()" class="sikds-confirm-close" aria-label="Fermer">
+            <button type="button" @click="closeDeleteModal()" class="sikds-confirm-close" aria-label="{{ __('Fermer') }}">
                 <i class="fa-solid fa-xmark"></i>
             </button>
 
@@ -308,14 +308,14 @@
                     <i class="fa-solid fa-circle-exclamation"></i>
                 </div>
                 <div>
-                    <h3 class="sikds-confirm-title">Supprimer le Tag</h3>
-                    <p class="sikds-confirm-subtitle">Action irréversible</p>
+                    <h3 class="sikds-confirm-title">{{ __('Supprimer le Tag') }}</h3>
+                    <p class="sikds-confirm-subtitle">{{ __('Action irréversible') }}</p>
                 </div>
             </div>
 
             <div class="sikds-confirm-body">
                 <p>
-                    Êtes-vous sûr de vouloir supprimer le tag
+                    {{ __('Êtes-vous sûr de vouloir supprimer le tag') }}
                     <span class="sikds-confirm-badge" x-show="deleteTarget">
                         <span class="sikds-confirm-badge-dot" :style="deleteTarget ? `background:${deleteTarget.color}` : ''"></span>
                         <span x-text="deleteTarget?.name"></span>
@@ -325,20 +325,20 @@
                 <div class="sikds-confirm-notice" x-show="deleteTarget && deleteTarget.count > 0" x-cloak>
                     <i class="fa-solid fa-circle-info"></i>
                     <span>
-                        Ce tag est associé à
+                        {{ __('Ce tag est associé à') }}
                         <strong x-text="deleteTarget?.count"></strong>
-                        <span x-text="(deleteTarget?.count || 0) > 1 ? 'documents' : 'document'"></span>.
-                        Il sera retiré de <span x-text="(deleteTarget?.count || 0) > 1 ? 'ces documents' : 'ce document'"></span>.
+                        <span x-text="(deleteTarget?.count || 0) > 1 ? i18n.documents : i18n.document"></span>.
+                        {{ __('Il sera retiré de') }} <span x-text="(deleteTarget?.count || 0) > 1 ? i18n.theseDocuments : i18n.thisDocument"></span>.
                     </span>
                 </div>
             </div>
 
             <form method="POST" :action="deleteTarget ? '/tags/' + deleteTarget.id : ''" class="sikds-confirm-footer">
                 @csrf @method('DELETE')
-                <button type="button" @click="closeDeleteModal()" class="sikds-modal-btn-cancel">Annuler</button>
+                <button type="button" @click="closeDeleteModal()" class="sikds-modal-btn-cancel">{{ __('Annuler') }}</button>
                 <button type="submit" class="sikds-modal-btn-danger">
                     <i class="fa-regular fa-trash-can"></i>
-                    Supprimer
+                    {{ __('Supprimer') }}
                 </button>
             </form>
         </div>
@@ -349,6 +349,23 @@
 <script>
 function tagsPage() {
     return {
+        i18n: {
+            editTagTitle: @json(__('Modifier le Tag')),
+            createTagTitle: @json(__('Créer un Tag')),
+            editTagSubtitle: @json(__('Modifier les informations du tag')),
+            createTagSubtitle: @json(__('Ajouter un nouveau tag au système')),
+            documents: @json(__('documents')),
+            document: @json(__('document')),
+            save: @json(__('Enregistrer')),
+            createTag: @json(__('Créer le Tag')),
+            nameRequired: @json(__('Le nom est requis.')),
+            similarTagExists: @json(__('Un tag similaire existe déjà : « :name ».')),
+            colorAlreadyUsed: @json(__('Cette couleur est déjà utilisée par « :name ».')),
+            newCategoryRequired: @json(__('Saisis un nom pour la nouvelle catégorie.')),
+            categoryAlreadyExists: @json(__('Cette catégorie existe déjà.')),
+            theseDocuments: @json(__('ces documents')),
+            thisDocument: @json(__('ce document')),
+        },
         modalOpen:    false,
         editId:       null,
         editDocCount: 0,
@@ -446,7 +463,7 @@ function tagsPage() {
         validateName() {
             const raw = (this.form.name || '').trim();
             if (!raw) {
-                this.errors.name = 'Le nom est requis.';
+                this.errors.name = this.i18n.nameRequired;
                 return false;
             }
             const normalized = this.normalizeName(raw);
@@ -454,7 +471,7 @@ function tagsPage() {
                 t => this.normalizeName(t.name) === normalized && t.id !== this.editId
             );
             if (duplicate) {
-                this.errors.name = `Un tag similaire existe déjà : « ${duplicate.name} ».`;
+                this.errors.name = this.i18n.similarTagExists.replace(':name', duplicate.name);
                 return false;
             }
             this.errors.name = '';
@@ -467,7 +484,7 @@ function tagsPage() {
                 t => (t.color || '').toLowerCase() === color && t.id !== this.editId
             );
             if (duplicate) {
-                this.errors.color = `Cette couleur est déjà utilisée par « ${duplicate.name} ».`;
+                this.errors.color = this.i18n.colorAlreadyUsed.replace(':name', duplicate.name);
                 return false;
             }
             this.errors.color = '';
@@ -481,7 +498,7 @@ function tagsPage() {
             }
             const raw = (this.form.newCategory || '').trim();
             if (!raw) {
-                this.errors.category = 'Saisis un nom pour la nouvelle catégorie.';
+                this.errors.category = this.i18n.newCategoryRequired;
                 return false;
             }
             const norm = this.normalizeName(raw);
@@ -493,7 +510,7 @@ function tagsPage() {
                 return this.normalizeName(label) === norm;
             });
             if (clash) {
-                this.errors.category = 'Cette catégorie existe déjà.';
+                this.errors.category = this.i18n.categoryAlreadyExists;
                 return false;
             }
             this.errors.category = '';

@@ -22,7 +22,7 @@
             <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" class="size-5 shrink-0">
                 <path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
             </svg>
-            Créer un Rôle
+            {{ __('Créer un Rôle') }}
         </button>
     </div>
 @endcan
@@ -45,7 +45,7 @@
                 data-empty-state
                 class="col-span-full rounded-[14px] border border-black/10 bg-white p-6 text-sm text-[#717182] shadow-[0px_1px_2px_-1px_rgba(0,0,0,0.10),0px_1px_3px_0px_rgba(0,0,0,0.10)]"
             >
-                Aucun rôle pour le moment. Créez un rôle pour commencer.
+                {{ __('Aucun rôle pour le moment. Créez un rôle pour commencer.') }}
             </p>
         @endforelse
     </div>
@@ -74,10 +74,10 @@
         >
             <div class="shrink-0 border-b border-black/10 px-6 py-6">
                 <h2 id="create-role-title" class="text-2xl font-semibold leading-8 text-[#0A0A0A]">
-                    Créer un Rôle
+                    {{ __('Créer un Rôle') }}
                 </h2>
                 <p class="mt-1 text-sm leading-5 text-[#717182]">
-                    Définir un nouveau rôle avec des permissions spécifiques
+                    {{ __('Définir un nouveau rôle avec des permissions spécifiques') }}
                 </p>
             </div>
 
@@ -100,7 +100,7 @@
                         <div class="flex flex-col gap-4">
                             <div class="flex flex-col gap-2">
                                 <label for="role-name" class="text-sm font-medium text-black">
-                                    Nom du Rôle <span class="text-red-600">*</span>
+                                    {{ __('Nom du Rôle') }} <span class="text-red-600">*</span>
                                 </label>
                                 <input
                                     id="role-name"
@@ -108,17 +108,17 @@
                                     type="text"
                                     required
                                     maxlength="255"
-                                    placeholder="Ex: Gestionnaire de Documents"
+                                    placeholder="{{ __('Ex: Gestionnaire de Documents') }}"
                                     class="h-[37px] w-full rounded-[10px] border border-black/10 px-3 py-2 text-sm text-[#0A0A0A] placeholder:text-[#717182] outline-none focus:border-[#1E3A8A] focus:ring-2 focus:ring-[#1E3A8A]/20"
                                 />
                             </div>
                             <div class="flex flex-col gap-2">
-                                <label for="role-description" class="text-sm font-medium text-black">Description</label>
+                                <label for="role-description" class="text-sm font-medium text-black">{{ __('Description') }}</label>
                                 <textarea
                                     id="role-description"
                                     name="description"
                                     rows="3"
-                                    placeholder="Description du rôle..."
+                                    placeholder="{{ __('Description du rôle...') }}"
                                     class="min-h-[96px] w-full resize-y rounded-[10px] border border-black/10 px-3 py-2 text-sm text-[#0A0A0A] placeholder:text-[#717182] outline-none focus:border-[#1E3A8A] focus:ring-2 focus:ring-[#1E3A8A]/20"
                                 ></textarea>
                             </div>
@@ -127,12 +127,12 @@
                         {{-- Permissions picker --}}
                         <div class="flex flex-col gap-4">
                             <div class="flex items-start justify-between gap-4">
-                                <h3 class="text-lg font-semibold leading-[27px] text-[#0A0A0A]">Permissions</h3>
-                                <span data-selected-count class="text-sm text-[#717182]">0 sélectionnées</span>
+                                <h3 class="text-lg font-semibold leading-[27px] text-[#0A0A0A]">{{ __('Permissions') }}</h3>
+                                <span data-selected-count class="text-sm text-[#717182]">{{ __('0 sélectionnées') }}</span>
                             </div>
 
                             @if (empty($permissionsGrouped))
-                                <p class="text-sm text-[#717182]">Aucune permission disponible.</p>
+                                <p class="text-sm text-[#717182]">{{ __('Aucune permission disponible.') }}</p>
                             @else
                                 <div class="flex flex-col gap-4 pb-4">
                                     @foreach ($permissionsGrouped as $section)
@@ -146,7 +146,7 @@
                                                     type="button"
                                                     data-select-all-section="{{ $section['key'] }}"
                                                     class="text-sm font-medium text-[#1E3A8A] underline-offset-2 hover:underline"
-                                                >Tout sélectionner</button>
+                                                >{{ __('Tout sélectionner') }}</button>
                                             </div>
                                             <div class="flex flex-col gap-2">
                                                 @foreach ($section['permissions'] as $perm)
@@ -179,12 +179,12 @@
                         type="button"
                         data-close-modal
                         class="inline-flex h-11 w-[106px] items-center justify-center rounded-[10px] border border-black/10 bg-white text-sm font-medium text-[#0A0A0A] transition hover:bg-black/[0.03] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1E3A8A]"
-                    >Annuler</button>
+                    >{{ __('Annuler') }}</button>
                     <button
                         type="submit"
                         data-submit-role
                         class="inline-flex h-11 items-center justify-center rounded-[10px] bg-[#1E3A8A] px-6 text-sm font-semibold text-white transition hover:bg-[#163171] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1E3A8A] disabled:opacity-60"
-                    >Créer le Rôle</button>
+                    >{{ __('Créer le Rôle') }}</button>
                 </div>
             </form>
         </div>

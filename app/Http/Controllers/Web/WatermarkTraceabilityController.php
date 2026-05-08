@@ -89,7 +89,7 @@ class WatermarkTraceabilityController extends Controller
 
         if (! $log) {
             return redirect()->route('watermark.index')
-                ->withErrors(['uuid' => 'Aucun enregistrement trouvé pour l\'UUID : ' . $uuid]);
+                ->withErrors(['uuid' => __('Aucun enregistrement trouvé pour l\'UUID : :uuid', ['uuid' => $uuid])]);
         }
 
         // Find related audit entry

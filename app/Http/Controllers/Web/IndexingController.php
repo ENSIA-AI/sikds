@@ -22,7 +22,7 @@ class IndexingController extends Controller
     {
         /** @var \App\Domain\Users\Models\User $user */
         $user = Auth::user();
-        abort_if(! $user->can('indexing.manage'), 403, 'Accès refusé. Permission indexing.manage requise.');
+        abort_if(! $user->can('indexing.manage'), 403, __('Accès refusé. Permission indexing.manage requise.'));
 
         $documents = Document::query()
             ->select([
@@ -48,13 +48,13 @@ class IndexingController extends Controller
     {
         /** @var \App\Domain\Users\Models\User $user */
         $user = Auth::user();
-        abort_if(! $user->can('indexing.manage'), 403, 'Accès refusé. Permission indexing.manage requise.');
+        abort_if(! $user->can('indexing.manage'), 403, __('Accès refusé. Permission indexing.manage requise.'));
 
         if ($document->indexing_status !== 'failed') {
-            return back()->with('error', 'Seuls les documents en échec peuvent être relancés.');
+            return back()->with('error', __('Seuls les documents en échec peuvent être relancés.'));
         }
         if ($document->status !== 'active' || $document->trashed()) {
-            return back()->with('error', 'Seuls les documents actifs peuvent être relancés.');
+            return back()->with('error', __('Seuls les documents actifs peuvent être relancés.'));
         }
 
         $document->indexing_status = 'pending';
@@ -62,7 +62,7 @@ class IndexingController extends Controller
 
         IndexDocumentJob::dispatch($document->id)->onQueue('indexing');
 
-        return back()->with('success', 'Indexation relancée.');
+        return back()->with('success', __('Indexation relancée.'));
     }
 }
 

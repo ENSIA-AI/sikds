@@ -2,15 +2,15 @@
 @php
     $activeNav = 'indexing';
 @endphp
-@section('page_title', 'Indexation des Documents')
-@section('page_subtitle', "Suivi des traitements et statut d'indexation documentaire")
+@section('page_title', __('Indexation des Documents'))
+@section('page_subtitle', __("Suivi des traitements et statut d'indexation documentaire"))
 @section('content')
 
     <div class="flex justify-between items-center mb-5 gap-3 flex-wrap">
-        <p class="text-sm sikds-muted-text">Mise à jour automatique toutes les 10 secondes.</p>
+        <p class="text-sm sikds-muted-text">{{ __('Mise à jour automatique toutes les 10 secondes.') }}</p>
         <a href="{{ url()->current() }}" class="sikds-doc-edit-btn sikds-doc-edit-btn--cancel">
             <i class="fa-solid fa-rotate-right"></i>
-            Rafraîchir
+            {{ __('Rafraîchir') }}
         </a>
     </div>
 
@@ -18,21 +18,21 @@
         <table class="sikds-docs-table">
             <thead>
                 <tr>
-                    <th class="sikds-th-title">Titre & Référence</th>
-                    <th class="sikds-th-status">Statut</th>
-                    <th class="sikds-th-date">Chunks</th>
-                    <th class="sikds-th-date-wide">Dernière mise à jour</th>
-                    <th class="sikds-th-actions">Action</th>
+                    <th class="sikds-th-title">{{ __('Titre & Référence') }}</th>
+                    <th class="sikds-th-status">{{ __('Statut') }}</th>
+                    <th class="sikds-th-date">{{ __('Chunks') }}</th>
+                    <th class="sikds-th-date-wide">{{ __('Dernière mise à jour') }}</th>
+                    <th class="sikds-th-actions">{{ __('Action') }}</th>
                 </tr>
             </thead>
             <tbody>
                 @forelse ($documents as $doc)
                     @php
                         $statusMap = [
-                            'pending' => ['label' => 'En attente', 'class' => 'sikds-status--draft', 'icon' => 'fa-regular fa-clock'],
-                            'processing' => ['label' => 'Traitement', 'class' => 'sikds-status--archived', 'icon' => 'fa-solid fa-spinner'],
-                            'indexed' => ['label' => 'Indexé', 'class' => 'sikds-status--active', 'icon' => 'fa-regular fa-circle-check'],
-                            'failed' => ['label' => 'Échec', 'class' => 'sikds-status--deleted', 'icon' => 'fa-regular fa-circle-xmark'],
+                            'pending' => ['label' => __('En attente'), 'class' => 'sikds-status--draft', 'icon' => 'fa-regular fa-clock'],
+                            'processing' => ['label' => __('Traitement'), 'class' => 'sikds-status--archived', 'icon' => 'fa-solid fa-spinner'],
+                            'indexed' => ['label' => __('Indexé'), 'class' => 'sikds-status--active', 'icon' => 'fa-regular fa-circle-check'],
+                            'failed' => ['label' => __('Échec'), 'class' => 'sikds-status--deleted', 'icon' => 'fa-regular fa-circle-xmark'],
                         ];
                         $s = $statusMap[$doc->indexing_status] ?? $statusMap['pending'];
                     @endphp
@@ -62,18 +62,18 @@
                                     @csrf
                                     <button type="submit" class="sikds-doc-edit-btn sikds-doc-edit-btn--save">
                                         <i class="fa-solid fa-rotate"></i>
-                                        Réessayer
+                                        {{ __('Réessayer') }}
                                     </button>
                                 </form>
                             @else
-                                <span class="text-xs sikds-muted-text">&mdash;</span>
+                                <span class="text-xs sikds-muted-text">-</span>
                             @endif
                         </td>
                     </tr>
                 @empty
                     <tr>
                         <td colspan="5" class="text-center py-8 text-sm sikds-muted-text">
-                            Aucun document à afficher.
+                            {{ __('Aucun document à afficher.') }}
                         </td>
                     </tr>
                 @endforelse
@@ -83,18 +83,18 @@
 
     <div class="sikds-docs-pagination">
         <span class="sikds-docs-pagination-info">
-            Affichage de {{ $documents->firstItem() ?? 0 }}-{{ $documents->lastItem() ?? 0 }} sur {{ number_format($documents->total()) }} documents
+            {{ __('Affichage de') }} {{ $documents->firstItem() ?? 0 }}-{{ $documents->lastItem() ?? 0 }} {{ __('sur') }} {{ number_format($documents->total()) }} {{ __('documents') }}
         </span>
         <div class="sikds-docs-pagination-btns">
             @if ($documents->onFirstPage())
-                <button type="button" class="sikds-docs-page-btn" disabled>Précédent</button>
+                <button type="button" class="sikds-docs-page-btn" disabled>{{ __('Précédent') }}</button>
             @else
-                <a href="{{ $documents->previousPageUrl() }}" class="sikds-docs-page-btn">Précédent</a>
+                <a href="{{ $documents->previousPageUrl() }}" class="sikds-docs-page-btn">{{ __('Précédent') }}</a>
             @endif
             @if ($documents->hasMorePages())
-                <a href="{{ $documents->nextPageUrl() }}" class="sikds-docs-page-btn">Suivant</a>
+                <a href="{{ $documents->nextPageUrl() }}" class="sikds-docs-page-btn">{{ __('Suivant') }}</a>
             @else
-                <button type="button" class="sikds-docs-page-btn" disabled>Suivant</button>
+                <button type="button" class="sikds-docs-page-btn" disabled>{{ __('Suivant') }}</button>
             @endif
         </div>
     </div>
