@@ -52,8 +52,9 @@ return [
     |
     */
     'reranking' => [
+        'enabled' => filter_var(env('RAG_RERANKER_ENABLED', false), FILTER_VALIDATE_BOOLEAN),
         'base_url' => env('RAG_RERANKER_URL', ''),
-        'api_key' => env('RAG_RERANKER_API_KEY') ?: env('RAG_API_KEY', ''),
+        'api_key' => env('RAG_RERANKER_API_KEY'),
         'model' => env('RAG_RERANKER_MODEL', ''),
         'top_n' => (int) env('RAG_RERANKER_TOP_N', 6),
         'timeout' => (int) env('RAG_RERANKER_TIMEOUT', 60),

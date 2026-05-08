@@ -13,7 +13,7 @@ use RuntimeException;
 use Prism\Prism\Facades\Prism;
 
 /**
- * Orchestrates RAG: authorize docs → embed → vector search → rerank → LLM answer with citations.
+ * Orchestrates RAG: authorize docs → embed → vector search → optional rerank → LLM answer with citations.
  */
 class RagQueryService
 {
@@ -67,8 +67,11 @@ class RagQueryService
         }
 
         $topN = (int) config('rag.reranking.top_n');
-        $reranked = $this->reranker->rerank($question, $candidates, $topN);
-        if ($reranked === []) {
+        $ranked = (bool) config('rag.reranking.enabled', true)
+            ? $this->reranker->rerank($question, $candidates, $topN)
+            : $this->withoutReranking($candidates, $topN);
+
+        if ($ranked === []) {
             return [
                 'answer' => 'Aucun extrait pertinent n’a été trouvé dans les documents autorisés.',
                 'citations' => [],
@@ -76,7 +79,7 @@ class RagQueryService
             ];
         }
 
-        $context = $this->buildContext($reranked);
+        $context = $this->buildContext($ranked);
         $answer = $this->callLlm($question, $context);
 
         if (trim($answer) === 'INSUFFICIENT_CONTEXT') {
@@ -104,7 +107,7 @@ class RagQueryService
                 'document_id' => (int) ($c['document_id'] ?? 0),
                 'chunk_text' => $chunkText,
             ];
-        }, $reranked);
+        }, $ranked);
 
         return [
             'answer' => $answer,
@@ -250,6 +253,21 @@ class RagQueryService
         $pool = max(1, min(200, (int) config('rag.retrieval.candidate_pool')));
 
         return array_slice($merged, 0, $pool);
+    }
+
+    /**
+     * @param  array<int, array<string, mixed>>  $candidates
+     * @return array<int, array<string, mixed>>
+     */
+    protected function withoutReranking(array $candidates, int $topN): array
+    {
+        return array_map(function (array $candidate) {
+            $candidate['relevance_score'] ??= (float) (
+                $candidate['score'] ?? $candidate['bm25_score'] ?? 0.0
+            );
+
+            return $candidate;
+        }, array_slice($candidates, 0, max(1, $topN)));
     }
 
     // ─── Context building ────────────────────────────────────────────────
