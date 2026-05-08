@@ -17,6 +17,12 @@ abstract class TestCase extends BaseTestCase
     {
         parent::setUp();
 
+        // Keep feature tests deterministic: many assertions expect French UI copy.
+        config()->set('app.locale', 'fr');
+        config()->set('app.fallback_locale', 'fr');
+        app()->setLocale('fr');
+        $this->defaultHeaders['Accept-Language'] = 'fr';
+
         if (class_exists(\Illuminate\Foundation\Http\Middleware\PreventRequestForgery::class)) {
             $this->withoutMiddleware(\Illuminate\Foundation\Http\Middleware\PreventRequestForgery::class);
         }
