@@ -2,22 +2,25 @@
 Surya OCR microservice — surya-ocr 0.17.x predictor API.
 Accepts a base64-encoded PDF, returns extracted text per page.
 
-Language codes come from surya/recognition/languages.py.
-Configure via SURYA_LANGUAGES env var (comma-separated, e.g. "ar,fr,en").
+Surya 0.17.x no longer accepts per-request language hints on the
+RecognitionPredictor call. The model handles multilingual OCR internally.
 """
 
 import base64
+import logging
 import os
 import tempfile
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, HTTPException
-from pdf2image import convert_from_path
 from pydantic import BaseModel
+from surya.common.surya.schema import TaskNames
+from surya.input.load import load_from_file
+from surya.settings import settings
 
-# ── Language config ───────────────────────────────────────────────────────────
-_raw = os.getenv("SURYA_LANGUAGES", "ar,fr")
-LANGUAGES: list[str] = [lang.strip() for lang in _raw.split(",") if lang.strip()]
+logger = logging.getLogger(__name__)
+IMAGE_DPI = int(os.getenv("SURYA_IMAGE_DPI", str(settings.IMAGE_DPI)))
+HIGHRES_IMAGE_DPI = int(os.getenv("SURYA_HIGHRES_IMAGE_DPI", str(settings.IMAGE_DPI_HIGHRES)))
 
 # ── Model handles (populated during startup) ──────────────────────────────────
 foundation_predictor  = None
@@ -30,7 +33,7 @@ async def lifespan(app: FastAPI):
     """Load all Surya predictors once at startup; keep them in memory forever."""
     global foundation_predictor, recognition_predictor, detection_predictor
 
-    print(f"Loading Surya OCR models (languages: {LANGUAGES})...")
+    print("Loading Surya OCR models...")
 
     from surya.foundation import FoundationPredictor
     from surya.recognition import RecognitionPredictor
@@ -68,15 +71,15 @@ def ocr(request: OcrRequest):
             tmp.write(pdf_bytes)
             tmp_path = tmp.name
 
-        pages_images = convert_from_path(tmp_path, dpi=300)
-
-        # langs: one list of language codes per page
-        langs = [LANGUAGES] * len(pages_images)
+        pages_images, _ = load_from_file(tmp_path, dpi=IMAGE_DPI)
+        highres_images, _ = load_from_file(tmp_path, dpi=HIGHRES_IMAGE_DPI)
 
         results = recognition_predictor(
             pages_images,
+            task_names=[TaskNames.ocr_with_boxes] * len(pages_images),
             det_predictor=detection_predictor,
-            langs=langs,
+            highres_images=highres_images,
+            sort_lines=True,
         )
 
         return {
@@ -94,6 +97,7 @@ def ocr(request: OcrRequest):
         }
 
     except Exception as e:
+        logger.exception("OCR request failed")
         raise HTTPException(status_code=500, detail=str(e))
 
     finally:

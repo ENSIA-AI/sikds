@@ -93,7 +93,27 @@ services:
     networks:
       - sikds
 
-  #
+  surya:
+    build:
+      context: ./docker/surya
+    container_name: sikds-surya
+    restart: unless-stopped
+    profiles:
+      - prod
+    environment:
+      SURYA_LANGUAGES: ${SURYA_LANGUAGES:-ar,fr}
+    volumes:
+      - sikds_surya_cache:/root/.cache # HuggingFace model weights cache
+    ports:
+      - "${SURYA_PORT:-8100}:8100"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8100/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 24
+      start_period: 180s
+    networks:
+      - sikds
 
   seaweed-master:
     image: chrislusf/seaweedfs:4.02
@@ -178,7 +198,9 @@ services:
       embeddings:
         condition: service_healthy
         required: false
-    #
+      surya:
+        condition: service_healthy
+        required: false
     command: php artisan queue:work redis --queue=indexing,notifications,default --sleep=3 --tries=3 --timeout=300
     networks:
       - sikds
@@ -189,7 +211,7 @@ volumes:
   sikds_seaweed_master:
   sikds_seaweed_volume:
   sikds_infinity_cache:
-#
+  sikds_surya_cache:
 
 networks:
   sikds:
