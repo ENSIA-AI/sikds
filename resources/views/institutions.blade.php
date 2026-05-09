@@ -75,20 +75,23 @@
 
     {{-- Create / Edit modal --}}
     @canany(['institution.create', 'institution.edit'])
+        @php
+            $institutionModalI18n = [
+                'createTitle' => __("Nouvelle institution"),
+                'createSubtitle' => __("Renseigner les informations de l'institution"),
+                'editTitle' => __("Modifier l'Institution"),
+                'editSubtitle' => __("Modifier les informations de l'institution"),
+                'unexpectedError' => __("Une erreur est survenue."),
+                'serverUnreachable' => __("Impossible de contacter le serveur."),
+                'deleteConfirm' => __("Supprimer l'institution « :name » ?"),
+                'deleteFailed' => __("Suppression impossible."),
+                'emptyState' => __("Aucune institution pour le moment."),
+            ];
+        @endphp
         <div
             id="institution-modal-root"
             class="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6"
-            data-i18n='@json([
-                "createTitle" => __("Nouvelle institution"),
-                "createSubtitle" => __("Renseigner les informations de l'institution"),
-                "editTitle" => __("Modifier l'Institution"),
-                "editSubtitle" => __("Modifier les informations de l'institution"),
-                "unexpectedError" => __("Une erreur est survenue."),
-                "serverUnreachable" => __("Impossible de contacter le serveur."),
-                "deleteConfirm" => __("Supprimer l'institution « :name » ?"),
-                "deleteFailed" => __("Suppression impossible."),
-                "emptyState" => __("Aucune institution pour le moment."),
-            ])'
+            data-i18n="{{ json_encode($institutionModalI18n, JSON_UNESCAPED_UNICODE) }}"
             hidden
             role="dialog"
             aria-modal="true"
