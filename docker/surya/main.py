@@ -12,15 +12,29 @@ import os
 import tempfile
 from contextlib import asynccontextmanager
 
+import numpy as np
 from fastapi import FastAPI, HTTPException
+from PIL import Image
 from pydantic import BaseModel
 from surya.common.surya.schema import TaskNames
 from surya.input.load import load_from_file
 from surya.settings import settings
 
 logger = logging.getLogger(__name__)
+
+
+def env_bool(name: str, default: bool = False) -> bool:
+    value = os.getenv(name)
+    if value is None:
+        return default
+
+    return value.strip().lower() in {"1", "true", "yes", "on"}
+
+
 IMAGE_DPI = int(os.getenv("SURYA_IMAGE_DPI", str(settings.IMAGE_DPI)))
 HIGHRES_IMAGE_DPI = int(os.getenv("SURYA_HIGHRES_IMAGE_DPI", str(settings.IMAGE_DPI_HIGHRES)))
+MATH_MODE = env_bool("SURYA_MATH_MODE", False)
+REMOVE_RED_STAMP = env_bool("SURYA_REMOVE_RED_STAMP", False)
 
 # ── Model handles (populated during startup) ──────────────────────────────────
 foundation_predictor  = None
@@ -33,7 +47,11 @@ async def lifespan(app: FastAPI):
     """Load all Surya predictors once at startup; keep them in memory forever."""
     global foundation_predictor, recognition_predictor, detection_predictor
 
-    print("Loading Surya OCR models...")
+    print(
+        "Loading Surya OCR models "
+        f"(image_dpi={IMAGE_DPI}, highres_image_dpi={HIGHRES_IMAGE_DPI}, "
+        f"math_mode={MATH_MODE}, remove_red_stamp={REMOVE_RED_STAMP})..."
+    )
 
     from surya.foundation import FoundationPredictor
     from surya.recognition import RecognitionPredictor
@@ -59,6 +77,28 @@ class OcrRequest(BaseModel):
     pdf_base64: str
 
 
+# ── Image preprocessing ───────────────────────────────────────────────────────
+
+def remove_red_stamp(image: Image.Image) -> Image.Image:
+    """Remove strong red stamp pixels without touching normal black text."""
+    arr = np.array(image.convert("RGB"))
+    red = arr[:, :, 0].astype(np.int16)
+    green = arr[:, :, 1].astype(np.int16)
+    blue = arr[:, :, 2].astype(np.int16)
+
+    mask = (red > 135) & (red > green + 35) & (red > blue + 35)
+    arr[mask] = [255, 255, 255]
+
+    return Image.fromarray(arr)
+
+
+def preprocess_images(images: list[Image.Image]) -> list[Image.Image]:
+    if not REMOVE_RED_STAMP:
+        return images
+
+    return [remove_red_stamp(image) for image in images]
+
+
 # ── Routes ────────────────────────────────────────────────────────────────────
 
 @app.post("/ocr")
@@ -73,6 +113,8 @@ def ocr(request: OcrRequest):
 
         pages_images, _ = load_from_file(tmp_path, dpi=IMAGE_DPI)
         highres_images, _ = load_from_file(tmp_path, dpi=HIGHRES_IMAGE_DPI)
+        pages_images = preprocess_images(pages_images)
+        highres_images = preprocess_images(highres_images)
 
         results = recognition_predictor(
             pages_images,
@@ -80,6 +122,7 @@ def ocr(request: OcrRequest):
             det_predictor=detection_predictor,
             highres_images=highres_images,
             sort_lines=True,
+            math_mode=MATH_MODE,
         )
 
         return {
