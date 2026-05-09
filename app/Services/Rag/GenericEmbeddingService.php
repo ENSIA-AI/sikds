@@ -47,24 +47,34 @@ class GenericEmbeddingService implements EmbeddingServiceInterface
      */
     protected function embedMany(array $texts, string $task = ''): array
     {
-        $baseUrl = rtrim((string) config('rag.embedding.base_url'), '/');
-        $apiKey = (string) config('rag.embedding.api_key', '');
-        $timeout = (int) config('rag.embedding.timeout', 60);
-        $model = (string) config('rag.embedding.model');
+        $baseUrl  = rtrim((string) config('rag.embedding.base_url'), '/');
+        $apiKey   = (string) config('rag.embedding.api_key', '');
+        $timeout  = (int) config('rag.embedding.timeout', 60);
+        $model    = (string) config('rag.embedding.model');
         $dimensions = (int) config('rag.embedding.dimensions', 0);
+        $taskMode = (string) config('rag.embedding.task_mode', 'param'); // 'param' or 'prefix'
+
+        // Prefix mode: prepend task directly into each text (e.g. Ollama)
+        $inputTexts = $texts;
+        if ($task !== '' && $taskMode === 'prefix') {
+            $inputTexts = array_map(fn($t) => $task . ': ' . $t, array_values($texts));
+        }
 
         $payload = [
             'model' => $model,
-            'input' => array_values($texts),
+            'input' => array_values($inputTexts),
         ];
 
         if ($dimensions > 0) {
             $payload['dimensions'] = $dimensions;
         }
 
-        if ($task !== '') {
-            $payload['task'] = $task;
+        // Param mode: send task as a payload key (e.g. Jina uses "task", Nomic API uses "task_type")
+        if ($task !== '' && $taskMode === 'param') {
+            $taskParam = (string) config('rag.embedding.task_param', 'task');
+            $payload[$taskParam] = $task;
         }
+        
 
         $request = Http::timeout($timeout)->acceptJson();
 
