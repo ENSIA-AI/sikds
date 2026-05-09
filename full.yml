@@ -101,10 +101,7 @@ services:
     profiles:
       - prod
     environment:
-      SURYA_IMAGE_DPI: ${SURYA_IMAGE_DPI:-96}
-      SURYA_HIGHRES_IMAGE_DPI: ${SURYA_HIGHRES_IMAGE_DPI:-192}
-      SURYA_MATH_MODE: ${SURYA_MATH_MODE:-false}
-      SURYA_REMOVE_RED_STAMP: ${SURYA_REMOVE_RED_STAMP:-false}
+      SURYA_LANGUAGES: ${SURYA_LANGUAGES:-ar,fr}
     volumes:
       - sikds_surya_cache:/root/.cache # HuggingFace model weights cache
     ports:
