@@ -62,6 +62,7 @@ class SsoService
         }
 
         $normalized = $this->normalizeProfile($profileResponse->json());
+        $this->assertHasAuthorizedRole($normalized['sso_roles']);
 
         return DB::transaction(function () use ($normalized, $profileResponse): User {
             $user = User::query()
@@ -107,7 +108,7 @@ class SsoService
                 throw new SsoAuthenticationException('Your account is deactivated. Contact an administrator.');
             }
 
-            $this->assignDefaultRoleIfMissing($user);
+            $this->assignRoleFromSso($user, $normalized['sso_roles']);
             Auth::guard('web')->login($user);
 
             return $user;
@@ -209,7 +210,39 @@ class SsoService
             'email' => Str::lower($email),
             'full_name' => $fullName,
             'auth_domain' => ($domain = Str::lower(Str::after($email, '@'))) !== '' ? $domain : null,
+            'sso_roles' => $this->extractRoles($profile),
         ];
+    }
+
+    /**
+     * Pull role codes from the SSO profile, accepting both arrays of strings and
+     * arrays of objects exposing a `code` (or `name`) field.
+     *
+     * @return array<int, string> uppercase, deduplicated role codes
+     */
+    private function extractRoles(array $profile): array
+    {
+        $path = (string) config('sso.roles_path', 'roles');
+        $raw = data_get($profile, $path, []);
+        if (! is_array($raw)) {
+            return [];
+        }
+
+        $codes = [];
+        foreach ($raw as $entry) {
+            if (is_string($entry)) {
+                $code = trim($entry);
+            } elseif (is_array($entry)) {
+                $code = trim((string) ($entry['code'] ?? $entry['name'] ?? ''));
+            } else {
+                continue;
+            }
+            if ($code !== '') {
+                $codes[] = Str::upper($code);
+            }
+        }
+
+        return array_values(array_unique($codes));
     }
 
     private function buildUrl(?string $path): string
@@ -233,19 +266,74 @@ class SsoService
         }
     }
 
-    private function assignDefaultRoleIfMissing(User $user): void
+    /**
+     * Reject SSO logins whose profile does not carry one of the SSO role codes
+     * configured in `sso.authorized_roles`.
+     *
+     * @param  array<int, string>  $roleCodes  uppercase role codes from the SSO profile
+     */
+    private function assertHasAuthorizedRole(array $roleCodes): void
+    {
+        $authorized = array_map(
+            static fn(string $code): string => Str::upper($code),
+            array_keys((array) config('sso.authorized_roles', []))
+        );
+
+        if (array_intersect($roleCodes, $authorized) === []) {
+            throw new SsoAuthenticationException('Your SSO account is not authorized to access this application.');
+        }
+    }
+
+    /**
+     * Assign a system role on first login based on the SSO role code. Users who
+     * already have a role (e.g. the system admin seeded directly into the DB)
+     * keep their existing role.
+     *
+     * @param  array<int, string>  $roleCodes  uppercase role codes from the SSO profile
+     */
+    private function assignRoleFromSso(User $user, array $roleCodes): void
     {
         if ($user->roles()->exists()) {
             return;
         }
 
-        $defaultRole = Role::query()
-            ->where('name', 'User')
+        $systemRoleName = $this->resolveSystemRoleFromSso($roleCodes);
+        if ($systemRoleName === null) {
+            return;
+        }
+
+        $role = Role::query()
+            ->where('name', $systemRoleName)
             ->where('guard_name', 'web')
             ->first();
 
-        if ($defaultRole) {
-            $user->assignRole($defaultRole);
+        if ($role) {
+            $user->assignRole($role);
         }
+    }
+
+    /**
+     * Map SSO role codes to a system role name. SKIDS_MANAGER outranks SKIDS_USER
+     * when both are present.
+     *
+     * @param  array<int, string>  $roleCodes
+     */
+    private function resolveSystemRoleFromSso(array $roleCodes): ?string
+    {
+        $map = (array) config('sso.authorized_roles', []);
+
+        foreach (['SKIDS_MANAGER', 'SKIDS_USER'] as $priority) {
+            if (in_array($priority, $roleCodes, true) && isset($map[$priority])) {
+                return (string) $map[$priority];
+            }
+        }
+
+        foreach ($map as $ssoCode => $systemName) {
+            if (in_array(Str::upper((string) $ssoCode), $roleCodes, true)) {
+                return (string) $systemName;
+            }
+        }
+
+        return null;
     }
 }

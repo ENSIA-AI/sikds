@@ -13,4 +13,14 @@ return [
         static fn(string $domain): string => strtolower(trim($domain)),
         explode(',', (string) env('SSO_ALLOWED_DOMAINS', ''))
     ))),
+
+    // Dot-notation path inside the SSO userinfo response that contains the user's role list.
+    'roles_path' => env('SSO_ROLES_PATH', 'roles'),
+
+    // Map SSO role code (uppercased) → system role name. Logins whose SSO profile
+    // contains none of these role codes are rejected.
+    'authorized_roles' => [
+        'SKIDS_USER' => 'User',
+        'SKIDS_MANAGER' => 'Manager',
+    ],
 ];
