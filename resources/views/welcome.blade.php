@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>SIKDS — Accueil</title>
+    <title>{{ __('SIKDS — Accueil') }}</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;700&display=swap" rel="stylesheet">
@@ -162,21 +162,21 @@
     <div class="hero-content">
 
         <p class="hero-headline">
-            Système d'Information et de Gestion de la Documentation Scientifique
+            {{ __("Système d'Information et de Gestion de la Documentation Scientifique") }}
         </p>
 
         <p class="hero-sub">
-            Distribution de documents centralisée, contrôlée et traçable pour les ministères et les universités
+            {{ __('Distribution de documents centralisée, contrôlée et traçable pour les ministères et les universités') }}
         </p>
 
         <div class="hero-cta">
             <a href="{{ route('login') }}" class="btn-primary">
                 <img alt="" src="{{ asset('lock-blue.svg') }}" />
-                <span>Accéder</span>
+                <span>{{ __('Accéder') }}</span>
             </a>
 
             <a href="#" class="btn-outline">
-                <span>Savoir Plus</span>
+                <span>{{ __('Savoir Plus') }}</span>
                 <img alt="" src="{{ asset('arrow-right-white.svg') }}" />
             </a>
         </div>

@@ -44,3 +44,21 @@ jobs:
       - name: Run Pint (style check)
         continue-on-error: true
         run: vendor/bin/pint --test
+
+      # Translation sync check: any new __('key') call must be added to lang/{en,fr,ar}.json.
+      # Run `php artisan i18n:scan` locally to update the JSON files, then commit them.
+      - name: Prepare environment for artisan
+        run: |
+          cp .env.example .env || true
+          php artisan key:generate --ansi || true
+
+      - name: Check translation key sync (i18n:scan --check)
+        continue-on-error: true
+        run: php artisan i18n:scan --check
+
+      # Hardcoded-string lint: warns on raw text in blade. Non-blocking while the
+      # migration is in progress; flip `continue-on-error` to false once done and
+      # add `--strict` to fail the build.
+      - name: Lint translations and blade text (i18n:lint)
+        continue-on-error: true
+        run: php artisan i18n:lint

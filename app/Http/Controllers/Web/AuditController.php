@@ -8,7 +8,6 @@ use App\Domain\Audit\Models\AuditLog;
 use App\Http\Controllers\Controller;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -16,10 +15,6 @@ class AuditController extends Controller
 {
     public function index(Request $request): View
     {
-        /** @var \App\Domain\Users\Models\User $user */
-        $user = Auth::user();
-        abort_if(! $user->can('audit.view'), 403, 'Accès refusé. Permission audit.view requise.');
-
         $query = $this->buildFilteredQuery($request);
 
         $logs = $query
@@ -32,6 +27,7 @@ class AuditController extends Controller
             ->select('event_type')
             ->distinct()
             ->orderBy('event_type')
+            ->limit(500)
             ->pluck('event_type');
 
         $activeFiltersCount = collect($request->query())
@@ -50,10 +46,6 @@ class AuditController extends Controller
 
     public function export(Request $request): StreamedResponse|\Illuminate\Http\Response
     {
-        /** @var \App\Domain\Users\Models\User $user */
-        $user = Auth::user();
-        abort_if(! $user->can('audit.view'), 403, 'Accès refusé. Permission audit.view requise.');
-
         $rows = $this->buildFilteredQuery($request)
             ->with('user:id,full_name,email')
             ->orderByDesc('created_at')

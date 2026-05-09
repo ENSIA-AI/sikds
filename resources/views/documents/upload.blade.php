@@ -1,6 +1,6 @@
 @extends('layouts.app')
-@section('page_title', 'Gestion des Documents')
-@section('page_subtitle', 'Gérer le cycle de vie des documents institutionnels')
+@section('page_title', __('Gestion des Documents'))
+@section('page_subtitle', __('Gérer le cycle de vie des documents institutionnels'))
 @section('content')
 
 <div
@@ -17,31 +17,31 @@
     class="sikds-upload"
 >
 
-    <x-back-link :href="route('documents.index')" label="Retour aux documents" class="sikds-upload-back" />
+    <x-back-link :href="route('documents.index')" :label="__('Retour aux documents')" class="sikds-upload-back" />
 
-    <h2 class="sikds-upload-heading">Téléverser des Documents</h2>
-    <p class="sikds-upload-sub">Ajouter de nouveaux documents au système SIKDS</p>
+    <h2 class="sikds-upload-heading">{{ __('Téléverser des Documents') }}</h2>
+    <p class="sikds-upload-sub">{{ __('Ajouter de nouveaux documents au système SIKDS') }}</p>
 
     <div x-ref="uploadAlerts" class="sikds-upload-page-alerts">
         <div x-show="errorList.length" x-cloak class="sikds-toast sikds-toast--danger" role="alert">
             <span class="sikds-toast-icon"><i class="fa-solid fa-circle-exclamation"></i></span>
             <div class="sikds-toast-body">
-                <p class="sikds-toast-title">Action impossible</p>
+                <p class="sikds-toast-title">{{ __('Action impossible') }}</p>
                 <template x-for="(msg, idx) in errorList" :key="idx">
                     <p class="sikds-toast-message" x-text="msg"></p>
                 </template>
             </div>
-            <button type="button" @click="errorList = []" class="sikds-toast-dismiss" aria-label="Fermer">
+            <button type="button" @click="errorList = []" class="sikds-toast-dismiss" aria-label="{{ __('Fermer') }}">
                 <i class="fa-solid fa-xmark"></i>
             </button>
         </div>
         <div x-show="successMessage" x-cloak class="sikds-toast sikds-toast--success" role="status">
             <span class="sikds-toast-icon"><i class="fa-solid fa-circle-check"></i></span>
             <div class="sikds-toast-body">
-                <p class="sikds-toast-title">Opération réussie</p>
+                <p class="sikds-toast-title">{{ __('Opération réussie') }}</p>
                 <p class="sikds-toast-message" x-text="successMessage"></p>
             </div>
-            <button type="button" @click="successMessage = ''" class="sikds-toast-dismiss" aria-label="Fermer">
+            <button type="button" @click="successMessage = ''" class="sikds-toast-dismiss" aria-label="{{ __('Fermer') }}">
                 <i class="fa-solid fa-xmark"></i>
             </button>
         </div>
@@ -55,7 +55,7 @@
             @click="setMode('single')"
         >
             <i class="fa-regular fa-file"></i>
-            <span>Téléversement Simple</span>
+            <span>{{ __('Téléversement Simple') }}</span>
         </button>
         <button type="button"
             class="sikds-upload-tab"
@@ -63,7 +63,7 @@
             @click="setMode('batch')"
         >
             <i class="fa-regular fa-copy"></i>
-            <span>Téléversement en Lot (jusqu'à 5 fichiers)</span>
+            <span>{{ __("Téléversement en Lot (jusqu'à 5 fichiers)") }}</span>
         </button>
     </div>
 
@@ -74,9 +74,9 @@
         <div class="sikds-upload-card sikds-upload-card--file">
             <div class="sikds-upload-card-header">
                 <h3 class="sikds-upload-card-title">
-                    <span x-text="mode === 'single' ? 'Fichier PDF' : 'Fichiers PDF'"></span>
+                    <span x-text="mode === 'single' ? @js(__('Fichier PDF')) : @js(__('Fichiers PDF'))"></span>
                 </h3>
-                <span x-show="mode === 'batch'" class="sikds-upload-file-count" x-text="files.length + ' / 5 fichiers'"></span>
+                <span x-show="mode === 'batch'" class="sikds-upload-file-count" x-text="files.length + @js(__(' / 5 fichiers'))"></span>
             </div>
 
             <div class="sikds-upload-dropzone"
@@ -91,18 +91,18 @@
                         <i :class="mode === 'single' ? 'fa-solid fa-cloud-arrow-up sikds-upload-dropzone-icon' : 'fa-solid fa-layer-group sikds-upload-dropzone-icon'"></i>
                         <p class="sikds-upload-dropzone-label">
                             <span x-text="mode === 'single'
-                                ? 'Glissez-déposez votre fichier PDF ici'
-                                : 'Glissez-déposez vos fichiers PDF ici'"></span>
+                                ? @js(__('Glissez-déposez votre fichier PDF ici'))
+                                : @js(__('Glissez-déposez vos fichiers PDF ici'))"></span>
                         </p>
                         <p class="sikds-upload-dropzone-hint">
                             <span x-text="mode === 'single'
-                                ? 'ou cliquez pour parcourir'
-                                : 'ou cliquez pour parcourir (jusqu\'à 5 fichiers)'"></span>
+                                ? @js(__('ou cliquez pour parcourir'))
+                                : @js(__("ou cliquez pour parcourir (jusqu'à 5 fichiers)"))"></span>
                         </p>
                         <p class="sikds-upload-dropzone-format">
                             <span x-text="mode === 'single'
-                                ? 'Format accepté : PDF uniquement'
-                                : 'Format : PDF uniquement • Taille max : 50 MB par fichier'"></span>
+                                ? @js(__('Format accepté : PDF uniquement'))
+                                : @js(__('Format : PDF uniquement • Taille max : 50 MB par fichier'))"></span>
                         </p>
                     </div>
                 </template>
@@ -131,10 +131,10 @@
         {{-- Tags --}}
         <div class="sikds-upload-card sikds-upload-card--tags">
             <h3 class="sikds-upload-card-title">
-                <i class="fa-solid fa-tag"></i> Tags
+                <i class="fa-solid fa-tag"></i> {{ __('Tags') }}
             </h3>
 
-            <p class="sikds-upload-tags-label">Tags du document courant <span class="sikds-muted-text">(au moins un obligatoire)</span></p>
+            <p class="sikds-upload-tags-label">{{ __('Tags du document courant') }} <span class="sikds-muted-text">{{ __('(au moins un obligatoire)') }}</span></p>
             <div class="sikds-upload-tags-available">
                 <template x-for="tag in availableTags" :key="tag.id">
                     <button
@@ -153,11 +153,11 @@
     {{-- Informations Générales --}}
     <div class="sikds-upload-card">
         <div class="sikds-upload-card-header">
-            <h3 class="sikds-upload-card-title">Informations Générales</h3>
+            <h3 class="sikds-upload-card-title">{{ __('Informations Générales') }}</h3>
             <template x-if="mode === 'batch'">
                 <div class="sikds-upload-stepper">
                     <button type="button" class="sikds-upload-next-btn" @click="prevStep()" :disabled="!canGoPrev()">
-                        <i class="fa-solid fa-chevron-left"></i> Précédent
+                        <i class="fa-solid fa-chevron-left"></i> {{ __('Précédent') }}
                     </button>
                     <div class="sikds-upload-dots">
                         <template x-for="i in 5" :key="i">
@@ -172,7 +172,7 @@
                         </template>
                     </div>
                     <button type="button" class="sikds-upload-next-btn" @click="nextStep()" :disabled="currentFileIdx >= 4">
-                        Suivant <i class="fa-solid fa-chevron-right"></i>
+                        {{ __('Suivant') }} <i class="fa-solid fa-chevron-right"></i>
                     </button>
                 </div>
             </template>
@@ -188,29 +188,29 @@
                 </template>
                 <template x-if="files.length === 0">
                     <div class="sikds-upload-current-file-empty">
-                        Ajoutez des fichiers PDF pour commencer la saisie des informations.
+                        {{ __('Ajoutez des fichiers PDF pour commencer la saisie des informations.') }}
                     </div>
                 </template>
             </div>
         </template>
 
-        <label class="sikds-upload-label">Titre <span class="sikds-upload-required">*</span></label>
+        <label class="sikds-upload-label">{{ __('Titre') }} <span class="sikds-upload-required">*</span></label>
         <input
             id="document-title"
             name="document_title"
             type="text"
             class="sikds-upload-input"
-            placeholder="Ex: Directive MESRS-2024-045"
+            placeholder="{{ __('Ex: Directive MESRS-2024-045') }}"
             x-model="documentsMeta[currentFileIdx].title"
         >
 
-        <label class="sikds-upload-label" style="margin-top: 16px;">Description</label>
+        <label class="sikds-upload-label" style="margin-top: 16px;">{{ __('Description') }}</label>
         <textarea
             id="document-description"
             name="document_description"
             class="sikds-upload-textarea"
             rows="4"
-            placeholder="Description du document..."
+            placeholder="{{ __('Description du document...') }}"
             x-model="documentsMeta[currentFileIdx].description"
         ></textarea>
     </div>
@@ -218,19 +218,19 @@
     {{-- Dates --}}
     <div class="sikds-upload-card">
         <h3 class="sikds-upload-card-title">
-            <i class="fa-regular fa-calendar"></i> Dates
+            <i class="fa-regular fa-calendar"></i> {{ __('Dates') }}
         </h3>
         <div class="sikds-upload-dates-row">
             <div class="sikds-upload-date-field">
-                <label class="sikds-upload-label">Date d'Émission <span class="sikds-upload-required">*</span></label>
+                <label class="sikds-upload-label">{{ __("Date d'Émission") }} <span class="sikds-upload-required">*</span></label>
                 <input id="document-issue-date" name="document_issue_date" type="date" class="sikds-upload-input" x-model="documentsMeta[currentFileIdx].issue_date">
             </div>
             <div class="sikds-upload-date-field">
-                <label class="sikds-upload-label">Date d'Effet</label>
+                <label class="sikds-upload-label">{{ __("Date d'Effet") }}</label>
                 <input id="document-effective-date" name="document_effective_date" type="date" class="sikds-upload-input" x-model="documentsMeta[currentFileIdx].effective_date">
             </div>
             <div class="sikds-upload-date-field">
-                <label class="sikds-upload-label">Date d'Expiration</label>
+                <label class="sikds-upload-label">{{ __("Date d'Expiration") }}</label>
                 <input id="document-expiration-date" name="document_expiration_date" type="date" class="sikds-upload-input" x-model="documentsMeta[currentFileIdx].expiration_date">
             </div>
         </div>
@@ -239,39 +239,39 @@
     {{-- Public Cible --}}
     <div class="sikds-upload-card">
         <h3 class="sikds-upload-card-title">
-            <i class="fa-solid fa-users"></i> Public Cible
+            <i class="fa-solid fa-users"></i> {{ __('Public Cible') }}
         </h3>
         <div class="sikds-upload-audience-options">
             <label class="sikds-upload-radio">
                 <input :id="'audience-all-' + currentFileIdx" :name="'audience_' + currentFileIdx" value="all" type="radio" x-model="documentsMeta[currentFileIdx].target_audience">
                 <span class="sikds-upload-radio-mark"></span>
                 <span class="sikds-upload-radio-content">
-                    <span class="sikds-upload-radio-title">Toutes les institutions</span>
-                    <span class="sikds-upload-radio-desc">Tous les utilisateurs du système</span>
+                    <span class="sikds-upload-radio-title">{{ __('Toutes les institutions') }}</span>
+                    <span class="sikds-upload-radio-desc">{{ __('Tous les utilisateurs du système') }}</span>
                 </span>
             </label>
             <label class="sikds-upload-radio">
                 <input :id="'audience-institutions-' + currentFileIdx" :name="'audience_' + currentFileIdx" value="specific_institutions" type="radio" x-model="documentsMeta[currentFileIdx].target_audience">
                 <span class="sikds-upload-radio-mark"></span>
                 <span class="sikds-upload-radio-content">
-                    <span class="sikds-upload-radio-title">Institutions spécifiques</span>
-                    <span class="sikds-upload-radio-desc">Sélectionner les institutions</span>
+                    <span class="sikds-upload-radio-title">{{ __('Institutions spécifiques') }}</span>
+                    <span class="sikds-upload-radio-desc">{{ __('Sélectionner les institutions') }}</span>
                 </span>
             </label>
             <label class="sikds-upload-radio">
                 <input :id="'audience-roles-' + currentFileIdx" :name="'audience_' + currentFileIdx" value="specific_roles" type="radio" x-model="documentsMeta[currentFileIdx].target_audience">
                 <span class="sikds-upload-radio-mark"></span>
                 <span class="sikds-upload-radio-content">
-                    <span class="sikds-upload-radio-title">Rôles spécifiques</span>
-                    <span class="sikds-upload-radio-desc">Sélectionner les rôles</span>
+                    <span class="sikds-upload-radio-title">{{ __('Rôles spécifiques') }}</span>
+                    <span class="sikds-upload-radio-desc">{{ __('Sélectionner les rôles') }}</span>
                 </span>
             </label>
             <label class="sikds-upload-radio">
                 <input :id="'audience-users-' + currentFileIdx" :name="'audience_' + currentFileIdx" value="specific_users" type="radio" x-model="documentsMeta[currentFileIdx].target_audience">
                 <span class="sikds-upload-radio-mark"></span>
                 <span class="sikds-upload-radio-content">
-                    <span class="sikds-upload-radio-title">Utilisateurs spécifiques</span>
-                    <span class="sikds-upload-radio-desc">Sélectionner les utilisateurs (prioritaire)</span>
+                    <span class="sikds-upload-radio-title">{{ __('Utilisateurs spécifiques') }}</span>
+                    <span class="sikds-upload-radio-desc">{{ __('Sélectionner les utilisateurs (prioritaire)') }}</span>
                 </span>
             </label>
         </div>
@@ -306,12 +306,12 @@
 
     {{-- Footer actions --}}
     <div class="sikds-upload-footer">
-        <a href="{{ route('documents.index') }}" class="sikds-upload-btn-cancel">Annuler</a>
+        <a href="{{ route('documents.index') }}" class="sikds-upload-btn-cancel">{{ __('Annuler') }}</a>
         <button type="button" class="sikds-upload-btn-submit" :disabled="submitting || files.length === 0" @click="submit()">
             <i :class="submitting ? 'fa-solid fa-spinner fa-spin' : 'fa-solid fa-cloud-arrow-up'"></i>
             <span x-text="mode === 'single'
-                ? 'Téléverser le Document'
-                : 'Téléverser ' + files.length + ' Document(s)'"></span>
+                ? @js(__('Téléverser le Document'))
+                : @js(__('Téléverser')) + ' ' + files.length + ' ' + @js(__('Document(s)') )"></span>
         </button>
     </div>
 
@@ -319,6 +319,16 @@
 
 <script>
 function uploadPage(config) {
+    const i18n = {
+        pdfOnly: @json(__('Seuls les fichiers PDF sont autorisés.')),
+        addAtLeastOnePdf: @json(__('Ajoutez au moins un fichier PDF avant de continuer.')),
+        atLeastOneTag: @json(__('Sélectionnez au moins un tag pour chaque document.')),
+        serverRedirectFields: @json(__('La requête a été redirigée par le serveur. Vérifiez les champs requis et votre session.')),
+        uploadFailed: @json(__('Le téléversement a échoué.')),
+        unexpectedResponse: @json(__('Réponse inattendue du serveur')),
+        noDocumentCreated: @json(__('Aucun document créé.')),
+        createdSuccess: @json(__('Document(s) créé(s) avec succès.')),
+    };
     return {
         availableTags: config.availableTags,
         institutions: config.institutions,
@@ -398,7 +408,7 @@ function uploadPage(config) {
             this.dragging = false;
             const dropped = Array.from(e.dataTransfer.files).filter(f => this.isPdfFile(f));
             if (dropped.length === 0 && e.dataTransfer.files.length > 0) {
-                this.showErrors(['Seuls les fichiers PDF sont autorisés.']);
+                this.showErrors([i18n.pdfOnly]);
                 return;
             }
             this.addFiles(dropped);
@@ -407,7 +417,7 @@ function uploadPage(config) {
         handleFileSelect(e) {
             const selected = Array.from(e.target.files).filter(f => this.isPdfFile(f));
             if (selected.length === 0 && e.target.files.length > 0) {
-                this.showErrors(['Seuls les fichiers PDF sont autorisés.']);
+                this.showErrors([i18n.pdfOnly]);
                 e.target.value = '';
                 return;
             }
@@ -506,14 +516,14 @@ function uploadPage(config) {
             this.successMessage = '';
 
             if (this.files.length === 0) {
-                this.showErrors(['Ajoutez au moins un fichier PDF avant de continuer.']);
+                this.showErrors([i18n.addAtLeastOnePdf]);
                 return;
             }
 
             for (let idx = 0; idx < this.files.length; idx++) {
                 const meta = this.documentsMeta[idx] ?? this.emptyMeta();
                 if (!meta.tag_ids || meta.tag_ids.length === 0) {
-                    this.showErrors(['Sélectionnez au moins un tag pour chaque document.']);
+                    this.showErrors([i18n.atLeastOneTag]);
                     return;
                 }
             }
@@ -559,7 +569,7 @@ function uploadPage(config) {
                 });
 
                 if (response.redirected) {
-                    throw new Error('La requête a été redirigée par le serveur. Vérifiez les champs requis et votre session.');
+                    throw new Error(i18n.serverRedirectFields);
                 }
 
                 const payload = await response.json().catch(() => ({}));
@@ -568,22 +578,22 @@ function uploadPage(config) {
                     if (payload.errors) {
                         this.showErrors(Object.values(payload.errors).flat());
                     } else {
-                        this.showErrors([payload.message || 'Le téléversement a échoué.']);
+                        this.showErrors([payload.message || i18n.uploadFailed]);
                     }
                     return;
                 }
 
                 if (response.status !== 201 || !Array.isArray(payload.documents) || payload.documents.length === 0) {
-                    this.showErrors([payload.message || `Réponse inattendue du serveur (${response.status}). Aucun document créé.`]);
+                    this.showErrors([payload.message || `${i18n.unexpectedResponse} (${response.status}). ${i18n.noDocumentCreated}`]);
                     return;
                 }
 
-                this.successMessage = payload.message || 'Document(s) créé(s) avec succès.';
+                this.successMessage = payload.message || i18n.createdSuccess;
                 this.scrollToUploadAlerts();
                 window.sessionStorage.setItem('documents-success-message', this.successMessage);
                 setTimeout(() => window.location.href = config.indexUrl, 900);
             } catch (error) {
-                this.showErrors([error.message || 'Le téléversement a échoué.']);
+                this.showErrors([error.message || i18n.uploadFailed]);
             } finally {
                 this.submitting = false;
             }

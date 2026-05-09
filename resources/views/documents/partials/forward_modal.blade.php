@@ -13,7 +13,7 @@
         x-transition.opacity
     >
         <div class="sikds-doc-modal" role="dialog" aria-modal="true" aria-labelledby="sikds-forward-title">
-            <button type="button" class="sikds-doc-modal-close" @click="closeModal()" aria-label="Fermer">
+            <button type="button" class="sikds-doc-modal-close" @click="closeModal()" aria-label="{{ __('Fermer') }}">
                 <i class="fa-solid fa-xmark"></i>
             </button>
 
@@ -22,7 +22,7 @@
                     <i class="fa-solid fa-share-from-square"></i>
                 </div>
                 <div>
-                    <h3 id="sikds-forward-title" class="sikds-doc-modal-title">Transférer le document</h3>
+                    <h3 id="sikds-forward-title" class="sikds-doc-modal-title">{{ __('Transférer le document') }}</h3>
                     <p class="sikds-doc-modal-subtitle">
                         <span x-text="documentReference"></span><span x-show="documentTitle"> — <span x-text="documentTitle"></span></span>
                     </p>
@@ -30,7 +30,7 @@
             </div>
 
             <div class="sikds-doc-modal-text" style="padding-top:0.5rem;">
-                <label class="sikds-doc-meta-label" for="sikds-forward-search">Destinataire</label>
+                <label class="sikds-doc-meta-label" for="sikds-forward-search">{{ __('Destinataire') }}</label>
                 <div class="sikds-docs-search" style="display:block;flex:none;min-width:0;width:100%;">
                     <i class="fa-solid fa-magnifying-glass sikds-docs-search-icon"></i>
                     <input
@@ -38,7 +38,7 @@
                         type="text"
                         autocomplete="off"
                         class="sikds-docs-search-input"
-                        placeholder="Rechercher par nom, email ou institution..."
+                        placeholder="{{ __('Rechercher par nom, email ou institution...') }}"
                         x-model="search"
                         @input.debounce.250ms="fetchSuggestions()"
                         @focus="fetchSuggestions()"
@@ -52,10 +52,10 @@
                         style="position:absolute;left:0;right:0;top:calc(100% + 4px);z-index:30;background:#fff;border:1px solid var(--sikds-border-solid);border-radius:10px;box-shadow:0 8px 24px rgba(15,23,42,0.08);max-height:260px;overflow-y:auto;"
                     >
                         <template x-if="loading">
-                            <div style="padding:0.75rem 1rem;font-size:0.875rem;color:var(--sikds-muted);">Recherche en cours…</div>
+                            <div style="padding:0.75rem 1rem;font-size:0.875rem;color:var(--sikds-muted);">{{ __('Recherche en cours...') }}</div>
                         </template>
                         <template x-if="!loading && suggestions.length === 0 && search.length > 0">
-                            <div style="padding:0.75rem 1rem;font-size:0.875rem;color:var(--sikds-muted);">Aucun utilisateur actif ne correspond.</div>
+                            <div style="padding:0.75rem 1rem;font-size:0.875rem;color:var(--sikds-muted);">{{ __('Aucun utilisateur actif ne correspond.') }}</div>
                         </template>
                         <template x-for="user in suggestions" :key="user.id">
                             <button
@@ -96,7 +96,7 @@
 
             <div class="sikds-doc-modal-actions">
                 <button type="button" class="sikds-doc-modal-btn sikds-doc-modal-btn--cancel" @click="closeModal()" :disabled="submitting">
-                    Annuler
+                    {{ __('Annuler') }}
                 </button>
                 <button
                     type="button"
@@ -108,7 +108,7 @@
                     @click="submit()"
                 >
                     <i :class="submitting ? 'fa-solid fa-spinner fa-spin' : 'fa-solid fa-paper-plane'"></i>
-                    <span x-text="submitting ? 'Envoi…' : 'Transférer'"></span>
+                    <span x-text="submitting ? @js(__('Envoi...')) : @js(__('Transférer'))"></span>
                 </button>
             </div>
         </div>
@@ -117,6 +117,11 @@
 
 <script>
     function documentForwardModal(config) {
+        const i18n = {
+            searchUnavailable: @json(__('Recherche indisponible.')),
+            actionImpossible: @json(__('Action impossible.')),
+            forwardSuccess: @json(__('Document transféré avec succès.')),
+        };
         return {
             open: false,
             forwardUrl: '',
@@ -176,14 +181,14 @@
                     });
 
                     if (!response.ok) {
-                        throw new Error('Recherche indisponible.');
+                        throw new Error(i18n.searchUnavailable);
                     }
 
                     const payload = await response.json();
                     this.suggestions = Array.isArray(payload?.data) ? payload.data : [];
                 } catch (error) {
                     if (error?.name === 'AbortError') return;
-                    this.errorMessage = error?.message || 'Recherche indisponible.';
+                    this.errorMessage = error?.message || i18n.searchUnavailable;
                     this.suggestions = [];
                 } finally {
                     this.loading = false;
@@ -215,10 +220,10 @@
 
                     const payload = await response.json().catch(() => ({}));
                     if (!response.ok) {
-                        throw new Error(payload?.message || 'Action impossible.');
+                        throw new Error(payload?.message || i18n.actionImpossible);
                     }
 
-                    this.successMessage = payload.message || 'Document transféré avec succès.';
+                    this.successMessage = payload.message || i18n.forwardSuccess;
                     this.$dispatch('forward-success', { message: this.successMessage });
                     try {
                         window.sessionStorage.setItem('documents-success-message', this.successMessage);
@@ -228,7 +233,7 @@
                         window.location.reload();
                     }, 900);
                 } catch (error) {
-                    this.errorMessage = error?.message || 'Action impossible.';
+                    this.errorMessage = error?.message || i18n.actionImpossible;
                 } finally {
                     this.submitting = false;
                 }

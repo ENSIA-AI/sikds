@@ -92,7 +92,7 @@ class TagsController
             request: $request,
         );
 
-        return redirect()->route('tags.index')->with('success', 'Tag créé avec succès.');
+        return redirect()->route('tags.index')->with('success', __('Tag créé avec succès.'));
     }
 
     public function update(Request $request, Tag $tag): RedirectResponse
@@ -130,7 +130,7 @@ class TagsController
             request: $request,
         );
 
-        return redirect()->route('tags.index')->with('success', 'Tag mis à jour.');
+        return redirect()->route('tags.index')->with('success', __('Tag mis à jour.'));
     }
 
     public function destroy(Request $request, Tag $tag): RedirectResponse
@@ -154,7 +154,7 @@ class TagsController
 
             return redirect()->route('tags.index')->with(
                 'error',
-                "Impossible de supprimer ce tag : il est utilisé par {$usageCount} document(s)."
+                __('Impossible de supprimer ce tag : il est utilisé par :count document(s).', ['count' => $usageCount])
             );
         }
 
@@ -175,13 +175,13 @@ class TagsController
             request: $request,
         );
 
-        return redirect()->route('tags.index')->with('success', 'Tag supprimé.');
+        return redirect()->route('tags.index')->with('success', __('Tag supprimé.'));
     }
 
     private function authorizeManage(): void
     {
         $user = Auth::user();
-        abort_if($user === null || ! $user->can('tag.manage'), 403, 'Accès refusé. Permission tag.manage requise.');
+        abort_if($user === null || ! $user->can('tag.manage'), 403, __('Accès refusé. Permission tag.manage requise.'));
     }
 
     private function validateTag(Request $request, ?Tag $tag = null): array
@@ -199,7 +199,7 @@ class TagsController
                 ->get(['id', 'name'])
                 ->contains(fn (Tag $t) => $this->normalizeName($t->name) === $normalizedName);
             if ($clash) {
-                $fail('Un tag avec ce nom existe déjà (les accents et la casse sont ignorés).');
+                $fail(__('Un tag avec ce nom existe déjà (les accents et la casse sont ignorés).'));
             }
         };
 
@@ -213,7 +213,7 @@ class TagsController
                 ->when($tag, fn ($q) => $q->where('id', '!=', $tag->id))
                 ->exists();
             if ($clash) {
-                $fail('Cette couleur est déjà utilisée par un autre tag.');
+                $fail(__('Cette couleur est déjà utilisée par un autre tag.'));
             }
         };
 
@@ -223,11 +223,11 @@ class TagsController
             }
             $raw = trim((string) $value);
             if ($raw === '') {
-                $fail('Saisissez un nom pour la nouvelle catégorie.');
+                $fail(__('Saisissez un nom pour la nouvelle catégorie.'));
                 return;
             }
             if ($this->categoryExists($raw)) {
-                $fail('Cette catégorie existe déjà.');
+                $fail(__('Cette catégorie existe déjà.'));
             }
         };
 

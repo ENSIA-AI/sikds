@@ -1,6 +1,6 @@
 @extends('layouts.app')
-@section('page_title', 'Gestion des Documents')
-@section('page_subtitle', 'Gérer le cycle de vie des documents institutionnels')
+@section('page_title', __('Gestion des Documents'))
+@section('page_subtitle', __('Gérer le cycle de vie des documents institutionnels'))
 @section('content')
 
 <div
@@ -18,19 +18,19 @@
 
     {{-- Top bar: back link + action buttons --}}
     <div class="sikds-doc-topbar">
-        <x-back-link :href="route('documents.index')" label="Retour aux documents" class="sikds-doc-back" />
+        <x-back-link :href="route('documents.index')" :label="__('Retour aux documents')" class="sikds-doc-back" />
 
         <div class="sikds-doc-actions">
             <button type="button"
                     class="sikds-doc-action-btn sikds-doc-action-btn--default"
                     @click="$dispatch('open-download-modal', { downloadUrl: @js(route('documents.download', $document['id'])) })">
                 <i class="fa-solid fa-download"></i>
-                <span>Télécharger</span>
+                <span>{{ __('Télécharger') }}</span>
             </button>
             @if ($canEdit)
             <a href="{{ $document['edit_url'] }}" class="sikds-doc-action-btn sikds-doc-action-btn--default">
                 <i class="fa-solid fa-pen"></i>
-                <span>Modifier</span>
+                <span>{{ __('Modifier') }}</span>
             </a>
             @endif
             @if ($canForward ?? false)
@@ -38,31 +38,31 @@
                     class="sikds-doc-action-btn sikds-doc-action-btn--default"
                     @click="$dispatch('open-forward-modal', { forwardUrl: @js(route('documents.forward.store', $document['id'])), reference: @js($document['reference']), title: @js($document['title']) })">
                 <i class="fa-solid fa-share-from-square"></i>
-                <span>Transférer</span>
+                <span>{{ __('Transférer') }}</span>
             </button>
             @endif
             @if ($canPublish && $document['status'] === 'draft')
-            <button type="button" class="sikds-doc-action-btn sikds-doc-action-btn--default" @click="performAction(urls.publish, 'POST', 'Document publié.')">
+            <button type="button" class="sikds-doc-action-btn sikds-doc-action-btn--default" @click="performAction(urls.publish, 'POST', @js(__('Document publié.')))">
                 <i :class="loading ? 'fa-solid fa-spinner fa-spin' : 'fa-solid fa-bullhorn'"></i>
-                <span>Publier</span>
+                <span>{{ __('Publier') }}</span>
             </button>
             @endif
             @if ($canPublish && $document['status'] === 'active')
             <button type="button" class="sikds-doc-action-btn sikds-doc-action-btn--warn" @click="modal = 'archive'">
                 <i class="fa-solid fa-box-archive"></i>
-                <span>Archiver</span>
+                <span>{{ __('Archiver') }}</span>
             </button>
             @endif
             @if ($canDelete && $document['status'] !== 'deleted')
             <button type="button" class="sikds-doc-action-btn sikds-doc-action-btn--danger" @click="modal = 'delete'">
                 <i class="fa-regular fa-trash-can"></i>
-                <span>Supprimer</span>
+                <span>{{ __('Supprimer') }}</span>
             </button>
             @endif
             @if ($canRestore && $document['status'] === 'deleted')
-            <button type="button" class="sikds-doc-action-btn sikds-doc-action-btn--default" @click="performAction(urls.restore, 'POST', 'Document restauré.')">
+            <button type="button" class="sikds-doc-action-btn sikds-doc-action-btn--default" @click="performAction(urls.restore, 'POST', @js(__('Document restauré.')))">
                 <i :class="loading ? 'fa-solid fa-spinner fa-spin' : 'fa-solid fa-rotate-left'"></i>
-                <span>Restaurer</span>
+                <span>{{ __('Restaurer') }}</span>
             </button>
             @endif
         </div>
@@ -87,10 +87,10 @@
         </span>
         <div class="sikds-toast-body">
             <p class="sikds-toast-title"
-               x-text="banner.type === 'danger' ? 'Action impossible' : (banner.type === 'success' ? 'Opération réussie' : 'Information')"></p>
+               x-text="banner.type === 'danger' ? @js(__('Action impossible')) : (banner.type === 'success' ? @js(__('Opération réussie')) : @js(__('Information')))"></p>
             <p class="sikds-toast-message" x-text="banner.message"></p>
         </div>
-        <button type="button" @click="banner.message = ''" class="sikds-toast-dismiss" aria-label="Fermer">
+        <button type="button" @click="banner.message = ''" class="sikds-toast-dismiss" aria-label="{{ __('Fermer') }}">
             <i class="fa-solid fa-xmark"></i>
         </button>
     </div>
@@ -122,25 +122,25 @@
                 class="sikds-doc-tab"
                 :class="activeTab === 'overview' ? 'sikds-doc-tab--active' : 'sikds-doc-tab--idle'"
                 @click="activeTab = 'overview'">
-            Vue d'ensemble
+            {{ __("Vue d'ensemble") }}
         </button>
         <button type="button"
                 class="sikds-doc-tab"
                 :class="activeTab === 'versions' ? 'sikds-doc-tab--active' : 'sikds-doc-tab--idle'"
                 @click="activeTab = 'versions'">
-            Historique des Versions
+            {{ __('Historique des Versions') }}
         </button>
         <button type="button"
                 class="sikds-doc-tab"
                 :class="activeTab === 'downloads' ? 'sikds-doc-tab--active' : 'sikds-doc-tab--idle'"
                 @click="activeTab = 'downloads'">
-            Historique de Téléchargement
+            {{ __('Historique de Téléchargement') }}
         </button>
         <button type="button"
                 class="sikds-doc-tab"
                 :class="activeTab === 'activity' ? 'sikds-doc-tab--active' : 'sikds-doc-tab--idle'"
                 @click="activeTab = 'activity'">
-            Activité
+            {{ __('Activité') }}
         </button>
     </div>
 
@@ -153,23 +153,23 @@
 
                 {{-- Description card --}}
                 <div class="sikds-doc-card">
-                    <h3 class="sikds-doc-card-heading">Description</h3>
+                    <h3 class="sikds-doc-card-heading">{{ __('Description') }}</h3>
                     <p class="sikds-doc-card-text">{{ $document['description'] }}</p>
                 </div>
 
                 {{-- Metadata card --}}
                 <div class="sikds-doc-card">
-                    <h3 class="sikds-doc-card-heading">Métadonnées Complètes</h3>
+                    <h3 class="sikds-doc-card-heading">{{ __('Métadonnées Complètes') }}</h3>
 
                     <div class="sikds-doc-meta-grid">
                         {{-- General info --}}
                         <div class="sikds-doc-meta-col">
-                            <p class="sikds-doc-meta-section-title">Informations Générales</p>
+                            <p class="sikds-doc-meta-section-title">{{ __('Informations Générales') }}</p>
 
                             <div class="sikds-doc-meta-row">
                                 <i class="fa-regular fa-hashtag sikds-doc-meta-icon"></i>
                                 <div>
-                                    <p class="sikds-doc-meta-label">Référence</p>
+                                    <p class="sikds-doc-meta-label">{{ __('Référence') }}</p>
                                     <p class="sikds-doc-meta-value">{{ $document['reference'] }}</p>
                                 </div>
                             </div>
@@ -177,7 +177,7 @@
                             <div class="sikds-doc-meta-row">
                                 <i class="fa-regular fa-building sikds-doc-meta-icon"></i>
                                 <div>
-                                    <p class="sikds-doc-meta-label">Institution</p>
+                                    <p class="sikds-doc-meta-label">{{ __('Institution') }}</p>
                                     <p class="sikds-doc-meta-value">{{ $document['institution'] }}</p>
                                 </div>
                             </div>
@@ -185,12 +185,12 @@
 
                         {{-- Dates --}}
                         <div class="sikds-doc-meta-col">
-                            <p class="sikds-doc-meta-section-title">Dates</p>
+                            <p class="sikds-doc-meta-section-title">{{ __('Dates') }}</p>
 
                             <div class="sikds-doc-meta-row">
                                 <i class="fa-regular fa-calendar sikds-doc-meta-icon"></i>
                                 <div>
-                                    <p class="sikds-doc-meta-label">Date d'Émission</p>
+                                    <p class="sikds-doc-meta-label">{{ __("Date d'Émission") }}</p>
                                     <p class="sikds-doc-meta-value">{{ $document['issue_date'] }}</p>
                                 </div>
                             </div>
@@ -198,7 +198,7 @@
                             <div class="sikds-doc-meta-row">
                                 <i class="fa-regular fa-calendar sikds-doc-meta-icon"></i>
                                 <div>
-                                    <p class="sikds-doc-meta-label">Date d'Effet</p>
+                                    <p class="sikds-doc-meta-label">{{ __("Date d'Effet") }}</p>
                                     <p class="sikds-doc-meta-value">{{ $document['effective_date'] }}</p>
                                 </div>
                             </div>
@@ -206,7 +206,7 @@
                             <div class="sikds-doc-meta-row">
                                 <i class="fa-regular fa-calendar sikds-doc-meta-icon"></i>
                                 <div>
-                                    <p class="sikds-doc-meta-label">Date d'Expiration</p>
+                                    <p class="sikds-doc-meta-label">{{ __("Date d'Expiration") }}</p>
                                     <p class="sikds-doc-meta-value">{{ $document['expiry_date'] }}</p>
                                 </div>
                             </div>
@@ -218,9 +218,9 @@
                 <div class="sikds-doc-audience-banner">
                     <i class="fa-solid fa-circle-info sikds-doc-audience-icon"></i>
                     <div>
-                        <p class="sikds-doc-audience-title">Public Cible</p>
+                        <p class="sikds-doc-audience-title">{{ __('Public Cible') }}</p>
                         <p class="sikds-doc-audience-text">
-                            Ce document est accessible à : <strong>{{ $document['audience'] }}</strong>
+                            {{ __('Ce document est accessible à :') }} <strong>{{ $document['audience'] }}</strong>
                         </p>
                     </div>
                 </div>
@@ -233,7 +233,7 @@
                 <div class="sikds-doc-card">
                     <h3 class="sikds-doc-card-heading sikds-doc-card-heading--with-icon">
                         <i class="fa-solid fa-tags"></i>
-                        Tags
+                        {{ __('Tags') }}
                     </h3>
                     <div class="sikds-doc-tags-wrap">
                         @foreach ($document['tags'] as $tag)
@@ -244,18 +244,18 @@
 
                 {{-- Statistiques card --}}
                 <div class="sikds-doc-card">
-                    <h3 class="sikds-doc-card-heading">Statistiques</h3>
+                    <h3 class="sikds-doc-card-heading">{{ __('Statistiques') }}</h3>
 
                     <div class="sikds-doc-stat-rows">
                         <div class="sikds-doc-stat-row">
                             <span class="sikds-doc-stat-label">
-                                <i class="fa-solid fa-download"></i> Téléchargements
+                                <i class="fa-solid fa-download"></i> {{ __('Téléchargements') }}
                             </span>
                             <span class="sikds-doc-stat-value">{{ $document['downloads'] }}</span>
                         </div>
                         <div class="sikds-doc-stat-row">
                             <span class="sikds-doc-stat-label">
-                                <i class="fa-solid fa-code-branch"></i> Version
+                                <i class="fa-solid fa-code-branch"></i> {{ __('Version') }}
                             </span>
                             <span class="sikds-doc-stat-value">{{ $document['version'] }}</span>
                         </div>
@@ -264,19 +264,19 @@
 
                 {{-- Fichier card --}}
                 <div class="sikds-doc-card">
-                    <h3 class="sikds-doc-card-heading">Fichier</h3>
+                    <h3 class="sikds-doc-card-heading">{{ __('Fichier') }}</h3>
 
                     <div class="sikds-doc-file-rows">
                         <div class="sikds-doc-file-row">
-                            <p class="sikds-doc-meta-label">Nom</p>
+                            <p class="sikds-doc-meta-label">{{ __('Nom') }}</p>
                             <p class="sikds-doc-meta-value">{{ $document['file_name'] }}</p>
                         </div>
                         <div class="sikds-doc-file-row">
-                            <p class="sikds-doc-meta-label">Type</p>
+                            <p class="sikds-doc-meta-label">{{ __('Type') }}</p>
                             <p class="sikds-doc-meta-value">{{ $document['file_type'] }}</p>
                         </div>
                         <div class="sikds-doc-file-row">
-                            <p class="sikds-doc-meta-label">Taille</p>
+                            <p class="sikds-doc-meta-label">{{ __('Taille') }}</p>
                             <p class="sikds-doc-meta-value">{{ $document['file_size'] }}</p>
                         </div>
                     </div>
@@ -289,8 +289,8 @@
     <div x-show="activeTab === 'versions'" class="sikds-doc-content">
         <div class="sikds-doc-history-card">
             <div class="sikds-doc-history-head">
-                <h3 class="sikds-doc-history-title">Historique des Versions</h3>
-                <p class="sikds-doc-history-sub">Toutes les versions de ce document</p>
+                <h3 class="sikds-doc-history-title">{{ __('Historique des Versions') }}</h3>
+                <p class="sikds-doc-history-sub">{{ __('Toutes les versions de ce document') }}</p>
             </div>
             <div class="sikds-doc-history-list">
                 @forelse ($document['versions'] as $version)
@@ -311,7 +311,7 @@
                             </div>
                         </div>
                         <div class="sikds-doc-history-tools">
-                            <button type="button" class="sikds-doc-tool-btn" aria-label="Télécharger version" @click="$dispatch('open-download-modal', { downloadUrl: @js($document['download_url']) })">
+                            <button type="button" class="sikds-doc-tool-btn" aria-label="{{ __('Télécharger version') }}" @click="$dispatch('open-download-modal', { downloadUrl: @js($document['download_url']) })">
                                 <i class="fa-solid fa-download"></i>
                             </button>
                         </div>
@@ -319,7 +319,7 @@
                 @empty
                     <div class="sikds-doc-history-row">
                         <div class="sikds-doc-history-content">
-                            <p class="sikds-doc-history-item-title">Aucune version archivée</p>
+                            <p class="sikds-doc-history-item-title">{{ __('Aucune version archivée') }}</p>
                         </div>
                     </div>
                 @endforelse
@@ -330,8 +330,8 @@
     <div x-show="activeTab === 'downloads'" class="sikds-doc-content">
         <div class="sikds-doc-history-card">
             <div class="sikds-doc-history-head">
-                <h3 class="sikds-doc-history-title">Historique de Téléchargement</h3>
-                <p class="sikds-doc-history-sub">Tous les téléchargements de ce document</p>
+                <h3 class="sikds-doc-history-title">{{ __('Historique de Téléchargement') }}</h3>
+                <p class="sikds-doc-history-sub">{{ __('Tous les téléchargements de ce document') }}</p>
             </div>
             <div class="sikds-doc-history-list">
                 @forelse ($document['download_history'] as $download)
@@ -343,11 +343,11 @@
                             <div class="sikds-doc-history-content">
                                 <p class="sikds-doc-history-item-title">{{ $download['title'] }}</p>
                                 <p class="sikds-doc-history-item-meta">{{ $download['meta'] }}</p>
-                                <p class="sikds-doc-history-item-desc">UUID Filigrane : {{ $download['uuid'] }}</p>
+                                <p class="sikds-doc-history-item-desc">{{ __('UUID Filigrane :') }} {{ $download['uuid'] }}</p>
                             </div>
                         </div>
                         <div class="sikds-doc-history-tools">
-                            <button type="button" class="sikds-doc-tool-btn" aria-label="Télécharger copie" @click="$dispatch('open-download-modal', { downloadUrl: @js($document['download_url']) })">
+                            <button type="button" class="sikds-doc-tool-btn" aria-label="{{ __('Télécharger copie') }}" @click="$dispatch('open-download-modal', { downloadUrl: @js($document['download_url']) })">
                                 <i class="fa-solid fa-download"></i>
                             </button>
                         </div>
@@ -355,7 +355,7 @@
                 @empty
                     <div class="sikds-doc-history-row">
                         <div class="sikds-doc-history-content">
-                            <p class="sikds-doc-history-item-title">Aucun téléchargement enregistré</p>
+                            <p class="sikds-doc-history-item-title">{{ __('Aucun téléchargement enregistré') }}</p>
                         </div>
                     </div>
                 @endforelse
@@ -366,8 +366,8 @@
     <div x-show="activeTab === 'activity'" class="sikds-doc-content">
         <div class="sikds-doc-history-card">
             <div class="sikds-doc-history-head">
-                <h3 class="sikds-doc-history-title">Journal d'Activité</h3>
-                <p class="sikds-doc-history-sub">Historique des actions sur ce document</p>
+                <h3 class="sikds-doc-history-title">{{ __("Journal d'Activité") }}</h3>
+                <p class="sikds-doc-history-sub">{{ __('Historique des actions sur ce document') }}</p>
             </div>
             <div class="sikds-doc-history-list">
                 @forelse ($document['activities'] as $activity)
@@ -386,7 +386,7 @@
                 @empty
                     <div class="sikds-doc-history-row">
                         <div class="sikds-doc-history-content">
-                            <p class="sikds-doc-history-item-title">Aucune activité enregistrée</p>
+                            <p class="sikds-doc-history-item-title">{{ __('Aucune activité enregistrée') }}</p>
                         </div>
                     </div>
                 @endforelse
@@ -397,7 +397,7 @@
     {{-- Confirmation modal: Archive --}}
     <div x-show="modal === 'archive'" x-transition.opacity class="sikds-doc-modal-overlay" @click.self="modal = null" x-cloak>
         <div class="sikds-doc-modal">
-            <button type="button" class="sikds-doc-modal-close" @click="modal = null" aria-label="Fermer">
+            <button type="button" class="sikds-doc-modal-close" @click="modal = null" aria-label="{{ __('Fermer') }}">
                 <i class="fa-solid fa-xmark"></i>
             </button>
 
@@ -406,23 +406,23 @@
                     <i class="fa-solid fa-circle-exclamation"></i>
                 </div>
                 <div>
-                    <h3 class="sikds-doc-modal-title">Archiver le Document</h3>
-                    <p class="sikds-doc-modal-subtitle">Confirmer l'archivage</p>
+                    <h3 class="sikds-doc-modal-title">{{ __('Archiver le Document') }}</h3>
+                    <p class="sikds-doc-modal-subtitle">{{ __("Confirmer l'archivage") }}</p>
                 </div>
             </div>
 
             <p class="sikds-doc-modal-text">
-                Êtes-vous sûr de vouloir archiver le document
+                {{ __('Êtes-vous sûr de vouloir archiver le document') }}
                 <strong>"{{ $document['title'] }}"</strong> ?
             </p>
 
             <div class="sikds-doc-modal-actions">
                 <button type="button" class="sikds-doc-modal-btn sikds-doc-modal-btn--cancel" @click="modal = null">
-                    Annuler
+                    {{ __('Annuler') }}
                 </button>
-                <button type="button" class="sikds-doc-modal-btn sikds-doc-modal-btn--archive" @click="performAction(urls.archive, 'POST', 'Document archivé.')">
+                <button type="button" class="sikds-doc-modal-btn sikds-doc-modal-btn--archive" @click="performAction(urls.archive, 'POST', @js(__('Document archivé.')))">
                     <i :class="loading ? 'fa-solid fa-spinner fa-spin' : 'fa-solid fa-box-archive'"></i>
-                    Archiver
+                    {{ __('Archiver') }}
                 </button>
             </div>
         </div>
@@ -431,7 +431,7 @@
     {{-- Confirmation modal: Delete --}}
     <div x-show="modal === 'delete'" x-transition.opacity class="sikds-doc-modal-overlay" @click.self="modal = null" x-cloak>
         <div class="sikds-doc-modal">
-            <button type="button" class="sikds-doc-modal-close" @click="modal = null" aria-label="Fermer">
+            <button type="button" class="sikds-doc-modal-close" @click="modal = null" aria-label="{{ __('Fermer') }}">
                 <i class="fa-solid fa-xmark"></i>
             </button>
 
@@ -440,23 +440,23 @@
                     <i class="fa-regular fa-circle-exclamation"></i>
                 </div>
                 <div>
-                    <h3 class="sikds-doc-modal-title">Supprimer le Document</h3>
-                    <p class="sikds-doc-modal-subtitle">Action irréversible</p>
+                    <h3 class="sikds-doc-modal-title">{{ __('Supprimer le Document') }}</h3>
+                    <p class="sikds-doc-modal-subtitle">{{ __('Action irréversible') }}</p>
                 </div>
             </div>
 
             <p class="sikds-doc-modal-text">
-                Êtes-vous sûr de vouloir supprimer définitivement le document
+                {{ __('Êtes-vous sûr de vouloir supprimer définitivement le document') }}
                 <strong>"{{ $document['title'] }}"</strong> ?
             </p>
 
             <div class="sikds-doc-modal-actions">
                 <button type="button" class="sikds-doc-modal-btn sikds-doc-modal-btn--cancel" @click="modal = null">
-                    Annuler
+                    {{ __('Annuler') }}
                 </button>
-                <button type="button" class="sikds-doc-modal-btn sikds-doc-modal-btn--delete" @click="performAction(urls.delete, 'DELETE', 'Document supprimé.')">
+                <button type="button" class="sikds-doc-modal-btn sikds-doc-modal-btn--delete" @click="performAction(urls.delete, 'DELETE', @js(__('Document supprimé.')))">
                     <i :class="loading ? 'fa-solid fa-spinner fa-spin' : 'fa-regular fa-trash-can'"></i>
-                    Supprimer
+                    {{ __('Supprimer') }}
                 </button>
             </div>
         </div>
@@ -466,6 +466,10 @@
 
 <script>
     function documentShowPage(config) {
+        const i18n = {
+            serverRedirect: @json(__('La requête a été redirigée par le serveur. Vérifiez votre session.')),
+            actionImpossible: @json(__('Action impossible.')),
+        };
         return {
             activeTab: 'overview',
             modal: null,
@@ -490,19 +494,19 @@
                     });
 
                     if (response.redirected) {
-                        throw new Error('La requête a été redirigée par le serveur. Vérifiez votre session.');
+                        throw new Error(i18n.serverRedirect);
                     }
 
                     const payload = await response.json().catch(() => ({}));
                     if (!response.ok) {
-                        throw new Error(payload.message || 'Action impossible.');
+                        throw new Error(payload.message || i18n.actionImpossible);
                     }
 
                     this.modal = null;
                     this.banner = { message: successMessage, type: 'success' };
                     window.location.reload();
                 } catch (error) {
-                    this.banner = { message: error.message || 'Action impossible.', type: 'danger' };
+                    this.banner = { message: error.message || i18n.actionImpossible, type: 'danger' };
                 } finally {
                     this.loading = false;
                 }

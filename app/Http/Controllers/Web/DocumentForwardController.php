@@ -50,8 +50,8 @@ class DocumentForwardController extends Controller
         }
 
         $message = $result['was_already_targeted']
-            ? 'Le destinataire avait déjà accès à ce document. Une nouvelle notification lui a été envoyée.'
-            : 'Document transféré avec succès.';
+            ? __('Le destinataire avait déjà accès à ce document. Une nouvelle notification lui a été envoyée.')
+            : __('Document transféré avec succès.');
 
         return response()->json([
             'message' => $message,
@@ -71,7 +71,7 @@ class DocumentForwardController extends Controller
         /** @var User $actor */
         $actor = Auth::user();
 
-        abort_unless($actor->can('document.forward'), 403, 'Permission document.forward requise.');
+        abort_unless($actor->can('document.forward'), 403, __('Permission document.forward requise.'));
 
         $term = trim((string) $request->query('q', ''));
 

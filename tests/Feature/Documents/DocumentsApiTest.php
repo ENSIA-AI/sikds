@@ -4,8 +4,8 @@ use App\Domain\Documents\Models\Document;
 use App\Domain\Institutions\Models\Institution;
 use App\Domain\Users\Models\User;
 use App\Jobs\IndexDocumentJob;
-use App\Models\Permission;
-use App\Models\Role;
+use App\Domain\Users\Models\Permission;
+use App\Domain\Users\Models\Role;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Queue;
@@ -41,8 +41,11 @@ function ensureSuperAdmin(User $user): void
         ['name' => 'Super Administrateur', 'guard_name' => 'web'],
         ['slug' => 'super-admin', 'is_system_role' => true]
     );
+    // Super-admin role + document.restore: assertCanRestore() requires the role; middleware uses can:document.restore
+    // (Super Admin passes via Gate::before and/or explicit permissions below).
     grantPermission($user, 'document.view.all');
-    $role->givePermissionTo('document.view.all');
+    grantPermission($user, 'document.restore');
+    $role->givePermissionTo(['document.view.all', 'document.restore']);
     $user->assignRole($role);
 }
 
@@ -427,7 +430,32 @@ test('updating active document with a new file purges old chunks and requeues in
     Queue::assertPushed(IndexDocumentJob::class, fn (IndexDocumentJob $job): bool => true);
 });
 
-test('soft delete and restore require correct permissions', function () {
+test('restore is forbidden for non-Super Administrateur even with document.restore', function () {
+    $owner = User::factory()->create();
+    $doc = createDocument($owner, ['status' => 'active']);
+
+    $deleter = User::factory()->create(['institution_id' => $owner->institution_id]);
+    grantPermission($deleter, 'document.delete');
+    $this->actingAs($deleter);
+    $this->deleteJson('/api/documents/'.$doc->id)->assertOk();
+
+    $peerSameInstitution = User::factory()->create(['institution_id' => $owner->institution_id]);
+    grantPermission($peerSameInstitution, 'document.restore');
+    $this->actingAs($peerSameInstitution);
+    $this->postJson('/api/documents/'.$doc->id.'/restore')->assertForbidden();
+
+    $outsider = User::factory()->create([
+        'institution_id' => Institution::query()->firstOrCreate(
+            ['code' => 'REST-OTHER'],
+            ['name' => 'Other', 'type' => 'university', 'domain' => 'other.test']
+        )->id,
+    ]);
+    grantPermission($outsider, 'document.restore');
+    $this->actingAs($outsider);
+    $this->postJson('/api/documents/'.$doc->id.'/restore')->assertForbidden();
+});
+
+test('soft delete and restore succeeds only for Super Administrateur', function () {
     $owner = User::factory()->create();
     $doc = createDocument($owner, ['status' => 'active']);
 
@@ -443,7 +471,8 @@ test('soft delete and restore require correct permissions', function () {
     expect($doc->deleted_at)->not->toBeNull();
 
     $restorer = User::factory()->create();
-    grantPermission($restorer, 'document.restore');
+    ensureSuperAdmin($restorer);
+    app(PermissionRegistrar::class)->forgetCachedPermissions();
     $this->actingAs($restorer);
     $this->postJson('/api/documents/'.$doc->id.'/restore')
         ->assertOk();
@@ -451,5 +480,30 @@ test('soft delete and restore require correct permissions', function () {
     $doc->refresh();
     expect($doc->status)->not->toBe('soft_deleted');
     expect($doc->deleted_at)->toBeNull();
+});
+
+test('Super Administrateur can restore a soft-deleted document from another institution', function () {
+    $instA = Institution::query()->firstOrCreate(
+        ['code' => 'REST-XA'],
+        ['name' => 'Inst A', 'type' => 'university', 'domain' => 'rest-xa.test']
+    );
+    $instB = Institution::query()->firstOrCreate(
+        ['code' => 'REST-XB'],
+        ['name' => 'Inst B', 'type' => 'university', 'domain' => 'rest-xb.test']
+    );
+
+    $owner = User::factory()->create(['institution_id' => $instA->id]);
+    $doc = createDocument($owner, ['status' => 'active']);
+
+    $deleter = User::factory()->create(['institution_id' => $instA->id]);
+    grantPermission($deleter, 'document.delete');
+    $this->actingAs($deleter);
+    $this->deleteJson('/api/documents/'.$doc->id)->assertOk();
+
+    $super = User::factory()->create(['institution_id' => $instB->id]);
+    ensureSuperAdmin($super);
+    app(PermissionRegistrar::class)->forgetCachedPermissions();
+    $this->actingAs($super);
+    $this->postJson('/api/documents/'.$doc->id.'/restore')->assertOk();
 });
 

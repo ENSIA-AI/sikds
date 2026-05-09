@@ -103,8 +103,24 @@ final class UserController extends Controller
             'inactive_users' => (clone $statsBase)->where('is_active', false)->count(),
         ];
 
+        // Preload direct (custom) permissions for the current page in one query,
+        // avoiding N+1 – one extra JOIN instead of one query per user row.
+        $pageUserIds = collect($users->items())->pluck('id')->all();
+        $directPermissionIdsByUser = DB::table('model_has_permissions')
+            ->whereIn('model_id', $pageUserIds)
+            ->where('model_type', (new User)->getMorphClass())
+            ->select(['model_id', 'permission_id'])
+            ->get()
+            ->groupBy('model_id')
+            ->map(fn ($rows) => $rows->pluck('permission_id')->map(fn ($id): int => (int) $id)->values()->all());
+
         $userRowPayloads = collect($users->items())->mapWithKeys(
-            fn (User $u): array => [$u->id => $this->userPayloadForTable($u)]
+            fn (User $u): array => [
+                $u->id => $this->userTableRowPayload(
+                    $u,
+                    $directPermissionIdsByUser->get($u->id, []),
+                ),
+            ]
         )->all();
 
         return view('users', [
@@ -154,14 +170,14 @@ final class UserController extends Controller
 
             if ($request->wantsJson()) {
                 return response()->json([
-                    'message' => "L'utilisateur « {$user->full_name} » a été créé avec succès.",
+                    'message' => __("L'utilisateur « {$name} » a été créé avec succès.", ['name' => $user->full_name]),
                     'user' => $this->userPayloadForTable($user->fresh(['institution', 'roles'])),
                 ], 201);
             }
 
             return redirect()
                 ->route('users.show', $user)
-                ->with('success', "L'utilisateur « {$user->full_name} » a été créé avec succès.");
+                ->with('success', __("L'utilisateur « {$name} » a été créé avec succès.", ['name' => $user->full_name]));
 
         } catch (\Exception $e) {
             if ($request->wantsJson()) {
@@ -172,7 +188,7 @@ final class UserController extends Controller
 
             return back()
                 ->withInput()
-                ->with('error', "Erreur : {$e->getMessage()}");
+                ->with('error', __('Erreur : :message', ['message' => $e->getMessage()]));
         }
     }
 
@@ -229,14 +245,14 @@ final class UserController extends Controller
 
             if ($request->wantsJson()) {
                 return response()->json([
-                    'message' => "L'utilisateur « {$user->full_name} » a été mis à jour.",
+                    'message' => __("L'utilisateur « {$name} » a été mis à jour.", ['name' => $user->full_name]),
                     'user' => $this->userPayloadForTable($user->fresh(['institution', 'roles'])),
                 ]);
             }
 
             return redirect()
                 ->route('users.show', $user)
-                ->with('success', "L'utilisateur « {$user->full_name} » a été mis à jour.");
+                ->with('success', __("L'utilisateur « {$name} » a été mis à jour.", ['name' => $user->full_name]));
 
         } catch (\Exception $e) {
             if ($request->wantsJson()) {
@@ -247,7 +263,7 @@ final class UserController extends Controller
 
             return back()
                 ->withInput()
-                ->with('error', "Erreur : {$e->getMessage()}");
+                ->with('error', __('Erreur : :message', ['message' => $e->getMessage()]));
         }
     }
 
@@ -294,14 +310,14 @@ final class UserController extends Controller
 
             if ($request->wantsJson()) {
                 return response()->json([
-                    'message' => "Les rôles et permissions de « {$updated->full_name} » ont été mis à jour.",
+                    'message' => __("Les rôles et permissions de « {$name} » ont été mis à jour.", ['name' => $updated->full_name]),
                     'user' => $this->userPayloadForTable($updated->fresh(['institution', 'roles'])),
                 ]);
             }
 
             return redirect()
                 ->route('users.show', $user)
-                ->with('success', "Les rôles et permissions de « {$user->full_name} » ont été mis à jour.");
+                ->with('success', __("Les rôles et permissions de « {$name} » ont été mis à jour.", ['name' => $user->full_name]));
 
         } catch (\Exception $e) {
             if ($request->wantsJson()) {
@@ -312,7 +328,7 @@ final class UserController extends Controller
 
             return back()
                 ->withInput()
-                ->with('error', "Erreur : {$e->getMessage()}");
+                ->with('error', __('Erreur : :message', ['message' => $e->getMessage()]));
         }
     }
 
@@ -330,12 +346,12 @@ final class UserController extends Controller
                 $fresh = $user->fresh(['institution', 'roles']);
 
                 return response()->json([
-                    'message' => "L'utilisateur « {$fresh->full_name} » a été désactivé.",
+                    'message' => __("L'utilisateur « {$name} » a été désactivé.", ['name' => $fresh->full_name]),
                     'user' => $this->userPayloadForTable($fresh),
                 ]);
             }
 
-            return back()->with('success', "L'utilisateur « {$user->full_name} » a été désactivé.");
+            return back()->with('success', __("L'utilisateur « {$name} » a été désactivé.", ['name' => $user->full_name]));
 
         } catch (\Exception $e) {
             if ($request->wantsJson()) {
@@ -344,7 +360,7 @@ final class UserController extends Controller
                 ], 422);
             }
 
-            return back()->with('error', "Erreur : {$e->getMessage()}");
+            return back()->with('error', __('Erreur : :message', ['message' => $e->getMessage()]));
         }
     }
 
@@ -360,12 +376,12 @@ final class UserController extends Controller
 
             if ($request->wantsJson()) {
                 return response()->json([
-                    'message' => "L'utilisateur « {$fresh->full_name} » a été réactivé.",
+                    'message' => __("L'utilisateur « {$name} » a été réactivé.", ['name' => $fresh->full_name]),
                     'user' => $this->userPayloadForTable($fresh),
                 ]);
             }
 
-            return back()->with('success', "L'utilisateur « {$user->full_name} » a été réactivé.");
+            return back()->with('success', __("L'utilisateur « {$name} » a été réactivé.", ['name' => $user->full_name]));
         } catch (\Exception $e) {
             if ($request->wantsJson()) {
                 return response()->json([
@@ -373,17 +389,34 @@ final class UserController extends Controller
                 ], 422);
             }
 
-            return back()->with('error', "Erreur : {$e->getMessage()}");
+            return back()->with('error', __('Erreur : :message', ['message' => $e->getMessage()]));
         }
     }
 
     /**
+     * Serialize a user row for the JS table payload.
+     *
+     * @param  array<int>  $preloadedDirectPermissionIds  Pre-fetched direct permission IDs
+     *                                                    (avoids a per-row DB query).
      * @return array<string, mixed>
      */
-    private function userPayloadForTable(User $user): array
+    private function userPayloadForTable(User $user, array $preloadedDirectPermissionIds = []): array
     {
         $user->loadMissing(['institution:id,name,code', 'roles:id,name,slug']);
 
+        $directPermIds = $preloadedDirectPermissionIds !== []
+            ? $preloadedDirectPermissionIds
+            : $user->getDirectPermissions()->pluck('id')->map(fn ($id): int => (int) $id)->values()->all();
+
+        return $this->userTableRowPayload($user, $directPermIds);
+    }
+
+    /**
+     * @param  array<int>  $directPermIds
+     * @return array<string, mixed>
+     */
+    private function userTableRowPayload(User $user, array $directPermIds): array
+    {
         return [
             'id' => $user->id,
             'full_name' => $user->full_name,
@@ -402,7 +435,7 @@ final class UserController extends Controller
                 'name' => $r->name,
                 'slug' => $r->slug,
             ])->values()->all(),
-            'custom_permission_ids' => $user->getDirectPermissions()->pluck('id')->values()->all(),
+            'custom_permission_ids' => $directPermIds,
         ];
     }
 }

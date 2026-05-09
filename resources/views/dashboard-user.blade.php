@@ -1,11 +1,11 @@
 @extends('layouts.app')
-@section('page_title', 'Tableau de Bord')
-@section('page_subtitle', "Aperçu de l'activité du système SIKDS")
+@section('page_title', __('Tableau de Bord'))
+@section('page_subtitle', __("Aperçu de l'activité du système SIKDS"))
 @section('content')
     @php
         $activeNav = 'dashboard';
         $authUser = auth()->user();
-        $userName = $authUser?->full_name ?? $authUser?->name ?? $authUser?->email ?? 'Utilisateur';
+        $userName = $authUser?->full_name ?? $authUser?->name ?? $authUser?->email ?? __('Utilisateur');
         $canChat = $authUser?->can('rag.query') ?? false;
         $canSeeDocuments = $authUser && (
             $authUser->can('document.view.assigned')
@@ -20,10 +20,10 @@
     <section class="rounded-2xl bg-white border shadow-sm px-6 py-6 mb-5"
              style="border-color:rgba(0,0,0,.08);">
         <h2 class="text-2xl sm:text-3xl font-bold" style="color:var(--sikds-primary);">
-            Bonjour, {{ $userName }}
+            {{ __('Bonjour, :name', ['name' => $userName]) }}
         </h2>
         <p class="mt-1 text-sm" style="color:var(--sikds-muted)">
-            Accédez rapidement à vos documents et recherches
+            {{ __('Accédez rapidement à vos documents et recherches') }}
         </p>
     </section>
 
@@ -44,8 +44,8 @@
         <article class="rounded-2xl bg-white border shadow-sm overflow-hidden flex flex-col"
                  style="border-color:rgba(0,0,0,.08);">
             <div class="px-6 py-5 border-b" style="border-color:rgba(0,0,0,.06);">
-                <h3 class="text-lg font-bold" style="color:var(--sikds-ink);">Documents Récents</h3>
-                <p class="text-xs mt-0.5" style="color:var(--sikds-muted);">Vos derniers documents consultés</p>
+                <h3 class="text-lg font-bold" style="color:var(--sikds-ink);">{{ __('Documents Récents') }}</h3>
+                <p class="text-xs mt-0.5" style="color:var(--sikds-muted);">{{ __('Vos derniers documents consultés') }}</p>
             </div>
             <div class="flex-1 divide-y" style="border-color:rgba(0,0,0,.06);">
                 @forelse ($recentDocuments as $doc)
@@ -64,14 +64,14 @@
                 @empty
                     <div class="px-6 py-10 text-center">
                         <i class="fa-regular fa-folder-open text-2xl" style="color:var(--sikds-muted);"></i>
-                        <p class="mt-2 text-sm" style="color:var(--sikds-muted);">Aucun document récent</p>
+                        <p class="mt-2 text-sm" style="color:var(--sikds-muted);">{{ __('Aucun document récent') }}</p>
                     </div>
                 @endforelse
             </div>
             @if ($canSeeDocuments)
                 <div class="mt-auto px-6 py-3 border-t bg-slate-50/50" style="border-color:rgba(0,0,0,.06);">
                     <a href="{{ route('documents.index') }}" class="text-xs font-semibold hover:underline" style="color:var(--sikds-primary);">
-                        Voir tous les documents →
+                        {{ __('Voir tous les documents →') }}
                     </a>
                 </div>
             @endif
@@ -84,8 +84,8 @@
                  @sikds:chat-updated.window="load()"
                  @focus.window="load()">
             <div class="px-6 py-5 border-b" style="border-color:rgba(0,0,0,.06);">
-                <h3 class="text-lg font-bold" style="color:var(--sikds-ink);">Chats Récents</h3>
-                <p class="text-xs mt-0.5" style="color:var(--sikds-muted);">Vos derniers chats</p>
+                <h3 class="text-lg font-bold" style="color:var(--sikds-ink);">{{ __('Chats Récents') }}</h3>
+                <p class="text-xs mt-0.5" style="color:var(--sikds-muted);">{{ __('Vos derniers chats') }}</p>
             </div>
             <div class="flex-1 divide-y" style="border-color:rgba(0,0,0,.06);">
                 <template x-if="items.length > 0">
@@ -104,14 +104,14 @@
                 <template x-if="items.length === 0">
                     <div class="px-6 py-10 text-center">
                         <i class="fa-regular fa-comments text-2xl" style="color:var(--sikds-muted);"></i>
-                        <p class="mt-2 text-sm" style="color:var(--sikds-muted);">Aucune activité récente</p>
+                        <p class="mt-2 text-sm" style="color:var(--sikds-muted);">{{ __('Aucune activité récente') }}</p>
                     </div>
                 </template>
             </div>
             @if ($canChat)
                 <div class="mt-auto px-6 py-3 border-t bg-slate-50/50" style="border-color:rgba(0,0,0,.06);">
                     <a href="{{ route('rag.index') }}" class="text-xs font-semibold hover:underline" style="color:var(--sikds-primary);">
-                        Ouvrir le chatbot →
+                        {{ __('Ouvrir le chatbot →') }}
                     </a>
                 </div>
             @endif
@@ -124,17 +124,17 @@
                  style="border-color:rgba(0,0,0,.08);">
             <div class="flex items-center justify-between px-6 py-5 border-b" style="border-color:rgba(0,0,0,.06);">
                 <div>
-                    <h3 class="text-lg font-bold" style="color:var(--sikds-ink);">Notifications récentes</h3>
+                    <h3 class="text-lg font-bold" style="color:var(--sikds-ink);">{{ __('Notifications récentes') }}</h3>
                     <p class="text-xs mt-0.5" style="color:var(--sikds-muted);">
                         @if ($unreadCount > 0)
-                            {{ $unreadCount }} notification{{ $unreadCount > 1 ? 's' : '' }} non lue{{ $unreadCount > 1 ? 's' : '' }}
+                            {{ trans_choice('{1} :count notification non lue|[2,*] :count notifications non lues', $unreadCount, ['count' => $unreadCount]) }}
                         @else
-                            Vous êtes à jour
+                            {{ __('Vous êtes à jour') }}
                         @endif
                     </p>
                 </div>
                 <a href="{{ route('notifications.inbox') }}" class="text-xs font-semibold hover:underline" style="color:var(--sikds-primary);">
-                    Voir toutes
+                    {{ __('Voir toutes') }}
                 </a>
             </div>
             <div class="divide-y" style="border-color:rgba(0,0,0,.06);">
@@ -170,7 +170,7 @@
                 @empty
                     <div class="px-6 py-10 text-center">
                         <i class="fa-regular fa-bell-slash text-2xl" style="color:var(--sikds-muted);"></i>
-                        <p class="mt-2 text-sm" style="color:var(--sikds-muted);">Aucune notification</p>
+                        <p class="mt-2 text-sm" style="color:var(--sikds-muted);">{{ __('Aucune notification') }}</p>
                     </div>
                 @endforelse
             </div>
@@ -180,6 +180,12 @@
     @push('scripts')
         <script>
             function sikdsRecentChats(config) {
+                const i18n = {
+                    justNow: @json(__("à l'instant")),
+                    minutesAgo: @json(__('il y a :count min')),
+                    hoursAgo: @json(__('il y a :count h')),
+                    daysAgo: @json(__('il y a :count j')),
+                };
                 return {
                     items: [],
                     storageKey: 'sikds-chatbot-history-v2-' + (config.userId || 'guest'),
@@ -216,13 +222,13 @@
                     formatTime(ts) {
                         if (typeof ts !== 'number' || ts <= 0) return '';
                         const diffSec = Math.max(1, Math.floor((Date.now() - ts) / 1000));
-                        if (diffSec < 60) return "à l'instant";
+                        if (diffSec < 60) return i18n.justNow;
                         const min = Math.floor(diffSec / 60);
-                        if (min < 60) return 'il y a ' + min + ' min';
+                        if (min < 60) return i18n.minutesAgo.replace(':count', min);
                         const hr = Math.floor(min / 60);
-                        if (hr < 24) return 'il y a ' + hr + ' h';
+                        if (hr < 24) return i18n.hoursAgo.replace(':count', hr);
                         const day = Math.floor(hr / 24);
-                        return 'il y a ' + day + ' j';
+                        return i18n.daysAgo.replace(':count', day);
                     },
                 };
             }

@@ -36,7 +36,9 @@ class DocumentPublishedMail extends Mailable
     public function build(): self
     {
         return $this
-            ->subject("Nouveau document publié — {$this->document->reference_number}")
+            ->subject(__('Nouveau document publié — :reference', [
+                'reference' => $this->document->reference_number,
+            ]))
             ->view('emails.document-published')
             ->text('emails.document-published-text');
     }

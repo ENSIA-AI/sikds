@@ -1,28 +1,28 @@
-SIKDS — Nouveau document publié
-Ministère de l'Enseignement Supérieur et de la Recherche Scientifique
+{{ __('SIKDS — Nouveau document publié') }}
+{{ __("Ministère de l'Enseignement Supérieur et de la Recherche Scientifique") }}
 
-Bonjour {{ $recipient->full_name ?: $recipient->email }},
+{{ __('Bonjour :name,', ['name' => $recipient->full_name ?: $recipient->email]) }}
 
-Un nouveau document vient d'être publié et est disponible dans SIKDS.
+{{ __("Un nouveau document vient d'être publié et est disponible dans SIKDS.") }}
 
-Référence    : {{ $document->reference_number }}
-Titre        : {{ $document->title }}
-Date d'émission : {{ optional($document->issue_date)->format('Y-m-d') }}
+{{ __('Référence') }}    : {{ $document->reference_number }}
+{{ __('Titre') }}        : {{ $document->title }}
+{{ __("Date d'émission") }} : {{ optional($document->issue_date)->format('Y-m-d') }}
 @if (!empty($document->description))
 
-Description :
+{{ __('Description :') }}
 {{ $document->description }}
 @endif
 @if (!empty($documentTags))
 
-Tags :
+{{ __('Tags :') }}
 @foreach ($documentTags as $tag)
 - @if (!empty($tag['category'])){{ $tag['category'] }}: @endif{{ $tag['name'] }}
 @endforeach
 @endif
 
-Voir le document : {{ url('/documents/'.$document->id) }}
+{{ __('Voir le document :') }} {{ url('/documents/'.$document->id) }}
 
 ---
-Email envoyé automatiquement par SIKDS.
-Support : {{ $supportContact }}
+{{ __('Email envoyé automatiquement par SIKDS.') }}
+{{ __('Support :') }} {{ $supportContact }}

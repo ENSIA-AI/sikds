@@ -8,7 +8,6 @@ use App\Domain\Audit\Models\AuditLog;
 use App\Domain\Documents\Models\DownloadLog;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class WatermarkTraceabilityController extends Controller
@@ -19,10 +18,6 @@ class WatermarkTraceabilityController extends Controller
      */
     public function index(Request $request)
     {
-        /** @var \App\Domain\Users\Models\User $user */
-        $user = Auth::user();
-        abort_if(! $user->can('audit.view'), 403, 'Accès refusé. Permission audit.view requise.');
-
         $query = DownloadLog::with(['user.institution', 'document'])
             ->orderBy('downloaded_at', 'desc');
 
@@ -88,17 +83,13 @@ class WatermarkTraceabilityController extends Controller
      */
     public function show(string $uuid)
     {
-        /** @var \App\Domain\Users\Models\User $user */
-        $user = Auth::user();
-        abort_if(! $user->can('audit.view'), 403, 'Accès refusé. Permission audit.view requise.');
-
         $log = DownloadLog::with(['user.institution', 'document'])
             ->where('watermark_uuid', $uuid)
             ->first();
 
         if (! $log) {
             return redirect()->route('watermark.index')
-                ->withErrors(['uuid' => 'Aucun enregistrement trouvé pour l\'UUID : ' . $uuid]);
+                ->withErrors(['uuid' => __('Aucun enregistrement trouvé pour l\'UUID : :uuid', ['uuid' => $uuid])]);
         }
 
         // Find related audit entry

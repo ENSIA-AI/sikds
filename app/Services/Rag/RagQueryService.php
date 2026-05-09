@@ -6,10 +6,11 @@ namespace App\Services\Rag;
 
 use App\Domain\Documents\Models\Document;
 use App\Domain\Users\Models\User;
+use App\Services\Rag\Contracts\EmbeddingServiceInterface;
+use App\Services\Rag\Contracts\RerankerServiceInterface;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
 use Prism\Prism\Facades\Prism;
-use Prism\Prism\Enums\Provider;
 
 /**
  * Orchestrates RAG: authorize docs → embed → vector search → rerank → LLM answer with citations.
@@ -17,8 +18,8 @@ use Prism\Prism\Enums\Provider;
 class RagQueryService
 {
     public function __construct(
-        protected JinaEmbeddingService $embeddings,
-        protected JinaRerankerService $reranker,
+        protected EmbeddingServiceInterface $embeddings,
+        protected RerankerServiceInterface $reranker,
     ) {}
 
     /**
@@ -49,7 +50,14 @@ class RagQueryService
             throw new RuntimeException('Query embedding returned an empty vector.');
         }
 
-        $candidates = $this->vectorSearch($authorizedIds, $queryVector);
+        $denseCandidates = $this->vectorSearch($authorizedIds, $queryVector);
+
+        // Hybrid search: merge dense (semantic) + sparse (BM25) via RRF.
+        $hybridEnabled = (bool) config('rag.hybrid.enabled', false);
+        $candidates = $hybridEnabled
+            ? $this->hybridMerge($authorizedIds, $question, $denseCandidates)
+            : $denseCandidates;
+
         if ($candidates === []) {
             return [
                 'answer' => 'Aucun extrait pertinent n’a été trouvé dans les documents autorisés.',
@@ -131,20 +139,24 @@ class RagQueryService
      */
     protected function vectorSearch(array $authorizedIds, array $vector): array
     {
-        $candidatePool = (int) config('rag.retrieval.candidate_pool');
+        $candidatePool = max(1, min(200, (int) config('rag.retrieval.candidate_pool')));
+        $minConfidence = (float) config('rag.retrieval.min_confidence', 0.0);
         $vectorLiteral = $this->vectorLiteral($vector);
 
-        $placeholders = implode(',', array_fill(0, count($authorizedIds), '?'));
+        // Single PG array literal instead of N placeholder bindings.
+        $pgArray = '{' . implode(',', array_map('intval', $authorizedIds)) . '}';
+
         $sql = "
             SELECT dc.id, dc.document_id, dc.content, dc.metadata,
                    (1 - (dc.embedding <=> (?::vector))) AS score
             FROM document_chunks dc
-            WHERE dc.document_id = ANY(ARRAY[$placeholders]::int[])
+            WHERE dc.document_id = ANY(?::int[])
+              AND (1 - (dc.embedding <=> (?::vector))) >= ?
             ORDER BY dc.embedding <=> (?::vector)
-            LIMIT $candidatePool
+            LIMIT ?
         ";
 
-        $bindings = array_merge([$vectorLiteral], $authorizedIds, [$vectorLiteral]);
+        $bindings = [$vectorLiteral, $pgArray, $vectorLiteral, $minConfidence, $vectorLiteral, $candidatePool];
         $rows = DB::select($sql, $bindings);
 
         return array_map(function ($r) {
@@ -156,6 +168,91 @@ class RagQueryService
             return $arr;
         }, $rows);
     }
+
+    // ─── BM25 full-text search ────────────────────────────────────────────
+
+    /**
+     * @param  array<int, int>  $authorizedIds
+     * @return array<int, array<string, mixed>>
+     */
+    protected function bm25Search(array $authorizedIds, string $question): array
+    {
+        $pool = max(1, min(200, (int) config('rag.hybrid.bm25_candidate_pool', 20)));
+        $pgArray = '{' . implode(',', array_map('intval', $authorizedIds)) . '}';
+
+        $sql = "
+            SELECT dc.id, dc.document_id, dc.content, dc.metadata,
+                   ts_rank_cd(dc.search_vector, plainto_tsquery('simple', ?)) AS bm25_score
+            FROM document_chunks dc
+            WHERE dc.document_id = ANY(?::int[])
+              AND dc.search_vector @@ plainto_tsquery('simple', ?)
+            ORDER BY bm25_score DESC
+            LIMIT ?
+        ";
+
+        $rows = DB::select($sql, [$question, $pgArray, $question, $pool]);
+
+        return array_map(function ($r) {
+            $arr = (array) $r;
+            $arr['metadata'] = is_string($arr['metadata'] ?? null)
+                ? json_decode($arr['metadata'], true)
+                : $arr['metadata'];
+
+            return $arr;
+        }, $rows);
+    }
+
+    // ─── Reciprocal Rank Fusion ──────────────────────────────────────────
+
+    /**
+     * Merge dense and sparse result lists using Reciprocal Rank Fusion (RRF).
+     *
+     * RRF score = Σ 1 / (k + rank_i) for each list the chunk appears in.
+     *
+     * @param  array<int, int>  $authorizedIds
+     * @param  array<int, array<string, mixed>>  $denseCandidates
+     * @return array<int, array<string, mixed>>
+     */
+    protected function hybridMerge(array $authorizedIds, string $question, array $denseCandidates): array
+    {
+        $k = max(1, (int) config('rag.hybrid.rrf_k', 60));
+        $sparseCandidates = $this->bm25Search($authorizedIds, $question);
+
+        // Index by chunk ID → RRF score accumulator.
+        $scores = [];   // id => float
+        $chunks = [];   // id => chunk array
+
+        foreach ($denseCandidates as $rank => $c) {
+            $id = (int) $c['id'];
+            $scores[$id] = ($scores[$id] ?? 0.0) + (1.0 / ($k + $rank + 1));
+            $chunks[$id] = $c;
+        }
+
+        foreach ($sparseCandidates as $rank => $c) {
+            $id = (int) $c['id'];
+            $scores[$id] = ($scores[$id] ?? 0.0) + (1.0 / ($k + $rank + 1));
+            if (! isset($chunks[$id])) {
+                $chunks[$id] = $c;
+            }
+        }
+
+        // Sort by fused score descending.
+        arsort($scores);
+
+        $merged = [];
+        foreach ($scores as $id => $rrfScore) {
+            $item = $chunks[$id];
+            $item['score'] = $rrfScore;
+            $merged[] = $item;
+        }
+
+        // Return at most the configured candidate pool size.
+        $pool = max(1, min(200, (int) config('rag.retrieval.candidate_pool')));
+
+        return array_slice($merged, 0, $pool);
+    }
+
+    // ─── Context building ────────────────────────────────────────────────
 
     /**
      * @param  array<int, array<string, mixed>>  $chunks
@@ -169,32 +266,82 @@ class RagQueryService
             $section = $meta['section_heading'] ?? null;
             $page = (int) ($meta['page'] ?? 1);
 
-            $parts[] = '[SOURCE: ' . $title . ', Section: ' . ($section ?: '-') . ', Page ' . $page . "]\n"
-                . (string) ($c['content'] ?? '');
+            $parts[] = '<excerpt source="' . htmlspecialchars($title, ENT_XML1, 'UTF-8') . '"'
+                . ' section="' . htmlspecialchars((string) ($section ?: '-'), ENT_XML1, 'UTF-8') . '"'
+                . ' page="' . $page . "\">"
+                . "\n" . (string) ($c['content'] ?? '')
+                . "\n</excerpt>";
         }
 
         return implode("\n\n", $parts);
     }
 
+    // ─── LLM call ────────────────────────────────────────────────────────
+
     protected function callLlm(string $question, string $context): string
     {
-        $system = "You are an institutional assistant. Answer ONLY using the provided document\n"
-            . "excerpts. Do not include inline citations, brackets, or source markers in the response text.\n"
-            . "Write clear and concise prose in the same language as the user question.\n"
-            . "If the context does not contain enough information to answer confidently,\n"
-            . "respond with exactly: INSUFFICIENT_CONTEXT";
+        $system = <<<'PROMPT'
+You are an institutional assistant for SIKDS (Secure Institutional Knowledge & Distribution System).
 
-        $provider = (string) env('PRISM_LLM_PROVIDER', 'groq');
-        $model = (string) env('PRISM_LLM_MODEL', 'llama-3.3-70b-versatile');
+<instructions>
+- Answer ONLY from the provided document excerpts inside <context> tags.
+- Write clear and concise prose in the same language as the user question.
+- Do NOT include inline citations, brackets, [SOURCE] markers, or any reference markers in the response text.
+- Never fabricate information that is not explicitly stated in the provided excerpts.
+- If the context does not contain enough information to answer confidently, respond with exactly: INSUFFICIENT_CONTEXT
+</instructions>
+PROMPT;
+
+        // Input guardrail: strip potential prompt-injection patterns.
+        $safeQuestion = $this->sanitizeInput($question);
+
+        $userPrompt = "<question>\n{$safeQuestion}\n</question>\n\n<context>\n{$context}\n</context>";
+
+        $provider = (string) config('rag.llm.provider', 'groq');
+        $model = (string) config('rag.llm.model', 'llama-3.3-70b-versatile');
 
         $response = Prism::text()
-            ->using(Provider::from($provider), $model)
+            ->using($provider, $model, $this->llmProviderConfig())
             ->withSystemPrompt($system)
-            ->withPrompt("Question:\n{$question}\n\nContext:\n{$context}")
+            ->withPrompt($userPrompt)
             ->asText();
 
         return trim((string) $response->text);
     }
+
+    /**
+     * @return array<string, string>
+     */
+    protected function llmProviderConfig(): array
+    {
+        $config = [];
+        $apiKey = (string) config('rag.llm.api_key', '');
+        $url = rtrim((string) config('rag.llm.url', ''), '/');
+
+        if ($apiKey !== '') {
+            $config['api_key'] = $apiKey;
+        }
+
+        if ($url !== '') {
+            $config['url'] = $url;
+        }
+
+        return $config;
+    }
+
+    /**
+     * Basic input sanitization: strip control characters and common
+     * prompt-injection delimiters that have no place in a user question.
+     */
+    protected function sanitizeInput(string $text): string
+    {
+        // Remove control chars except newline and tab.
+        $text = preg_replace('/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/u', '', $text) ?? $text;
+
+        return $text;
+    }
+
+    // ─── Helpers ──────────────────────────────────────────────────────────
 
     /**
      * @param  array<int, float>  $vector
@@ -207,4 +354,3 @@ class RagQueryService
         )) . ']';
     }
 }
-

@@ -16,6 +16,29 @@ function setBodyModalOpen(open) {
     document.body.classList.toggle('overflow-hidden', open);
 }
 
+function readI18n() {
+    const root = document.getElementById('institution-modal-root');
+    const defaults = {
+        createTitle: 'Nouvelle institution',
+        createSubtitle: "Renseigner les informations de l'institution",
+        editTitle: "Modifier l'Institution",
+        editSubtitle: "Modifier les informations de l'institution",
+        unexpectedError: 'Une erreur est survenue.',
+        serverUnreachable: 'Impossible de contacter le serveur.',
+        deleteConfirm: "Supprimer l'institution « :name » ?",
+        deleteFailed: 'Suppression impossible.',
+        emptyState: 'Aucune institution pour le moment.',
+    };
+    if (!root) {
+        return defaults;
+    }
+    try {
+        return Object.assign(defaults, JSON.parse(root.dataset.i18n || '{}'));
+    } catch {
+        return defaults;
+    }
+}
+
 function showToast(message, variant = 'success') {
     const el = document.querySelector('[data-app-toast]');
     if (!el) {
@@ -59,6 +82,7 @@ function setMethodSpoof(container, method) {
 }
 
 function wireInstitutionModal(root) {
+    const i18n = readI18n();
     const overlay = root.querySelector('[data-modal-overlay]');
     const panel = root.querySelector('[data-modal-panel]');
     const form = root.querySelector('[data-institution-form]');
@@ -98,10 +122,10 @@ function wireInstitutionModal(root) {
     function openCreate() {
         mode = 'create';
         if (titleEl) {
-            titleEl.textContent = 'Nouvelle institution';
+            titleEl.textContent = i18n.createTitle;
         }
         if (subtitleEl) {
-            subtitleEl.textContent = "Renseigner les informations de l'institution";
+            subtitleEl.textContent = i18n.createSubtitle;
         }
         if (form) {
             form.action = `${apiBase}`;
@@ -119,10 +143,10 @@ function wireInstitutionModal(root) {
     function openEdit(payload) {
         mode = 'edit';
         if (titleEl) {
-            titleEl.textContent = "Modifier l'Institution";
+            titleEl.textContent = i18n.editTitle;
         }
         if (subtitleEl) {
-            subtitleEl.textContent = "Modifier les informations de l'institution";
+            subtitleEl.textContent = i18n.editSubtitle;
         }
         if (form) {
             form.action = `${apiBase}/${payload.id}`;
@@ -221,7 +245,7 @@ function wireInstitutionModal(root) {
             }
 
             if (!res.ok) {
-                const msg = data.message ?? 'Une erreur est survenue.';
+                const msg = data.message ?? i18n.unexpectedError;
                 if (errBox) {
                     errBox.textContent = msg;
                     errBox.classList.remove('hidden');
@@ -257,10 +281,10 @@ function wireInstitutionModal(root) {
             close();
         } catch {
             if (errBox) {
-                errBox.textContent = 'Impossible de contacter le serveur.';
+                errBox.textContent = i18n.serverUnreachable;
                 errBox.classList.remove('hidden');
             } else {
-                showToast('Impossible de contacter le serveur.', 'error');
+                showToast(i18n.serverUnreachable, 'error');
             }
         } finally {
             if (submitBtn instanceof HTMLButtonElement) {
@@ -302,7 +326,7 @@ function wireInstitutionModal(root) {
                 if (!id) {
                     return;
                 }
-                if (!window.confirm(`Supprimer l'institution « ${name} » ?`)) {
+                if (!window.confirm(i18n.deleteConfirm.replace(':name', name))) {
                     return;
                 }
                 try {
@@ -316,7 +340,7 @@ function wireInstitutionModal(root) {
                     });
                     const data = await res.json().catch(() => ({}));
                     if (!res.ok) {
-                        showToast(data.message ?? 'Suppression impossible.', 'error');
+                        showToast(data.message ?? i18n.deleteFailed, 'error');
                         return;
                     }
                     document.getElementById(`institution-card-${id}`)?.remove();
@@ -326,11 +350,11 @@ function wireInstitutionModal(root) {
                     if (grid && !grid.querySelector('[data-institution-card]')) {
                         grid.insertAdjacentHTML(
                             'beforeend',
-                            `<p data-institutions-empty class="col-span-full w-full rounded-[14px] border border-black/10 bg-white p-6 text-sm text-[#717182] shadow-[0px_1px_2px_-1px_rgba(0,0,0,0.10),0px_1px_3px_0px_rgba(0,0,0,0.10)]">Aucune institution pour le moment.</p>`,
+                            `<p data-institutions-empty class="col-span-full w-full rounded-[14px] border border-black/10 bg-white p-6 text-sm text-[#717182] shadow-[0px_1px_2px_-1px_rgba(0,0,0,0.10),0px_1px_3px_0px_rgba(0,0,0,0.10)]">${i18n.emptyState}</p>`,
                         );
                     }
                 } catch {
-                    showToast('Impossible de contacter le serveur.', 'error');
+                    showToast(i18n.serverUnreachable, 'error');
                 }
             });
         });
@@ -341,6 +365,7 @@ function wireInstitutionModal(root) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+    const i18n = readI18n();
     const root = document.getElementById('institution-modal-root');
     if (root) {
         wireInstitutionModal(root);
@@ -355,7 +380,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const apiBase = readApiBase();
                 const id = btn.getAttribute('data-institution-id');
                 const name = btn.getAttribute('data-institution-name') ?? '';
-                if (!id || !window.confirm(`Supprimer l'institution « ${name} » ?`)) {
+                if (!id || !window.confirm(i18n.deleteConfirm.replace(':name', name))) {
                     return;
                 }
                 try {
@@ -369,7 +394,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     });
                     const data = await res.json().catch(() => ({}));
                     if (!res.ok) {
-                        showToast(data.message ?? 'Suppression impossible.', 'error');
+                        showToast(data.message ?? i18n.deleteFailed, 'error');
                         return;
                     }
                     document.getElementById(`institution-card-${id}`)?.remove();
@@ -377,7 +402,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         showToast(data.message, 'success');
                     }
                 } catch {
-                    showToast('Impossible de contacter le serveur.', 'error');
+                    showToast(i18n.serverUnreachable, 'error');
                 }
             });
         });

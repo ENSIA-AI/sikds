@@ -1,11 +1,15 @@
+@php
+    $appLocale = app()->getLocale();
+    $isRtl = in_array($appLocale, (array) config('languages.rtl', ['ar']), true);
+@endphp
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html lang="{{ str_replace('_', '-', $appLocale) }}" dir="{{ $isRtl ? 'rtl' : 'ltr' }}">
 <head>
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>{{ $title ?? 'SIKDS' }}</title>
+    <title>{{ $title ?? __('SIKDS') }}</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -14,11 +18,11 @@
 </head>
 <body class="sikds-app-body">
     @php
-        $pageTitle = trim($__env->yieldContent('page_title')) ?: 'Tableau de Bord';
-        $pageSubtitle = trim($__env->yieldContent('page_subtitle')) ?: "Aperçu de l'activité du système SIKDS";
+        $pageTitle = html_entity_decode(trim($__env->yieldContent('page_title')), ENT_QUOTES | ENT_HTML5, 'UTF-8') ?: __('Tableau de Bord');
+        $pageSubtitle = html_entity_decode(trim($__env->yieldContent('page_subtitle')), ENT_QUOTES | ENT_HTML5, 'UTF-8') ?: __("Aperçu de l'activité du système SIKDS");
         $authUser = auth()->user();
-        $userRole = $authUser?->roles?->pluck('name')->first() ?? 'Utilisateur';
-        $userName = $authUser?->full_name ?? $authUser?->name ?? $authUser?->email ?? 'Utilisateur';
+        $userRole = $authUser?->roles?->pluck('name')->first() ?? __('Utilisateur');
+        $userName = $authUser?->full_name ?? $authUser?->name ?? $authUser?->email ?? __('Utilisateur');
         $canUseRagAssistant = $authUser?->can('rag.query') ?? false;
     @endphp
 
@@ -43,18 +47,19 @@
                     id="sikds-sidebar-toggle"
                     aria-controls="sikds-sidebar"
                     aria-expanded="false"
-                    aria-label="Ouvrir le menu latéral"
+                    aria-label="{{ __('Ouvrir le menu latéral') }}"
                 >
                     <span aria-hidden="true"></span>
                     <span aria-hidden="true"></span>
                     <span aria-hidden="true"></span>
                 </button>
 
-                <div class="sikds-profile" aria-label="Informations du profil">
+                <div class="sikds-profile" aria-label="{{ __('Informations du profil') }}">
                     <div class="sikds-user-meta">
                         <p class="sikds-user-role">{{ $userRole }}</p>
                         <p class="sikds-user-name">{{ $userName }}</p>
                     </div>
+                    @include('layouts.partials.language-switcher')
                     @include('layouts.partials.notification-bell')
                     <div class="relative">
                         <button
@@ -64,10 +69,10 @@
                             aria-haspopup="menu"
                             aria-expanded="false"
                             aria-controls="sikds-user-menu"
-                            aria-label="Ouvrir le menu utilisateur"
+                            aria-label="{{ __('Ouvrir le menu utilisateur') }}"
                         >
                             <i class="fa-regular fa-user text-white text-[18px] leading-none" aria-hidden="true"></i>
-                            <span class="sr-only">Profil</span>
+                            <span class="sr-only">{{ __('Profil') }}</span>
                         </button>
                         <div
                             id="sikds-user-menu"
@@ -84,7 +89,7 @@
                                 >
                                     <span class="inline-flex items-center gap-2">
                                         <i class="fa-solid fa-right-from-bracket text-xs"></i>
-                                        Se déconnecter
+                                        {{ __('Se déconnecter') }}
                                     </span>
                                 </button>
                             </form>
@@ -106,7 +111,7 @@
         type="button"
         class="sikds-sidebar-overlay"
         id="sikds-sidebar-overlay"
-        aria-label="Fermer le menu latéral"
+        aria-label="{{ __('Fermer le menu latéral') }}"
     ></button>
 
     <script>
@@ -150,23 +155,23 @@
             >
                 <div class="shrink-0 flex items-center justify-between px-4 py-3 border-b border-slate-200 bg-slate-50">
                     <div>
-                        <p class="text-sm font-semibold text-slate-900">Assistant</p>
-                        <p class="text-xs text-slate-500">Posez une question sans quitter la page.</p>
+                        <p class="text-sm font-semibold text-slate-900">{{ __('Assistant') }}</p>
+                        <p class="text-xs text-slate-500">{{ __('Posez une question sans quitter la page.') }}</p>
                     </div>
                     <div class="flex items-center gap-1">
                         <button
                             type="button"
                             id="sikds-chatbot-clear"
                             class="h-8 px-2 inline-flex items-center justify-center rounded-md text-xs text-slate-500 hover:bg-slate-200"
-                            aria-label="Effacer la conversation"
+                            aria-label="{{ __('Effacer la conversation') }}"
                         >
-                            Effacer
+                            {{ __('Effacer') }}
                         </button>
                         <button
                             type="button"
                             id="sikds-chatbot-close"
                             class="h-8 w-8 inline-flex items-center justify-center rounded-md text-slate-500 hover:bg-slate-200"
-                            aria-label="Fermer l'assistant"
+                            aria-label="{{ __('Fermer l\'assistant') }}"
                         >
                             <i class="fa-solid fa-xmark"></i>
                         </button>
@@ -181,7 +186,7 @@
                             id="sikds-chatbot-input"
                             rows="1"
                             maxlength="500"
-                            placeholder="Ecrivez votre question..."
+                            placeholder="{{ __('Ecrivez votre question...') }}"
                             class="w-full resize-none rounded-xl border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"
                         ></textarea>
                         <button
@@ -189,7 +194,7 @@
                             id="sikds-chatbot-send"
                             class="h-10 px-3 rounded-xl bg-[#1E3A8A] text-white text-sm font-medium hover:bg-[#163171] disabled:opacity-60"
                         >
-                            Envoyer
+                            {{ __('Envoyer') }}
                         </button>
                     </div>
                 </div>
@@ -223,7 +228,19 @@
                 const csrf = @json(csrf_token());
                 const userKey = @json((string) ($authUser?->id ?? 'guest'));
                 const storageKey = 'sikds-chatbot-history-v2-' + userKey;
-                const seedMessage = 'Bonjour. Je peux vous aider a retrouver des informations dans les documents indexes.';
+                const i18n = {
+                    seedMessage: @json(__('Bonjour. Je peux vous aider a retrouver des informations dans les documents indexes.')),
+                    closeIcon: @json(__('Fermer l assistant')),
+                    openIcon: @json(__('Ouvrir l assistant')),
+                    sources: @json(__('Sources')),
+                    document: @json(__('Document')),
+                    queryDenied: @json(__('Acces refuse. Permission rag.query requise.')),
+                    queryError: @json(__('Erreur lors de la requete.')),
+                    insufficientContext: @json(__('Je n ai pas de contexte suffisant pour repondre avec fiabilite.')),
+                    noAnswer: @json(__('Aucune reponse disponible.')),
+                    networkError: @json(__('Erreur reseau. Veuillez reessayer.')),
+                };
+                const seedMessage = i18n.seedMessage;
 
                 // Migrate / cleanup any pre-user-scoped legacy key so old chats from
                 // a previous account on this browser are not visible to the current one.
@@ -256,13 +273,13 @@
 
                         const summary = document.createElement('summary');
                         summary.className = 'cursor-pointer px-2 py-1 text-xs font-medium text-slate-600';
-                        summary.textContent = `Sources (${citations.length})`;
+                        summary.textContent = `${i18n.sources} (${citations.length})`;
                         details.appendChild(summary);
 
                         const list = document.createElement('div');
                         list.className = 'space-y-2 px-2 pb-2';
                         citations.forEach((c, idx) => {
-                            const title = escapeHtml(c.document_title || 'Document');
+                            const title = escapeHtml(c.document_title || i18n.document);
                             const section = escapeHtml(c.section_heading || '-');
                             const page = Number(c.page || 1);
                             const score = Math.round((Number(c.relevance_score || 0)) * 100);
@@ -329,7 +346,7 @@
                     toggle.innerHTML = open
                         ? '<i class="fa-solid fa-xmark text-white text-xl leading-none"></i>'
                         : '<i class="fa-regular fa-comments text-white text-lg leading-none"></i>';
-                    toggle.setAttribute('aria-label', open ? 'Fermer l assistant' : 'Ouvrir l assistant');
+                    toggle.setAttribute('aria-label', open ? i18n.closeIcon : i18n.openIcon);
                     if (open) {
                         renderHistory();
                         input.focus();
@@ -363,11 +380,11 @@
 
                         if (!response.ok) {
                             if (response.status === 403) {
-                                const msg = 'Acces refuse. Permission rag.query requise.';
+                                const msg = i18n.queryDenied;
                                 appendMessage('bot', msg, []);
                                 pushHistory({ role: 'bot', text: msg, citations: [] });
                             } else {
-                                const msg = payload.message || 'Erreur lors de la requete.';
+                                const msg = payload.message || i18n.queryError;
                                 appendMessage('bot', msg, []);
                                 pushHistory({ role: 'bot', text: msg, citations: [] });
                             }
@@ -377,12 +394,12 @@
                         const answer = String(payload.answer || '').trim();
                         const citations = Array.isArray(payload.citations) ? payload.citations : [];
                         const finalAnswer = answer === 'INSUFFICIENT_CONTEXT'
-                            ? 'Je n ai pas de contexte suffisant pour repondre avec fiabilite.'
-                            : (answer || 'Aucune reponse disponible.');
+                            ? i18n.insufficientContext
+                            : (answer || i18n.noAnswer);
                         appendMessage('bot', finalAnswer, citations);
                         pushHistory({ role: 'bot', text: finalAnswer, citations });
                     } catch (error) {
-                        const msg = 'Erreur reseau. Veuillez reessayer.';
+                        const msg = i18n.networkError;
                         appendMessage('bot', msg, []);
                         pushHistory({ role: 'bot', text: msg, citations: [] });
                     } finally {

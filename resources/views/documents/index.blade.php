@@ -1,6 +1,6 @@
 @extends('layouts.app')
-@section('page_title', 'Gestion des Documents')
-@section('page_subtitle', 'Gérer le cycle de vie des documents institutionnels')
+@section('page_title', __('Gestion des Documents'))
+@section('page_subtitle', __('Gérer le cycle de vie des documents institutionnels'))
 @section('content')
 
     <div
@@ -30,10 +30,10 @@
         </span>
         <div class="sikds-toast-body">
             <p class="sikds-toast-title"
-               x-text="banner.type === 'danger' ? 'Action impossible' : (banner.type === 'success' ? 'Opération réussie' : 'Information')"></p>
+               x-text="banner.type === 'danger' ? @js(__('Action impossible')) : (banner.type === 'success' ? @js(__('Opération réussie')) : @js(__('Information')))"></p>
             <p class="sikds-toast-message" x-text="banner.message"></p>
         </div>
-        <button type="button" @click="banner.message = ''" class="sikds-toast-dismiss" aria-label="Fermer">
+        <button type="button" @click="banner.message = ''" class="sikds-toast-dismiss" aria-label="{{ __('Fermer') }}">
             <i class="fa-solid fa-xmark"></i>
         </button>
     </div>
@@ -54,7 +54,7 @@
         >
             <div class="flex shrink-0 items-start justify-between gap-3 border-b border-slate-100 px-5 py-4">
                 <div class="min-w-0 flex-1">
-                    <p class="text-xs font-medium uppercase tracking-wide text-slate-500">Aperçu du document</p>
+                    <p class="text-xs font-medium uppercase tracking-wide text-slate-500">{{ __('Aperçu du document') }}</p>
                     <h2 id="sikds-doc-preview-title" class="mt-1 text-lg font-semibold leading-snug text-slate-900" x-text="previewDoc?.title"></h2>
                     <p class="mt-0.5 text-sm text-slate-600" x-text="previewDoc?.reference"></p>
                 </div>
@@ -62,7 +62,7 @@
                     type="button"
                     class="shrink-0 rounded-lg p-2 text-slate-500 transition hover:bg-slate-100 hover:text-slate-800"
                     @click="closePreview()"
-                    aria-label="Fermer l'aperçu"
+                    aria-label="{{ __('Fermer l\'aperçu') }}"
                 >
                     <i class="fa-solid fa-xmark text-lg"></i>
                 </button>
@@ -77,15 +77,15 @@
                             </span>
                         </div>
                         <div>
-                            <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Public cible</p>
+                            <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">{{ __('Public cible') }}</p>
                             <p class="mt-1 text-sm text-slate-800" x-text="previewDoc.target_audience"></p>
                         </div>
                         <div>
-                            <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Date d'émission</p>
+                            <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">{{ __("Date d'émission") }}</p>
                             <p class="mt-1 text-sm text-slate-800" x-text="previewDoc.issue_date"></p>
                         </div>
                         <div x-show="previewDoc.tags_full && previewDoc.tags_full.length">
-                            <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Tags</p>
+                            <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">{{ __('Tags') }}</p>
                             <div class="mt-2 flex flex-wrap gap-2">
                                 <template x-for="tag in previewDoc.tags_full" :key="tag.id">
                                     <span class="sikds-tag sikds-tag--table" :style="tag.style" x-text="tag.label"></span>
@@ -93,7 +93,7 @@
                             </div>
                         </div>
                         <div x-show="previewDoc.description_excerpt">
-                            <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Description</p>
+                            <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">{{ __('Description') }}</p>
                             <p class="mt-1 text-sm leading-relaxed text-slate-700" x-text="previewDoc.description_excerpt"></p>
                         </div>
                     </div>
@@ -105,13 +105,13 @@
                     class="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-50"
                     @click="closePreview()"
                 >
-                    Fermer
+                    {{ __('Fermer') }}
                 </button>
                 <a
                     :href="previewDoc?.show_url"
                     class="inline-flex items-center gap-2 rounded-lg bg-[var(--sikds-primary)] px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:opacity-95"
                 >
-                    <span>Ouvrir la fiche complète</span>
+                    <span>{{ __('Ouvrir la fiche complète') }}</span>
                     <i class="fa-solid fa-arrow-right text-xs"></i>
                 </a>
             </div>
@@ -122,7 +122,7 @@
         <div class="flex justify-end mb-5">
             <a href="{{ route('documents.create') }}" class="sikds-btn-upload">
                 <i class="fa-solid fa-plus"></i>
-                <span>Téléverser un Document</span>
+                <span>{{ __('Téléverser un Document') }}</span>
             </a>
         </div>
     @endcan
@@ -136,7 +136,7 @@
     <form method="GET" action="{{ route('documents.index') }}" class="sikds-docs-toolbar">
         <div class="sikds-docs-search">
             <i class="fa-solid fa-magnifying-glass sikds-docs-search-icon"></i>
-            <input type="text" name="q" value="{{ $filters['q'] ?? '' }}" placeholder="Rechercher par titre ou référence..." class="sikds-docs-search-input">
+            <input type="text" name="q" value="{{ $filters['q'] ?? '' }}" placeholder="{{ __('Rechercher par titre ou référence...') }}" class="sikds-docs-search-input">
         </div>
 
         <div class="sikds-docs-toolbar-right">
@@ -156,47 +156,47 @@
                     aria-haspopup="true"
                 >
                     <i class="fa-solid fa-filter"></i>
-                    <span>Filtres</span>
+                    <span>{{ __('Filtres') }}</span>
                     <i class="fa-solid fa-angle-down" :class="{ 'rotate-180': filtersOpen }"></i>
                 </button>
 
                 <div x-show="filtersOpen" x-transition.origin.top.right @click.outside="filtersOpen = false" class="sikds-docs-filter-panel" x-cloak>
                     <div class="sikds-docs-filter-section">
-                        <p class="sikds-docs-filter-title">Statut</p>
+                        <p class="sikds-docs-filter-title">{{ __('Statut') }}</p>
                         <div class="sikds-docs-filter-options">
                             <label class="sikds-docs-filter-check">
                                 <input type="checkbox" name="status[]" value="active" {{ in_array('active', $selectedStatus, true) ? 'checked' : '' }}>
                                 <span class="sikds-status sikds-status--active">
                                     <i class="fa-regular fa-circle-check sikds-status-icon"></i>
-                                    Actif
+                                    {{ __('Actif') }}
                                 </span>
                             </label>
                             <label class="sikds-docs-filter-check">
                                 <input type="checkbox" name="status[]" value="draft" {{ in_array('draft', $selectedStatus, true) ? 'checked' : '' }}>
                                 <span class="sikds-status sikds-status--draft">
                                     <i class="fa-solid fa-gear sikds-status-icon"></i>
-                                    Brouillon
+                                    {{ __('Brouillon') }}
                                 </span>
                             </label>
                             <label class="sikds-docs-filter-check">
                                 <input type="checkbox" name="status[]" value="archived" {{ in_array('archived', $selectedStatus, true) ? 'checked' : '' }}>
                                 <span class="sikds-status sikds-status--archived">
                                     <i class="fa-solid fa-box-archive sikds-status-icon"></i>
-                                    Archivé
+                                    {{ __('Archivé') }}
                                 </span>
                             </label>
                             <label class="sikds-docs-filter-check">
                                 <input type="checkbox" name="status[]" value="deleted" {{ in_array('deleted', $selectedStatus, true) ? 'checked' : '' }}>
                                 <span class="sikds-status sikds-status--deleted">
                                     <i class="fa-regular fa-circle-xmark sikds-status-icon"></i>
-                                    Supprimé
+                                    {{ __('Supprimé') }}
                                 </span>
                             </label>
                         </div>
                     </div>
 
                     <div class="sikds-docs-filter-section">
-                        <p class="sikds-docs-filter-title">Tags</p>
+                        <p class="sikds-docs-filter-title">{{ __('Tags') }}</p>
                         <div class="sikds-docs-filter-tags">
                             @foreach ($availableTags as $tag)
                                 <label class="sikds-docs-filter-check">
@@ -208,17 +208,17 @@
                     </div>
 
                     <div class="sikds-docs-filter-section">
-                        <p class="sikds-docs-filter-title">Public Cible</p>
+                        <p class="sikds-docs-filter-title">{{ __('Public Cible') }}</p>
                         <div class="sikds-docs-filter-options sikds-docs-filter-options--plain">
-                            <label class="sikds-docs-filter-check"><input type="checkbox" name="audience[]" value="Toutes les institutions" {{ in_array('Toutes les institutions', $selectedAudience, true) ? 'checked' : '' }}><span>Toutes les institutions</span></label>
-                            <label class="sikds-docs-filter-check"><input type="checkbox" name="audience[]" value="Universités" {{ in_array('Universités', $selectedAudience, true) ? 'checked' : '' }}><span>Universités</span></label>
-                            <label class="sikds-docs-filter-check"><input type="checkbox" name="audience[]" value="Cabinet du Ministre" {{ in_array('Cabinet du Ministre', $selectedAudience, true) ? 'checked' : '' }}><span>Cabinet du Ministre</span></label>
+                            <label class="sikds-docs-filter-check"><input type="checkbox" name="audience[]" value="Toutes les institutions" {{ in_array('Toutes les institutions', $selectedAudience, true) ? 'checked' : '' }}><span>{{ __('Toutes les institutions') }}</span></label>
+                            <label class="sikds-docs-filter-check"><input type="checkbox" name="audience[]" value="Universités" {{ in_array('Universités', $selectedAudience, true) ? 'checked' : '' }}><span>{{ __('Universités') }}</span></label>
+                            <label class="sikds-docs-filter-check"><input type="checkbox" name="audience[]" value="Cabinet du Ministre" {{ in_array('Cabinet du Ministre', $selectedAudience, true) ? 'checked' : '' }}><span>{{ __('Cabinet du Ministre') }}</span></label>
                         </div>
                     </div>
 
                     <div class="sikds-docs-filter-actions">
-                        <a href="{{ route('documents.index') }}" class="sikds-docs-filter-clear">Réinitialiser</a>
-                        <button type="submit" class="sikds-docs-filter-apply" @click="filtersOpen = false">Appliquer</button>
+                        <a href="{{ route('documents.index') }}" class="sikds-docs-filter-clear">{{ __('Réinitialiser') }}</a>
+                        <button type="submit" class="sikds-docs-filter-apply" @click="filtersOpen = false">{{ __('Appliquer') }}</button>
                     </div>
                 </div>
             </div>
@@ -229,12 +229,12 @@
         <table class="sikds-docs-table">
             <thead>
                 <tr>
-                    <th class="sikds-th-title">Titre & Référence</th>
-                    <th class="sikds-th-status">Statut</th>
-                    <th class="sikds-th-tags">Tags</th>
-                    <th class="sikds-th-audience">Public Cible</th>
-                    <th class="sikds-th-date">Date d'Émission</th>
-                    <th class="sikds-th-actions">Actions</th>
+                    <th class="sikds-th-title">{{ __('Titre & Référence') }}</th>
+                    <th class="sikds-th-status">{{ __('Statut') }}</th>
+                    <th class="sikds-th-tags">{{ __('Tags') }}</th>
+                    <th class="sikds-th-audience">{{ __('Public Cible') }}</th>
+                    <th class="sikds-th-date">{{ __("Date d'Émission") }}</th>
+                    <th class="sikds-th-actions">{{ __('Actions') }}</th>
                 </tr>
             </thead>
             <tbody>
@@ -283,42 +283,42 @@
                                 @foreach ($doc['actions'] as $action)
                                     @switch($action)
                                         @case('view')
-                                            <button type="button" class="sikds-docs-action-btn" title="Consulter (aperçu)" aria-label="Consulter (aperçu)" @click.prevent="openPreview(@js($doc))">
+                                            <button type="button" class="sikds-docs-action-btn" title="{{ __('Consulter (aperçu)') }}" aria-label="{{ __('Consulter (aperçu)') }}" @click.prevent="openPreview(@js($doc))">
                                                 <i class="fa-regular fa-eye"></i>
                                             </button>
                                             @break
                                         @case('edit')
-                                            <a href="{{ $doc['edit_url'] }}" class="sikds-docs-action-btn" title="Modifier" aria-label="Modifier">
+                                            <a href="{{ $doc['edit_url'] }}" class="sikds-docs-action-btn" title="{{ __('Modifier') }}" aria-label="{{ __('Modifier') }}">
                                                 <i class="fa-regular fa-pen-to-square"></i>
                                             </a>
                                             @break
                                         @case('archive')
-                                            <button type="button" class="sikds-docs-action-btn" title="Archiver" aria-label="Archiver" @click="performAction(@js($doc['archive_url']), 'POST', 'Document archivé.')">
+                                            <button type="button" class="sikds-docs-action-btn" title="{{ __('Archiver') }}" aria-label="{{ __('Archiver') }}" @click="performAction(@js($doc['archive_url']), 'POST', @js(__('Document archivé.')))">
                                                 <i :class="loading ? 'fa-solid fa-spinner fa-spin' : 'fa-solid fa-box-archive'"></i>
                                             </button>
                                             @break
                                         @case('download')
-                                            <button type="button" class="sikds-docs-action-btn" title="Télécharger" aria-label="Télécharger" @click="$dispatch('open-download-modal', { downloadUrl: @js($doc['download_url']) })">
+                                            <button type="button" class="sikds-docs-action-btn" title="{{ __('Télécharger') }}" aria-label="{{ __('Télécharger') }}" @click="$dispatch('open-download-modal', { downloadUrl: @js($doc['download_url']) })">
                                                 <i class="fa-solid fa-download"></i>
                                             </button>
                                             @break
                                         @case('forward')
-                                            <button type="button" class="sikds-docs-action-btn" title="Transférer" aria-label="Transférer" @click="$dispatch('open-forward-modal', { forwardUrl: @js($doc['forward_url']), reference: @js($doc['reference']), title: @js($doc['title']) })">
+                                            <button type="button" class="sikds-docs-action-btn" title="{{ __('Transférer') }}" aria-label="{{ __('Transférer') }}" @click="$dispatch('open-forward-modal', { forwardUrl: @js($doc['forward_url']), reference: @js($doc['reference']), title: @js($doc['title']) })">
                                                 <i class="fa-solid fa-share-from-square"></i>
                                             </button>
                                             @break
                                         @case('publish')
-                                            <button type="button" class="sikds-docs-action-btn" title="Publier" aria-label="Publier" @click="performAction(@js($doc['publish_url']), 'POST', 'Document publié.')">
+                                            <button type="button" class="sikds-docs-action-btn" title="{{ __('Publier') }}" aria-label="{{ __('Publier') }}" @click="performAction(@js($doc['publish_url']), 'POST', @js(__('Document publié.')))">
                                                 <i :class="loading ? 'fa-solid fa-spinner fa-spin' : 'fa-solid fa-paper-plane'"></i>
                                             </button>
                                             @break
                                         @case('delete')
-                                            <button type="button" class="sikds-docs-action-btn sikds-docs-action-btn--danger" title="Supprimer" aria-label="Supprimer" @click="openDeleteModal(@js($doc))">
+                                            <button type="button" class="sikds-docs-action-btn sikds-docs-action-btn--danger" title="{{ __('Supprimer') }}" aria-label="{{ __('Supprimer') }}" @click="openDeleteModal(@js($doc))">
                                                 <i :class="loading ? 'fa-solid fa-spinner fa-spin' : 'fa-regular fa-trash-can'"></i>
                                             </button>
                                             @break
                                         @case('restore')
-                                            <button type="button" class="sikds-docs-action-btn" title="Restaurer" aria-label="Restaurer" @click="performAction(@js($doc['restore_url']), 'POST', 'Document restauré.')">
+                                            <button type="button" class="sikds-docs-action-btn" title="{{ __('Restaurer') }}" aria-label="{{ __('Restaurer') }}" @click="performAction(@js($doc['restore_url']), 'POST', @js(__('Document restauré.')))">
                                                 <i :class="loading ? 'fa-solid fa-spinner fa-spin' : 'fa-solid fa-rotate-left'"></i>
                                             </button>
                                             @break
@@ -330,7 +330,7 @@
                 @empty
                     <tr>
                         <td colspan="6" class="text-center py-8 text-sm sikds-muted-text">
-                            Aucun document ne correspond aux filtres sélectionnés.
+                            {{ __('Aucun document ne correspond aux filtres sélectionnés.') }}
                         </td>
                     </tr>
                 @endforelse
@@ -340,19 +340,19 @@
 
     <div class="sikds-docs-pagination">
         <span class="sikds-docs-pagination-info">
-            Affichage de {{ $documents->firstItem() ?? 0 }}-{{ $documents->lastItem() ?? 0 }} sur {{ $documents->total() }} documents
+            {{ __('Affichage de') }} {{ $documents->firstItem() ?? 0 }}-{{ $documents->lastItem() ?? 0 }} {{ __('sur') }} {{ $documents->total() }} {{ __('documents') }}
         </span>
         <div class="sikds-docs-pagination-btns">
             @if ($documents->onFirstPage())
-                <button type="button" class="sikds-docs-page-btn" disabled>Précédent</button>
+                <button type="button" class="sikds-docs-page-btn" disabled>{{ __('Précédent') }}</button>
             @else
-                <a href="{{ $documents->previousPageUrl() }}" class="sikds-docs-page-btn">Précédent</a>
+                <a href="{{ $documents->previousPageUrl() }}" class="sikds-docs-page-btn">{{ __('Précédent') }}</a>
             @endif
 
             @if ($documents->hasMorePages())
-                <a href="{{ $documents->nextPageUrl() }}" class="sikds-docs-page-btn">Suivant</a>
+                <a href="{{ $documents->nextPageUrl() }}" class="sikds-docs-page-btn">{{ __('Suivant') }}</a>
             @else
-                <button type="button" class="sikds-docs-page-btn" disabled>Suivant</button>
+                <button type="button" class="sikds-docs-page-btn" disabled>{{ __('Suivant') }}</button>
             @endif
         </div>
     </div>
@@ -360,7 +360,7 @@
     {{-- Confirmation modal: Delete (dashboard) --}}
     <div x-show="modal === 'delete'" x-transition.opacity class="sikds-doc-modal-overlay" @click.self="modal = null" x-cloak>
         <div class="sikds-doc-modal">
-            <button type="button" class="sikds-doc-modal-close" @click="modal = null" aria-label="Fermer">
+            <button type="button" class="sikds-doc-modal-close" @click="modal = null" aria-label="{{ __('Fermer') }}">
                 <i class="fa-solid fa-xmark"></i>
             </button>
 
@@ -369,23 +369,23 @@
                     <i class="fa-regular fa-circle-exclamation"></i>
                 </div>
                 <div>
-                    <h3 class="sikds-doc-modal-title">Supprimer le Document</h3>
-                    <p class="sikds-doc-modal-subtitle">Action irréversible</p>
+                    <h3 class="sikds-doc-modal-title">{{ __('Supprimer le Document') }}</h3>
+                    <p class="sikds-doc-modal-subtitle">{{ __('Action irréversible') }}</p>
                 </div>
             </div>
 
             <p class="sikds-doc-modal-text">
-                Êtes-vous sûr de vouloir supprimer définitivement le document
+                {{ __('Êtes-vous sûr de vouloir supprimer définitivement le document') }}
                 "<strong x-text="pendingDeleteDoc?.title ?? ''"></strong>" ?
             </p>
 
             <div class="sikds-doc-modal-actions">
                 <button type="button" class="sikds-doc-modal-btn sikds-doc-modal-btn--cancel" @click="modal = null">
-                    Annuler
+                    {{ __('Annuler') }}
                 </button>
                 <button type="button" class="sikds-doc-modal-btn sikds-doc-modal-btn--delete" @click="confirmDelete()">
                     <i :class="loading ? 'fa-solid fa-spinner fa-spin' : 'fa-regular fa-trash-can'"></i>
-                    Supprimer
+                    {{ __('Supprimer') }}
                 </button>
             </div>
         </div>
@@ -395,6 +395,12 @@
 
     <script>
         function documentListPage(config) {
+            const i18n = {
+                deleted: @json(__('Document supprimé.')),
+                serverRedirect: @json(__('La requête a été redirigée par le serveur. Vérifiez votre session.')),
+                genericError: @json(__('Une erreur est survenue.')),
+                actionImpossible: @json(__('Action impossible.')),
+            };
             return {
                 filtersOpen: false,
                 previewOpen: false,
@@ -437,7 +443,7 @@
                 },
                 async confirmDelete() {
                     if (!this.pendingDeleteDoc?.delete_url) return;
-                    await this.performAction(this.pendingDeleteDoc.delete_url, 'DELETE', 'Document supprimé.');
+                    await this.performAction(this.pendingDeleteDoc.delete_url, 'DELETE', i18n.deleted);
                 },
                 async performAction(url, method, successMessage) {
                     if (this.loading) return;
@@ -457,13 +463,13 @@
                         });
 
                         if (response.redirected) {
-                            throw new Error('La requête a été redirigée par le serveur. Vérifiez votre session.');
+                            throw new Error(i18n.serverRedirect);
                         }
 
                         const payload = await response.json().catch(() => ({}));
 
                         if (!response.ok) {
-                            throw new Error(payload.message || 'Une erreur est survenue.');
+                            throw new Error(payload.message || i18n.genericError);
                         }
 
                         this.modal = null;
@@ -471,7 +477,7 @@
                         this.banner = { message: successMessage, type: 'success' };
                         window.location.reload();
                     } catch (error) {
-                        this.banner = { message: error.message || 'Action impossible.', type: 'danger' };
+                        this.banner = { message: error.message || i18n.actionImpossible, type: 'danger' };
                     } finally {
                         this.loading = false;
                     }

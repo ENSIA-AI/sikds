@@ -92,7 +92,7 @@ final class RoleController extends Controller
                 ])->render();
 
                 return response()->json([
-                    'message' => "Le rôle « {$role->name} » a été créé avec succès.",
+                    'message' => __("Le rôle « {$name} » a été créé avec succès.", ['name' => $role->name]),
                     'role' => [
                         'id' => $role->id,
                         'name' => $role->name,
@@ -105,17 +105,17 @@ final class RoleController extends Controller
 
             return redirect()
                 ->route('roles.show', $role)
-                ->with('success', "Le rôle « {$role->name} » a été créé avec succès.");
+                ->with('success', __("Le rôle « {$name} » a été créé avec succès.", ['name' => $role->name]));
         } catch (\Exception $e) {
             if ($request->wantsJson()) {
                 return response()->json([
-                    'message' => "Erreur lors de la création du rôle : {$e->getMessage()}",
+                    'message' => __('Erreur lors de la création du rôle : :message', ['message' => $e->getMessage()]),
                 ], 500);
             }
 
             return back()
                 ->withInput()
-                ->with('error', "Erreur lors de la création du rôle : {$e->getMessage()}");
+                ->with('error', __('Erreur lors de la création du rôle : :message', ['message' => $e->getMessage()]));
         }
     }
 
@@ -150,7 +150,7 @@ final class RoleController extends Controller
         $this->authorize('role.edit');
         
         if ($role->is_system_role) {
-            abort(403, 'Les rôles système ne peuvent pas être modifiés.');
+            abort(403, __('Les rôles système ne peuvent pas être modifiés.'));
         }
         
         $permissions = Permission::query()
@@ -175,12 +175,12 @@ final class RoleController extends Controller
             
             return redirect()
                 ->route('roles.show', $role)
-                ->with('success', "Le rôle « {$role->name} » a été mis à jour.");
+                ->with('success', __("Le rôle « {$name} » a été mis à jour.", ['name' => $role->name]));
                 
         } catch (\Exception $e) {
             return back()
                 ->withInput()
-                ->with('error', "Erreur : {$e->getMessage()}");
+                ->with('error', __('Erreur : :message', ['message' => $e->getMessage()]));
         }
     }
 
@@ -195,11 +195,11 @@ final class RoleController extends Controller
             
             return redirect()
                 ->route('roles.index')
-                ->with('success', "Le rôle « {$roleName} » a été supprimé.");
+                ->with('success', __("Le rôle « {$name} » a été supprimé.", ['name' => $roleName]));
                 
         } catch (\Exception $e) {
             return back()
-                ->with('error', "Erreur : {$e->getMessage()}");
+                ->with('error', __('Erreur : :message', ['message' => $e->getMessage()]));
         }
     }
 }

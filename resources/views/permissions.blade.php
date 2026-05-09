@@ -3,8 +3,8 @@
     $activeNav = 'permissions';
 @endphp
 
-@section('page_title', 'Gérer les Permissions')
-@section('page_subtitle', 'Catalogue complet des permissions système organisé par catégorie')
+@section('page_title', __('Gérer les Permissions'))
+@section('page_subtitle', __('Catalogue complet des permissions système organisé par catégorie'))
 
 @push('scripts')
     @vite(['resources/js/pages/permissions.js'])
@@ -18,19 +18,19 @@
     <section class="rounded-[14px] border border-black/10 bg-white px-[17.67px] pb-[12.67px] pt-[16.67px] shadow-[0px_1px_2px_-1px_rgba(0,0,0,0.10),0px_1px_3px_0px_rgba(0,0,0,0.10)]">
         <div class="grid grid-cols-2 gap-4 sm:grid-cols-4">
             <div class="flex flex-col gap-1">
-                <div class="text-sm font-normal leading-5 text-[#717182]">Total Permissions</div>
+                <div class="text-sm font-normal leading-5 text-[#717182]">{{ __('Total Permissions') }}</div>
                 <div class="text-2xl font-semibold leading-8 text-[#0A0A0A]">{{ $stats['total_permissions'] ?? 0 }}</div>
             </div>
             <div class="flex flex-col gap-1">
-                <div class="text-sm font-normal leading-5 text-[#717182]">Catégories</div>
+                <div class="text-sm font-normal leading-5 text-[#717182]">{{ __('Catégories') }}</div>
                 <div class="text-2xl font-semibold leading-8 text-[#0A0A0A]">{{ $stats['categories'] ?? 0 }}</div>
             </div>
             <div class="flex flex-col gap-1">
-                <div class="text-sm font-normal leading-5 text-[#717182]">Permissions Critiques</div>
+                <div class="text-sm font-normal leading-5 text-[#717182]">{{ __('Permissions Critiques') }}</div>
                 <div class="text-2xl font-semibold leading-8 text-[#0A0A0A]">{{ $stats['critical'] ?? 0 }}</div>
             </div>
             <div class="flex flex-col gap-1">
-                <div class="text-sm font-normal leading-5 text-[#717182]">Assignées aux rôles</div>
+                <div class="text-sm font-normal leading-5 text-[#717182]">{{ __('Assignées aux rôles') }}</div>
                 <div class="text-2xl font-semibold leading-8 text-[#0A0A0A]">{{ $stats['assigned'] ?? 0 }}</div>
             </div>
         </div>
@@ -48,7 +48,7 @@
             <input
                 data-permissions-search
                 type="text"
-                placeholder="Rechercher par nom, code ou description..."
+                placeholder="{{ __('Rechercher par nom, code ou description...') }}"
                 class="h-[41.33px] w-full rounded-[10px] border border-black/10 bg-white pl-10 pr-3 text-sm text-[#0A0A0A] placeholder:text-[#0A0A0A80] outline-none focus:border-black/20 focus:ring-2 focus:ring-black/10"
             />
         </div>
@@ -59,7 +59,7 @@
         <div class="flex flex-wrap gap-2">
             <x-permissions.filter-button
                 filterKey="all"
-                label="Toutes"
+                :label="__('Toutes')"
                 :count="$totalCount ?? 0"
                 :selected="true"
                 activeBg="#030213"
@@ -126,7 +126,7 @@
                             @endif
                             <div class="min-w-0">
                                 <h3 class="text-lg font-semibold leading-[27px] text-black">{{ $catKey }}</h3>
-                                <p class="text-sm leading-5 text-[#717182]">{{ $permCount }} permission(s)</p>
+                                <p class="text-sm leading-5 text-[#717182]">{{ $permCount }} {{ __('permission(s)') }}</p>
                             </div>
                         </div>
                     </div>
@@ -158,7 +158,7 @@
                             </div>
                         @empty
                             <div class="rounded-[10px] border border-black/10 bg-[#ECECF04D] p-3 text-sm text-[#717182]">
-                                Aucune permission dans cette catégorie.
+                                {{ __('Aucune permission dans cette catégorie.') }}
                             </div>
                         @endforelse
                     </div>
@@ -170,7 +170,7 @@
             data-permissions-empty
             class="hidden mt-6 rounded-[14px] border border-black/10 bg-white p-6 text-sm text-[#717182] shadow-[0px_1px_2px_-1px_rgba(0,0,0,0.10),0px_1px_3px_0px_rgba(0,0,0,0.10)]"
         >
-            Aucune permission ne correspond à votre recherche.
+            {{ __('Aucune permission ne correspond à votre recherche.') }}
         </div>
     </section>
 

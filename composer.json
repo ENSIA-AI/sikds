@@ -12,27 +12,29 @@
     "php": "^8.3",
     "ext-curl": "*",
     "ext-pdo": "*",
-    "laravel/framework": "^13.0",
-    "laravel/tinker": "^3.0",
-    "league/flysystem-aws-s3-v3": "^3.29",
-    "predis/predis": "^3.0",
+    "deployer/deployer": "^8.0",
+    "laravel/framework": "^13.8",
+    "laravel/horizon": "^5.46",
+    "laravel/tinker": "^3.0.2",
+    "league/flysystem-aws-s3-v3": "^3.32",
+    "predis/predis": "^3.4.2",
     "prism-php/prism": "^0.99.22",
-    "setasign/fpdf": "^1.8",
-    "setasign/fpdi": "^2.3",
-    "smalot/pdfparser": "^2.0",
-    "spatie/laravel-permission": "^6.24"
+    "setasign/fpdf": "^1.8.6",
+    "setasign/fpdi": "^2.6.6",
+    "smalot/pdfparser": "^2.12.5",
+    "spatie/laravel-permission": "^6.25"
   },
   "require-dev": {
-    "barryvdh/laravel-debugbar": "^4.0",
-    "fakerphp/faker": "^1.24",
-    "larastan/larastan": "^3.0",
-    "laravel/pail": "^1.2",
-    "laravel/pint": "^1.25",
-    "laravel/sail": "^1.52",
-    "mockery/mockery": "^1.6",
-    "nunomaduro/collision": "^8.9",
-    "pestphp/pest": "^4.0",
-    "pestphp/pest-plugin-laravel": "^4.0"
+    "barryvdh/laravel-debugbar": "^4.2.8",
+    "fakerphp/faker": "^1.24.1",
+    "larastan/larastan": "^3.9.6",
+    "laravel/pail": "^1.2.6",
+    "laravel/pint": "^1.29.1",
+    "laravel/sail": "^1.58",
+    "mockery/mockery": "^1.6.12",
+    "nunomaduro/collision": "^8.9.4",
+    "pestphp/pest": "^4.7",
+    "pestphp/pest-plugin-laravel": "^4.1"
   },
   "autoload": {
     "psr-4": {
@@ -71,6 +73,16 @@
     "test": [
       "@php artisan config:clear --ansi",
       "@php artisan test"
+    ],
+    "i18n:scan": [
+      "@php artisan i18n:scan"
+    ],
+    "i18n:lint": [
+      "@php artisan i18n:lint"
+    ],
+    "i18n:check": [
+      "@php artisan i18n:scan --check",
+      "@php artisan i18n:lint"
     ]
   },
   "extra": {

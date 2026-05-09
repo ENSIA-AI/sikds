@@ -1,6 +1,6 @@
 @extends('layouts.app')
-@section('page_title', 'Journaux d’Audit')
-@section('page_subtitle', 'Traçabilité complète des actions système et sécurité')
+@section('page_title', __('Journaux d’Audit'))
+@section('page_subtitle', __('Traçabilité complète des actions système et sécurité'))
 @section('content')
     <script type="application/json" id="audit-selected-events">@json(is_array(request('event_type')) ? request('event_type') : (request('event_type') ? [request('event_type')] : []))</script>
     <script type="application/json" id="audit-selected-statuses">@json(is_array(request('result')) ? request('result') : (request('result') ? [request('result')] : []))</script>
@@ -14,6 +14,7 @@
             'document.soft_deleted' => 'Suppression logique de document',
             'document.restored' => 'Restauration de document',
             'document.download' => 'Téléchargement de document',
+            'document.forwarded' => 'Document transféré',
             'auth.login.success' => 'Connexion réussie',
             'auth.login.failed' => 'Tentative de connexion échouée',
             'auth.logout' => 'Déconnexion',
@@ -40,6 +41,11 @@
             'indexing.started' => 'Démarrage indexation',
             'indexing.completed' => 'Indexation terminée',
             'indexing.failed' => 'Échec indexation',
+            'DOCUMENT_INDEXING_STARTED' => 'Démarrage indexation',
+            'DOCUMENT_INDEXING_COMPLETED' => 'Indexation terminée',
+            'DOCUMENT_INDEXING_FAILED' => 'Échec indexation',
+            'QUEUE_JOB_FAILED' => "Échec d'un travail en file",
+            'QUEUE_LONG_WAIT_DETECTED' => 'Attente prolongée détectée',
             'notification.sent' => 'Notification envoyée',
             'notification.failed' => 'Échec notification',
             // Defensive aliases for shorter event keys that may appear via legacy or future emitters.
@@ -161,7 +167,7 @@
                 <button type="button" id="open-export-modal"
                    class="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold border border-black/10 rounded-[12px] hover:bg-gray-50 transition-colors">
                     <i class="fa-solid fa-download text-xs"></i>
-                    Exporter les Logs
+                    {{ __('Exporter les Logs') }}
                 </button>
             </div>
 
@@ -205,7 +211,7 @@
                 <div class="lg:col-span-3">
                     <input type="text" name="user" value="{{ request('user', request('actor')) }}"
                            class="h-10 w-full text-sm border border-[#e5e7eb] rounded-[8px] px-3 bg-white focus:outline-none focus:border-[#1c398e] focus:ring-2 focus:ring-[#1c398e]/20 transition"
-                           placeholder="Filtrer par utilisateur...">
+                           placeholder="{{ __('Filtrer par utilisateur...') }}">
                 </div>
 
                 {{-- Status multi-select --}}
@@ -237,9 +243,9 @@
             {{-- Active filter chips --}}
             <div class="px-5 pb-4 flex flex-wrap items-center justify-between gap-3">
                 <div class="flex flex-wrap items-center gap-2 text-sm" style="color:var(--sikds-muted)">
-                    <span>Filtres actifs:</span>
+                    <span>{{ __('Filtres actifs:') }}</span>
                     @if ($nonEmptyFilters->isEmpty())
-                        <span class="inline-flex items-center rounded-full bg-[#f1f5f9] px-2.5 py-1 text-xs text-[#717182]">Aucun</span>
+                        <span class="inline-flex items-center rounded-full bg-[#f1f5f9] px-2.5 py-1 text-xs text-[#717182]">{{ __('Aucun') }}</span>
                     @else
                         @foreach ($nonEmptyFilters as $key => $value)
                             @php
@@ -277,11 +283,11 @@
                     <a href="{{ route('audits.index') }}"
                        class="inline-flex items-center gap-1.5 px-4 py-2 text-sm border border-black/10 rounded-[10px] hover:bg-gray-50 transition-colors" style="color:var(--sikds-ink)">
                         <i class="fa-solid fa-rotate-left text-[10px]"></i>
-                        Réinitialiser
+                        {{ __('Réinitialiser') }}
                     </a>
                     <button type="submit" class="inline-flex items-center gap-1.5 px-5 py-2 text-sm font-semibold text-white rounded-[10px] transition hover:opacity-90" style="background-color:var(--sikds-primary);">
                         <i class="fa-solid fa-check text-[10px]"></i>
-                        Appliquer
+                        {{ __('Appliquer') }}
                     </button>
                 </div>
             </div>
@@ -293,12 +299,12 @@
             <table class="w-full text-sm">
                 <thead>
                     <tr class="border-b" style="border-color:rgba(0,0,0,.1);background:#f9f9fb;">
-                        <th class="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider" style="color:var(--sikds-muted)">Type</th>
-                        <th class="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider" style="color:var(--sikds-muted)">Utilisateur</th>
-                        <th class="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider" style="color:var(--sikds-muted)">Action</th>
-                        <th class="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider" style="color:var(--sikds-muted)">Cible</th>
-                        <th class="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider" style="color:var(--sikds-muted)">Horodatage</th>
-                        <th class="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider" style="color:var(--sikds-muted)">Statut</th>
+                        <th class="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider" style="color:var(--sikds-muted)">{{ __('Type') }}</th>
+                        <th class="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider" style="color:var(--sikds-muted)">{{ __('Utilisateur') }}</th>
+                        <th class="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider" style="color:var(--sikds-muted)">{{ __('Action') }}</th>
+                        <th class="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider" style="color:var(--sikds-muted)">{{ __('Cible') }}</th>
+                        <th class="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider" style="color:var(--sikds-muted)">{{ __('Horodatage') }}</th>
+                        <th class="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider" style="color:var(--sikds-muted)">{{ __('Statut') }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -329,29 +335,29 @@
                                 </span>
                             </td>
                             <td class="px-4 py-3">
-                                <p class="font-semibold text-sm" style="color:var(--sikds-ink)">{{ $log->user?->full_name ?? 'Utilisateur Inconnu' }}</p>
-                                <p class="text-xs" style="color:var(--sikds-muted)">{{ $log->user_email ?? $log->user?->email ?? 'N/A' }}</p>
+                                <p class="font-semibold text-sm" style="color:var(--sikds-ink)">{{ $log->user?->full_name ?? __('Utilisateur Inconnu') }}</p>
+                                <p class="text-xs" style="color:var(--sikds-muted)">{{ $log->user_email ?? $log->user?->email ?? __('N/A') }}</p>
                             </td>
                             <td class="px-4 py-3">
                                 <p class="text-sm font-medium" style="color:var(--sikds-ink)">{{ $actionLabel }}</p>
-                                <p class="text-xs" style="color:var(--sikds-muted)">Événement audité</p>
+                                <p class="text-xs" style="color:var(--sikds-muted)">{{ __('Événement audité') }}</p>
                             </td>
                             <td class="px-4 py-3">
                                 <p class="text-sm font-medium" style="color:var(--sikds-ink)">{{ $targetLabel }}</p>
                                 <details>
-                                    <summary class="cursor-pointer text-xs font-medium" style="color:var(--sikds-primary)">Contexte</summary>
+                                    <summary class="cursor-pointer text-xs font-medium" style="color:var(--sikds-primary)">{{ __('Contexte') }}</summary>
                                     <div class="mt-2 space-y-2">
                                         @php($meta = is_array($log->metadata) ? $log->metadata : [])
                                         <ul class="text-xs space-y-1" style="color:var(--sikds-muted)">
                                             @foreach ($contextSummary($event, $meta) as $line)
                                                 <li>{{ $line }}</li>
                                             @endforeach
-                                            <li>Appareil: {{ $log->user_agent ? 'Navigateur web' : 'Système' }}</li>
+                                            <li>{{ __('Appareil') }}: {{ $log->user_agent ? __('Navigateur web') : __('Système') }}</li>
                                         </ul>
 
                                         @if ($canViewAuditTechnicalDetails)
                                             <details class="mt-2">
-                                                <summary class="cursor-pointer text-xs font-medium" style="color:var(--sikds-primary)">Voir JSON</summary>
+                                                <summary class="cursor-pointer text-xs font-medium" style="color:var(--sikds-primary)">{{ __('Voir JSON') }}</summary>
                                                 <pre class="mt-2 text-xs bg-gray-50 border border-black/10 rounded-[8px] p-2 overflow-auto max-h-28">{{ json_encode($meta, JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE) }}</pre>
                                             </details>
                                         @endif
@@ -360,7 +366,7 @@
                             </td>
                             <td class="px-4 py-3 whitespace-nowrap">
                                 <p class="text-sm font-medium" style="color:var(--sikds-ink)">{{ $log->created_at?->format('Y-m-d H:i:s') }}</p>
-                                <p class="text-xs" style="color:var(--sikds-muted)">{{ $log->ip_address ?? 'N/A' }}</p>
+                                <p class="text-xs" style="color:var(--sikds-muted)">{{ $log->ip_address ?? __('N/A') }}</p>
                             </td>
                             <td class="px-4 py-3">
                                 <span class="sikds-status {{ $badgeClass }}">{{ $resultLabels[$log->result] ?? ucfirst((string) ($log->result ?? 'success')) }}</span>
@@ -369,7 +375,7 @@
                     @empty
                         <tr>
                             <td colspan="6" class="px-5 py-14 text-center text-sm" style="color:var(--sikds-muted)">
-                                Aucun événement d'audit trouvé.
+                                {{ __('Aucun événement d\'audit trouvé.') }}
                             </td>
                         </tr>
                     @endforelse
@@ -379,18 +385,18 @@
 
         <div class="px-5 py-4 border-t flex items-center justify-between" style="border-color:rgba(0,0,0,.1);">
             <p class="text-sm" style="color:var(--sikds-muted)">
-                Affichage de {{ $logs->firstItem() ?? 0 }}-{{ $logs->lastItem() ?? 0 }} sur {{ number_format($logs->total()) }} événements
+                {{ __('Affichage de') }} {{ $logs->firstItem() ?? 0 }}-{{ $logs->lastItem() ?? 0 }} {{ __('sur') }} {{ number_format($logs->total()) }} {{ __('événements') }}
             </p>
             <div class="flex items-center gap-2">
                 @if ($logs->onFirstPage())
-                    <span class="px-4 py-1.5 text-sm border rounded-[10px] opacity-40 cursor-not-allowed" style="border-color:rgba(0,0,0,.1);color:var(--sikds-muted)">Précédent</span>
+                    <span class="px-4 py-1.5 text-sm border rounded-[10px] opacity-40 cursor-not-allowed" style="border-color:rgba(0,0,0,.1);color:var(--sikds-muted)">{{ __('Précédent') }}</span>
                 @else
-                    <a href="{{ $logs->previousPageUrl() }}" class="px-4 py-1.5 text-sm border rounded-[10px] hover:bg-gray-50 transition-colors" style="border-color:rgba(0,0,0,.1);color:var(--sikds-ink)">Précédent</a>
+                    <a href="{{ $logs->previousPageUrl() }}" class="px-4 py-1.5 text-sm border rounded-[10px] hover:bg-gray-50 transition-colors" style="border-color:rgba(0,0,0,.1);color:var(--sikds-ink)">{{ __('Précédent') }}</a>
                 @endif
                 @if ($logs->hasMorePages())
-                    <a href="{{ $logs->nextPageUrl() }}" class="px-4 py-1.5 text-sm border rounded-[10px] hover:bg-gray-50 transition-colors" style="border-color:rgba(0,0,0,.1);color:var(--sikds-ink)">Suivant</a>
+                    <a href="{{ $logs->nextPageUrl() }}" class="px-4 py-1.5 text-sm border rounded-[10px] hover:bg-gray-50 transition-colors" style="border-color:rgba(0,0,0,.1);color:var(--sikds-ink)">{{ __('Suivant') }}</a>
                 @else
-                    <span class="px-4 py-1.5 text-sm border rounded-[10px] opacity-40 cursor-not-allowed" style="border-color:rgba(0,0,0,.1);color:var(--sikds-muted)">Suivant</span>
+                    <span class="px-4 py-1.5 text-sm border rounded-[10px] opacity-40 cursor-not-allowed" style="border-color:rgba(0,0,0,.1);color:var(--sikds-muted)">{{ __('Suivant') }}</span>
                 @endif
             </div>
         </div>
@@ -401,10 +407,10 @@
         <div class="relative w-full max-w-xl rounded-2xl bg-white border border-black/10 shadow-2xl" style="font-family:'Inter', ui-sans-serif, sans-serif;">
             <div class="flex items-start justify-between px-6 py-5 border-b border-black/10">
                 <div>
-                    <h3 class="text-[22px] leading-7 font-semibold" style="color:var(--sikds-ink)">Exporter les Journaux</h3>
-                    <p class="mt-1 text-[14px]" style="color:var(--sikds-muted)">Télécharger l'historique d'audit</p>
+                    <h3 class="text-[22px] leading-7 font-semibold" style="color:var(--sikds-ink)">{{ __('Exporter les Journaux') }}</h3>
+                    <p class="mt-1 text-[14px]" style="color:var(--sikds-muted)">{{ __('Télécharger l\'historique d\'audit') }}</p>
                 </div>
-                <button type="button" id="close-export-modal" class="text-xl leading-none text-gray-500 hover:text-gray-700">&times;</button>
+                <button type="button" id="close-export-modal" class="text-xl leading-none text-gray-500 hover:text-gray-700"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
             </div>
 
             <form method="GET" action="{{ route('audits.export') }}" class="px-6 py-5 space-y-5">
@@ -415,7 +421,7 @@
                 @endforeach
 
                 <div>
-                    <label class="block text-[15px] font-semibold mb-2">Format d'Export <span class="text-red-500">*</span></label>
+                    <label class="block text-[15px] font-semibold mb-2">{{ __('Format d\'Export') }} <span class="text-red-500">*</span></label>
                     <div class="space-y-2">
                         <label class="flex items-start gap-3 rounded-xl border border-black/10 p-3 cursor-pointer hover:bg-gray-50">
                             <input type="radio" name="format" value="csv" checked class="mt-1">
@@ -424,7 +430,7 @@
                                     <img src="/csv_green.svg" alt="" class="h-4 w-4">
                                     CSV
                                 </p>
-                                <p class="text-[12px]" style="color:var(--sikds-muted)">Fichier tableur compatible Excel</p>
+                                <p class="text-[12px]" style="color:var(--sikds-muted)">{{ __('Fichier tableur compatible Excel') }}</p>
                             </div>
                         </label>
                         <label class="flex items-start gap-3 rounded-xl border border-black/10 p-3 cursor-pointer hover:bg-gray-50">
@@ -434,7 +440,7 @@
                                     <img src="/csv_blue.svg" alt="" class="h-4 w-4">
                                     JSON
                                 </p>
-                                <p class="text-[12px]" style="color:var(--sikds-muted)">Format structuré pour analyse</p>
+                                <p class="text-[12px]" style="color:var(--sikds-muted)">{{ __('Format structuré pour analyse') }}</p>
                             </div>
                         </label>
                         <label class="flex items-start gap-3 rounded-xl border border-black/10 p-3 opacity-60 cursor-not-allowed">
@@ -444,14 +450,14 @@
                                     <img src="/csv_red.svg" alt="" class="h-4 w-4">
                                     PDF
                                 </p>
-                                <p class="text-[12px]" style="color:var(--sikds-muted)">Rapport imprimable (bientôt disponible)</p>
+                                <p class="text-[12px]" style="color:var(--sikds-muted)">{{ __('Rapport imprimable (bientôt disponible)') }}</p>
                             </div>
                         </label>
                     </div>
                 </div>
 
                 <div>
-                    <label class="block text-[15px] font-semibold mb-2">Période</label>
+                    <label class="block text-[15px] font-semibold mb-2">{{ __('Période') }}</label>
                     <div class="grid grid-cols-2 gap-3">
                         <input type="date" name="export_date_from" class="text-[13px] border border-black/10 rounded-[10px] px-3 py-2">
                         <input type="date" name="export_date_to" class="text-[13px] border border-black/10 rounded-[10px] px-3 py-2">
@@ -460,13 +466,13 @@
 
                 <div class="rounded-xl px-3 py-2 text-[12px]" style="background:#eef4ff;color:#3859d0;">
                     <i class="fa-solid fa-circle-info mr-1"></i>
-                    L'export inclura tous les événements selon les filtres actifs.
+                    {{ __('L\'export inclura tous les événements selon les filtres actifs.') }}
                 </div>
 
                 <div class="flex items-center justify-between pt-2">
-                    <button type="button" id="cancel-export-modal" class="px-5 py-2 text-sm border border-black/10 rounded-[10px] hover:bg-gray-50">Annuler</button>
+                    <button type="button" id="cancel-export-modal" class="px-5 py-2 text-sm border border-black/10 rounded-[10px] hover:bg-gray-50">{{ __('Annuler') }}</button>
                     <button type="submit" class="px-5 py-2 text-sm font-semibold text-white rounded-[10px]" style="background-color:var(--sikds-primary);">
-                        <i class="fa-solid fa-download mr-1"></i> Exporter
+                        <i class="fa-solid fa-download mr-1"></i> {{ __('Exporter') }}
                     </button>
                 </div>
             </form>

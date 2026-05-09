@@ -1,28 +1,28 @@
-SIKDS — Document mis à jour
-Ministère de l'Enseignement Supérieur et de la Recherche Scientifique
+{{ __('SIKDS — Document mis à jour') }}
+{{ __("Ministère de l'Enseignement Supérieur et de la Recherche Scientifique") }}
 
-Bonjour {{ $recipient->full_name ?: $recipient->email }},
+{{ __('Bonjour :name,', ['name' => $recipient->full_name ?: $recipient->email]) }}
 
-Une nouvelle version d'un document existant est disponible.
+{{ __("Une nouvelle version d'un document existant est disponible.") }}
 
-Référence : {{ $document->reference_number }}
-Titre     : {{ $document->title }}
-Version   : v{{ $previousVersion }} -> v{{ $newVersion }}
+{{ __('Référence') }} : {{ $document->reference_number }}
+{{ __('Titre') }}     : {{ $document->title }}
+{{ __('Version') }}   : v{{ $previousVersion }} -> v{{ $newVersion }}
 @if (!empty($changeSummary))
 
-Résumé des modifications :
+{{ __('Résumé des modifications :') }}
 {{ $changeSummary }}
 @endif
 @if (!empty($documentTags))
 
-Tags :
+{{ __('Tags :') }}
 @foreach ($documentTags as $tag)
 - @if (!empty($tag['category'])){{ $tag['category'] }}: @endif{{ $tag['name'] }}
 @endforeach
 @endif
 
-Voir la nouvelle version : {{ url('/documents/'.$document->id) }}
+{{ __('Voir la nouvelle version :') }} {{ url('/documents/'.$document->id) }}
 
 ---
-Email envoyé automatiquement par SIKDS.
-Support : {{ $supportContact }}
+{{ __('Email envoyé automatiquement par SIKDS.') }}
+{{ __('Support :') }} {{ $supportContact }}

@@ -7,17 +7,17 @@
     /** @var \Illuminate\Support\Collection $permissionsByCategory */
     $categoryOrder = ['documents', 'distributions', 'tags', 'indexing', 'utilisateurs', 'users', 'roles', 'institutions', 'institution', 'chatbot', 'audit'];
     $categoryLabels = [
-        'documents' => 'Documents',
-        'distributions' => 'Distributions',
-        'tags' => 'Tags',
-        'indexing' => 'Indexation',
-        'utilisateurs' => 'Utilisateurs',
-        'users' => 'Utilisateurs',
-        'roles' => 'Rôles',
-        'institutions' => 'Institutions',
-        'institution' => 'Institutions',
-        'chatbot' => 'Chatbot',
-        'audit' => 'Audit',
+        'documents' => __('Documents'),
+        'distributions' => __('Distributions'),
+        'tags' => __('Tags'),
+        'indexing' => __('Indexation'),
+        'utilisateurs' => __('Utilisateurs'),
+        'users' => __('Utilisateurs'),
+        'roles' => __('Rôles'),
+        'institutions' => __('Institutions'),
+        'institution' => __('Institutions'),
+        'chatbot' => __('Chatbot'),
+        'audit' => __('Audit'),
     ];
     $normalized = $permissionsByCategory->mapWithKeys(fn ($items, $key) => [strtolower((string) $key) => $items]);
     $orderedKeys = collect($categoryOrder)->filter(fn ($k) => $normalized->has($k));
@@ -40,7 +40,7 @@
             >
                 <span class="min-w-0 flex-1 truncate">{{ $categoryLabels[$catKey] ?? ucfirst((string) $catKey) }}</span>
                 <span class="shrink-0 rounded-full bg-[#ECECF04D] px-2 py-0.5 font-inter text-xs font-medium text-[#717182]" data-perm-count>
-                    {{ $perms->count() }} permissions
+                    {{ $perms->count() }} {{ __('permissions') }}
                 </span>
                 <svg data-perm-chevron class="size-4 shrink-0 text-[#717182] transition-transform" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                     <path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />

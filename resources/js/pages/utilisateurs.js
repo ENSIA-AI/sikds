@@ -11,6 +11,19 @@ function readApiBase() {
     return root?.dataset?.usersApiBase ?? '/users';
 }
 
+function readUsersI18n() {
+    const root = document.querySelector('[data-users-api-base]');
+    return {
+        networkError: root?.dataset?.i18nNetworkError || 'Erreur réseau.',
+        genericError: root?.dataset?.i18nGenericError || 'Une erreur est survenue.',
+        statusUpdated: root?.dataset?.i18nStatusUpdated || 'Statut mis à jour.',
+        userCreated: root?.dataset?.i18nUserCreated || 'Utilisateur créé.',
+        userUpdated: root?.dataset?.i18nUserUpdated || 'Utilisateur mis à jour.',
+        userRoleUpdated: root?.dataset?.i18nUserRoleUpdated || 'Utilisateur et rôle mis à jour.',
+        requiredFields: root?.dataset?.i18nRequiredFields || 'Le nom, l’email et l’institution sont obligatoires.',
+    };
+}
+
 function readRolesBootstrap() {
     const el = document.getElementById('users-roles-bootstrap');
     if (!el?.textContent) {
@@ -354,7 +367,8 @@ async function toggleUserActiveFromRow(tr) {
             return;
         }
 
-        showToast(data.message ?? 'Statut mis à jour.');
+        const i18n = readUsersI18n();
+        showToast(data.message ?? i18n.statusUpdated);
         const tbody = document.querySelector('[data-users-tbody]');
         const beforeActive = !!payload.is_active;
         replaceOrAppendUserRow(tbody, data.user);
@@ -366,7 +380,8 @@ async function toggleUserActiveFromRow(tr) {
             bumpStat(afterActive ? 'active' : 'inactive', 1);
         }
     } catch {
-        showToast('Erreur réseau.', 'error');
+        const i18n = readUsersI18n();
+        showToast(i18n.networkError, 'error');
     }
 }
 
@@ -418,7 +433,8 @@ function parseJsonErrors(data) {
             .flat()
             .join(' ');
     }
-    return data.message ?? 'Une erreur est survenue.';
+    const i18n = readUsersI18n();
+    return data.message ?? i18n.genericError;
 }
 
 function wireSearchInput() {
@@ -549,7 +565,8 @@ function wireCreateUserModal(rolesData) {
                 }
                 return;
             }
-            showToast(data.message ?? 'Utilisateur créé.');
+            const i18n = readUsersI18n();
+            showToast(data.message ?? i18n.userCreated);
             const tbody = document.querySelector('[data-users-tbody]');
             replaceOrAppendUserRow(tbody, data.user);
             bumpStat('total', 1);
@@ -560,7 +577,8 @@ function wireCreateUserModal(rolesData) {
             }
             close();
         } catch {
-            showToast('Erreur réseau.', 'error');
+            const i18n = readUsersI18n();
+            showToast(i18n.networkError, 'error');
         }
     });
 }
@@ -682,7 +700,8 @@ function wireEditUserModal(rolesData) {
 
         if (!fullName || !email || !Number.isFinite(institutionId)) {
             if (errBox) {
-                errBox.textContent = 'Le nom, l’email et l’institution sont obligatoires.';
+                const i18n = readUsersI18n();
+                errBox.textContent = i18n.requiredFields;
                 errBox.classList.remove('hidden');
             }
             return;
@@ -714,7 +733,8 @@ function wireEditUserModal(rolesData) {
             }
 
             // 2) Optionally update roles + custom permissions in the same modal.
-            let toastMsg = 'Utilisateur mis à jour.';
+            const i18n = readUsersI18n();
+            let toastMsg = i18n.userUpdated;
             let userPayload = updateData.user ?? null;
 
             if (canAssignPermissions) {
@@ -740,7 +760,7 @@ function wireEditUserModal(rolesData) {
                     return;
                 }
                 if (permData.user) userPayload = permData.user;
-                toastMsg = permData.message ?? 'Utilisateur et rôle mis à jour.';
+                toastMsg = permData.message ?? i18n.userRoleUpdated;
             }
 
             showToast(toastMsg);
@@ -752,7 +772,8 @@ function wireEditUserModal(rolesData) {
             }
             close();
         } catch {
-            showToast('Erreur réseau.', 'error');
+            const i18n = readUsersI18n();
+            showToast(i18n.networkError, 'error');
         }
     });
 }

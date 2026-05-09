@@ -7,17 +7,12 @@ namespace App\Http\Controllers\Web;
 use App\Http\Controllers\Controller;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class NotificationsController extends Controller
 {
     public function index(Request $request): View
     {
-        /** @var \App\Domain\Users\Models\User $user */
-        $user = Auth::user();
-        abort_if(! $user->can('audit.view'), 403, 'Accès refusé. Permission audit.view requise.');
-
         $query = DB::table('notifications as n')
             ->leftJoin('users as u', 'u.id', '=', 'n.recipient_user_id')
             ->leftJoin('documents as d', 'd.id', '=', 'n.document_id')
@@ -45,12 +40,20 @@ class NotificationsController extends Controller
             });
         }
 
-        if ($type = $request->input('type')) {
-            $query->where('n.type', $type);
+        $type = $request->input('type');
+        $types = is_array($type)
+            ? array_values(array_filter(array_map('strval', $type), fn ($v): bool => $v !== ''))
+            : (is_string($type) && trim($type) !== '' ? [$type] : []);
+        if ($types !== []) {
+            $query->whereIn('n.type', $types);
         }
 
-        if ($status = $request->input('status')) {
-            $query->where('n.email_status', $status);
+        $status = $request->input('status');
+        $statuses = is_array($status)
+            ? array_values(array_filter(array_map('strval', $status), fn ($v): bool => $v !== ''))
+            : (is_string($status) && trim($status) !== '' ? [$status] : []);
+        if ($statuses !== []) {
+            $query->whereIn('n.email_status', $statuses);
         }
 
         if ($dateFrom = $request->input('date_from')) {
@@ -82,6 +85,7 @@ class NotificationsController extends Controller
             ->select('type')
             ->distinct()
             ->orderBy('type')
+            ->limit(500)
             ->pluck('type');
 
         return view('notifications.index', compact('notifications', 'stats', 'types') + ['activeNav' => 'notifications']);

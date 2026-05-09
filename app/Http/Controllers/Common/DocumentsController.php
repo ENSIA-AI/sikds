@@ -8,6 +8,7 @@ use App\Domain\Audit\Models\AuditLog;
 use App\Domain\Documents\Models\Document;
 use App\Domain\Documents\Models\DocumentVersion;
 use App\Domain\Documents\Models\DownloadLog;
+use App\Domain\Documents\Services\Api\DocumentApiAuthorizationService;
 use App\Domain\Institutions\Models\Institution;
 use App\Domain\Users\Models\User;
 use App\Models\Role;
@@ -20,6 +21,10 @@ use Illuminate\View\View;
 
 class DocumentsController
 {
+    public function __construct(
+        private readonly DocumentApiAuthorizationService $documentAuth,
+    ) {}
+
     public function index(Request $request): View
     {
         /** @var User $user */
@@ -108,21 +113,23 @@ class DocumentsController
     {
         /** @var User $user */
         $user = Auth::user();
-        abort_if(! $this->canPreview($user), 403, 'Permission document.view.all requise pour la prévisualisation.');
 
         $resolved = $this->resolveDocument($document);
+
+        $instScope = $this->documentAuth->isInstitutionScopedActionAllowed($user, $resolved);
 
         return view('documents.show', [
             'activeNav' => 'documents',
             'document' => $this->mapDetailDocument($resolved),
-            'canEdit' => $user->can('document.edit'),
-            'canDelete' => $user->can('document.delete'),
-            'canPublish' => $user->can('document.publish'),
-            'canRestore' => $user->can('document.restore'),
+            'canEdit' => $user->can('document.edit') && $instScope,
+            'canDelete' => $user->can('document.delete') && $instScope,
+            'canPublish' => $user->can('document.publish') && $instScope,
+            'canRestore' => $this->mayRestoreSoftDeletedDocument($user),
             'canForward' => $resolved->status === 'active'
                 && ! $resolved->trashed()
                 && $this->canForward($user)
-                && $resolved->isAccessibleBy($user),
+                && $resolved->isAccessibleBy($user)
+                && $instScope,
         ]);
     }
 
@@ -130,9 +137,9 @@ class DocumentsController
     {
         /** @var User $user */
         $user = Auth::user();
-        abort_if(! $user->can('document.edit'), 403, 'Permission document.edit requise.');
 
         $resolved = $this->resolveDocument($document);
+        $this->documentAuth->assertInstitutionScope($user, $resolved);
 
         return view('documents.edit', [
             'activeNav' => 'documents',
@@ -141,7 +148,8 @@ class DocumentsController
             'institutions' => $this->availableInstitutions(),
             'roles' => $this->availableRoles(),
             'targetUsers' => $this->availableTargetUsers(),
-            'canPublish' => $user->can('document.publish'),
+            'canPublish' => $user->can('document.publish')
+                && $this->documentAuth->isInstitutionScopedActionAllowed($user, $resolved),
         ]);
     }
 
@@ -181,27 +189,29 @@ class DocumentsController
 
         $uiStatus = $document->status === 'soft_deleted' ? 'deleted' : $document->status;
 
+        $instScope = $this->documentAuth->isInstitutionScopedActionAllowed($user, $document);
+
         $actions = ['download'];
-        if ($document->status === 'draft' && $user->can('document.publish')) {
+        if ($document->status === 'draft' && $user->can('document.publish') && $instScope) {
             $actions[] = 'publish';
         }
         if ($this->canPreview($user)) {
             $actions[] = 'view';
         }
-        if ($user->can('document.edit')) {
+        if ($user->can('document.edit') && $instScope) {
             $actions[] = 'edit';
         }
-        if ($document->status === 'active' && ! $document->trashed() && $this->canForward($user)) {
+        if ($document->status === 'active' && ! $document->trashed() && $this->canForward($user) && $instScope) {
             $actions[] = 'forward';
         }
-        if ($document->status === 'active' && $user->can('document.publish')) {
+        if ($document->status === 'active' && $user->can('document.publish') && $instScope) {
             $actions[] = 'archive';
         }
         if ($document->status === 'soft_deleted') {
-            if ($user->can('document.restore')) {
+            if ($this->mayRestoreSoftDeletedDocument($user)) {
                 $actions[] = 'restore';
             }
-        } elseif ($user->can('document.delete')) {
+        } elseif ($user->can('document.delete') && $instScope) {
             $actions[] = 'delete';
         }
 
@@ -251,11 +261,11 @@ class DocumentsController
             ->orderByDesc('downloaded_at')
             ->get()
             ->map(function (DownloadLog $download, int $index): array {
-                $name = $download->user?->full_name ?? $download->user?->name ?? 'Utilisateur inconnu';
-                $email = $download->user?->email ?? 'Email indisponible';
+                $name = $download->user?->full_name ?? $download->user?->name ?? __('Utilisateur inconnu');
+                $email = $download->user?->email ?? __('Email indisponible');
 
                 return [
-                    'title' => 'Téléchargement #'.($index + 1),
+                    'title' => __('Téléchargement #').($index + 1),
                     'meta' => $name.' • '.$email.' • '.$download->downloaded_at?->format('d/m/Y H:i'),
                     'uuid' => $download->watermark_uuid,
                 ];
@@ -278,12 +288,21 @@ class DocumentsController
                     'document.soft_deleted' => ['title' => 'Document supprimé', 'icon' => 'fa-regular fa-trash-can', 'class' => 'sikds-doc-event-icon--share'],
                     'document.restored' => ['title' => 'Document restauré', 'icon' => 'fa-solid fa-rotate-left', 'class' => 'sikds-doc-event-icon--share'],
                     'document.archived' => ['title' => 'Document archivé', 'icon' => 'fa-solid fa-box-archive', 'class' => 'sikds-doc-event-icon--share'],
+                    'document.forwarded' => ['title' => 'Document transféré', 'icon' => 'fa-solid fa-share-from-square', 'class' => 'sikds-doc-event-icon--share'],
+                    'tag.assigned' => ['title' => 'Étiquette ajoutée', 'icon' => 'fa-solid fa-tag', 'class' => 'sikds-doc-event-icon--version'],
+                    'tag.removed' => ['title' => 'Étiquette retirée', 'icon' => 'fa-solid fa-tag', 'class' => 'sikds-doc-event-icon--share'],
+                    'DOCUMENT_INDEXING_STARTED' => ['title' => 'Indexation démarrée', 'icon' => 'fa-solid fa-bolt', 'class' => 'sikds-doc-event-icon--version'],
+                    'DOCUMENT_INDEXING_COMPLETED' => ['title' => 'Indexation terminée', 'icon' => 'fa-solid fa-circle-check', 'class' => 'sikds-doc-event-icon--version'],
+                    'DOCUMENT_INDEXING_FAILED' => ['title' => "Échec d'indexation", 'icon' => 'fa-solid fa-triangle-exclamation', 'class' => 'sikds-doc-event-icon--share'],
                 ];
                 $data = $map[$activity->event_type] ?? ['title' => $activity->event_type, 'icon' => 'fa-regular fa-circle', 'class' => 'sikds-doc-event-icon--version'];
 
+                $resultLabels = ['success' => 'Succès', 'failed' => 'Échec', 'warning' => 'Avertissement'];
+                $resultLabel = $activity->result ? ($resultLabels[$activity->result] ?? $activity->result) : null;
+
                 return [
                     'title' => $data['title'],
-                    'meta' => ($activity->user_email ?? 'Système').($activity->result ? ' • '.$activity->result : ''),
+                    'meta' => ($activity->user_email ?? 'Système').($resultLabel ? ' • '.$resultLabel : ''),
                     'timestamp' => $activity->created_at?->format('d/m/Y H:i') ?? '-',
                     'icon' => $data['icon'],
                     'icon_class' => $data['class'],
@@ -304,7 +323,7 @@ class DocumentsController
                     'status' => null,
                     'status_class' => null,
                     'meta' => ($version->created_at?->format('d/m/Y') ?? '-').' • '.$this->formatBytes((int) (DB::table('documents')->where('id', $version->document_id)->value('file_size') ?? 0)),
-                    'description' => (string) ($metadata['description'] ?? 'Version archivée'),
+                    'description' => (string) ($metadata['description'] ?? __('Version archivée')),
                 ];
             })
             ->values();
@@ -314,7 +333,7 @@ class DocumentsController
             'status' => 'Actuelle',
             'status_class' => 'sikds-doc-pill--current',
             'meta' => $this->formatDate($document->updated_at).' • '.$this->formatBytes((int) $document->file_size),
-            'description' => $document->description ?: 'Version courante du document.',
+            'description' => $document->description ?: __('Version courante du document.'),
         ]])->concat($archivedVersions)->all();
 
         return [
@@ -322,9 +341,9 @@ class DocumentsController
             'title' => $document->title,
             'reference' => $document->reference_number,
             'status' => $document->status === 'soft_deleted' ? 'deleted' : $document->status,
-            'description' => $document->description ?: 'Aucune description fournie.',
+            'description' => $document->description ?: __('Aucune description fournie.'),
             'tags' => $this->documentTags($document->id),
-            'institution' => $document->uploader?->institution?->name ?? 'Non renseignée',
+            'institution' => $document->uploader?->institution?->name ?? __('Non renseignée'),
             'issue_date' => $this->formatDate($document->issue_date),
             'effective_date' => $this->formatDate($document->effective_date),
             'expiry_date' => $this->formatDate($document->expiration_date),
@@ -332,7 +351,7 @@ class DocumentsController
             'downloads' => count($downloadHistory),
             'version' => 'v'.$document->version_number,
             'file_name' => basename((string) $document->file_path),
-            'file_type' => 'PDF',
+            'file_type' => __('PDF'),
             'file_size' => $this->formatBytes((int) $document->file_size),
             'versions' => $versions,
             'download_history' => $downloadHistory,
@@ -361,7 +380,7 @@ class DocumentsController
             'status' => $document->status,
             'status_label' => $this->statusLabel($document->status),
             'file_name' => basename((string) $document->file_path),
-            'file_type' => 'PDF',
+            'file_type' => __('PDF'),
             'version' => 'v'.$document->version_number,
             'tags' => $this->documentTags($document->id),
             'tag_ids' => DB::table('document_tags')->where('document_id', $document->id)->pluck('tag_id')->map(fn ($id): int => (int) $id)->all(),
@@ -488,13 +507,13 @@ class DocumentsController
     private function formatAudience(Document $document): string
     {
         return match ($document->target_audience) {
-            'all' => 'Toutes les institutions',
-            'specific_institutions' => $document->targetInstitutions->pluck('name')->filter()->join(', ') ?: 'Institutions spécifiques',
-            'specific_roles' => $document->targetRoles->pluck('name')->filter()->join(', ') ?: 'Rôles spécifiques',
+            'all' => __('Toutes les institutions'),
+            'specific_institutions' => $document->targetInstitutions->pluck('name')->filter()->join(', ') ?: __('Institutions spécifiques'),
+            'specific_roles' => $document->targetRoles->pluck('name')->filter()->join(', ') ?: __('Rôles spécifiques'),
             'specific_users' => $document->targetUsers->map(
                 fn (User $user): string => (string) ($user->full_name ?: $user->username ?: $user->email)
-            )->filter()->join(', ') ?: 'Utilisateurs spécifiques',
-            default => 'Non renseigné',
+            )->filter()->join(', ') ?: __('Utilisateurs spécifiques'),
+            default => __('Non renseigné'),
         };
     }
 
@@ -528,6 +547,14 @@ class DocumentsController
         return $user->can('document.forward');
     }
 
+    /**
+     * SRS §3.1 / §7.2: only the system Super Administrateur may restore soft-deleted documents.
+     */
+    private function mayRestoreSoftDeletedDocument(User $user): bool
+    {
+        return $user->hasRole('Super Administrateur');
+    }
+
     private function excerptDescription(?string $html): string
     {
         if ($html === null || $html === '') {
@@ -547,7 +574,7 @@ class DocumentsController
     private function formatBytes(int $bytes): string
     {
         if ($bytes <= 0) {
-            return '0 B';
+            return __('0 B');
         }
 
         $units = ['B', 'KB', 'MB', 'GB'];
@@ -560,10 +587,10 @@ class DocumentsController
     private function statusLabel(string $status): string
     {
         return match ($status) {
-            'active' => 'Actif',
-            'draft' => 'Brouillon',
-            'archived' => 'Archivé',
-            'soft_deleted' => 'Supprimé',
+            'active' => __('Actif'),
+            'draft' => __('Brouillon'),
+            'archived' => __('Archivé'),
+            'soft_deleted' => __('Supprimé'),
             default => ucfirst($status),
         };
     }

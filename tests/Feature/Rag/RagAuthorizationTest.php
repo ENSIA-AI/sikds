@@ -5,8 +5,8 @@ use App\Domain\Institutions\Models\Institution;
 use App\Domain\Users\Models\User;
 use App\Models\Permission;
 use App\Models\Role;
-use App\Services\Rag\JinaEmbeddingService;
-use App\Services\Rag\JinaRerankerService;
+use App\Services\Rag\Contracts\EmbeddingServiceInterface;
+use App\Services\Rag\Contracts\RerankerServiceInterface;
 use App\Services\Rag\RagQueryService;
 use Illuminate\Support\Facades\DB;
 use Spatie\Permission\PermissionRegistrar;
@@ -51,8 +51,8 @@ function ragCreateDocument(User $uploader, array $overrides = []): Document
 function ragServiceForTests(): RagQueryService
 {
     return new class(
-        mock(JinaEmbeddingService::class),
-        mock(JinaRerankerService::class)
+        mock(EmbeddingServiceInterface::class),
+        mock(RerankerServiceInterface::class)
     ) extends RagQueryService {
         /**
          * @return array<int, int>

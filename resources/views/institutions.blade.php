@@ -3,8 +3,8 @@
     $activeNav = 'institutions';
 @endphp
 
-@section('page_title', 'Gérer les Institutions')
-@section('page_subtitle', 'Catalogue complet des institutions')
+@section('page_title', __('Gérer les Institutions'))
+@section('page_subtitle', __('Catalogue complet des institutions'))
 
 @push('scripts')
     @vite(['resources/js/pages/institutions.js'])
@@ -24,7 +24,7 @@
                 <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" class="size-5 shrink-0">
                     <path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
                 </svg>
-                Nouvelle institution
+                {{ __('Nouvelle institution') }}
             </button>
         </div>
     @endcan
@@ -33,19 +33,19 @@
     <section class="rounded-[14px] border border-black/10 bg-white px-[17.67px] pb-[12.67px] pt-[16.67px] shadow-[0px_1px_2px_-1px_rgba(0,0,0,0.10),0px_1px_3px_0px_rgba(0,0,0,0.10)] mb-6">
         <div class="grid grid-cols-2 gap-4 sm:grid-cols-4">
             <div class="flex flex-col gap-1">
-                <div class="text-sm font-normal leading-5 text-[#717182]">Total Institutions</div>
+                <div class="text-sm font-normal leading-5 text-[#717182]">{{ __('Total Institutions') }}</div>
                 <div class="text-2xl font-semibold leading-8 text-[#0A0A0A]">{{ $stats['total_institutions'] ?? 0 }}</div>
             </div>
             <div class="flex flex-col gap-1">
-                <div class="text-sm font-normal leading-5 text-[#717182]">Institutions actives</div>
+                <div class="text-sm font-normal leading-5 text-[#717182]">{{ __('Institutions actives') }}</div>
                 <div class="text-2xl font-semibold leading-8 text-[#0A0A0A]">{{ $stats['active_institutions'] ?? 0 }}</div>
             </div>
             <div class="flex flex-col gap-1">
-                <div class="text-sm font-normal leading-5 text-[#717182]">Total Utilisateurs</div>
+                <div class="text-sm font-normal leading-5 text-[#717182]">{{ __('Total Utilisateurs') }}</div>
                 <div class="text-2xl font-semibold leading-8 text-[#0A0A0A]">{{ $stats['total_users'] ?? 0 }}</div>
             </div>
             <div class="flex flex-col gap-1">
-                <div class="text-sm font-normal leading-5 text-[#717182]">Total Documents</div>
+                <div class="text-sm font-normal leading-5 text-[#717182]">{{ __('Total Documents') }}</div>
                 <div class="text-2xl font-semibold leading-8 text-[#0A0A0A]">{{ $stats['total_documents'] ?? 0 }}</div>
             </div>
         </div>
@@ -64,9 +64,9 @@
                     data-institutions-empty
                     class="col-span-full w-full rounded-[14px] border border-black/10 bg-white p-6 text-sm text-[#717182] shadow-[0px_1px_2px_-1px_rgba(0,0,0,0.10),0px_1px_3px_0px_rgba(0,0,0,0.10)]"
                 >
-                    Aucune institution pour le moment.
+                    {{ __('Aucune institution pour le moment.') }}
                     @can('institution.create')
-                        Utilisez « Nouvelle institution » pour en ajouter une.
+                        {{ __('Utilisez « Nouvelle institution » pour en ajouter une.') }}
                     @endcan
                 </p>
             @endforelse
@@ -75,9 +75,23 @@
 
     {{-- Create / Edit modal --}}
     @canany(['institution.create', 'institution.edit'])
+        @php
+            $institutionModalI18n = [
+                'createTitle' => __("Nouvelle institution"),
+                'createSubtitle' => __("Renseigner les informations de l'institution"),
+                'editTitle' => __("Modifier l'Institution"),
+                'editSubtitle' => __("Modifier les informations de l'institution"),
+                'unexpectedError' => __("Une erreur est survenue."),
+                'serverUnreachable' => __("Impossible de contacter le serveur."),
+                'deleteConfirm' => __("Supprimer l'institution « :name » ?"),
+                'deleteFailed' => __("Suppression impossible."),
+                'emptyState' => __("Aucune institution pour le moment."),
+            ];
+        @endphp
         <div
             id="institution-modal-root"
             class="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6"
+            data-i18n="{{ json_encode($institutionModalI18n, JSON_UNESCAPED_UNICODE) }}"
             hidden
             role="dialog"
             aria-modal="true"
@@ -92,10 +106,10 @@
             >
                 <div class="shrink-0 border-b border-black/10 bg-[#ECECF04D] px-6 pb-px pt-6">
                     <h2 id="institution-modal-title" data-modal-title class="text-2xl font-semibold leading-8 text-black">
-                        Modifier l'Institution
+                        {{ __('Modifier l\'Institution') }}
                     </h2>
                     <p data-modal-subtitle class="mt-1 text-sm leading-5 text-[#717182]">
-                        Modifier les informations de l'institution
+                        {{ __('Modifier les informations de l\'institution') }}
                     </p>
                 </div>
 
@@ -116,15 +130,15 @@
                         ></div>
 
                         <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-                            <x-institutions.text-input label="Nom complet"          name="name"          value="" autocomplete="organization" />
-                            <x-institutions.text-input label="Acronyme"             name="code"          value="" autocomplete="off" />
-                            <x-institutions.text-input label="Email"                name="contact_email" type="email" value="" autocomplete="email" />
-                            <x-institutions.text-input label="Téléphone (optionnel)" name="contact_phone" type="tel" value="" autocomplete="tel" inputmode="tel" pattern="[\d\s+().-]{8,32}" :required="false" />
+                            <x-institutions.text-input :label="__('Nom complet')"          name="name"          value="" autocomplete="organization" />
+                            <x-institutions.text-input :label="__('Acronyme')"             name="code"          value="" autocomplete="off" />
+                            <x-institutions.text-input :label="__('Email')"                name="contact_email" type="email" value="" autocomplete="email" />
+                            <x-institutions.text-input :label="__('Téléphone (optionnel)')" name="contact_phone" type="tel" value="" autocomplete="tel" inputmode="tel" pattern="[\d\s+().-]{8,32}" :required="false" />
                         </div>
 
                         <div class="mt-4 flex w-full flex-col gap-2">
                             <label for="institution-address" class="text-sm font-medium leading-5 text-[#0A0A0A]">
-                                Adresse <span class="font-normal text-[#717182]">(optionnel)</span>
+                                {{ __('Adresse') }} <span class="font-normal text-[#717182]">{{ __('(optionnel)') }}</span>
                             </label>
                             <textarea
                                 id="institution-address"
@@ -136,7 +150,7 @@
 
                         <div class="mt-4 flex w-full flex-col gap-2">
                             <label for="institution-logo" class="text-sm font-medium leading-5 text-[#0A0A0A]">
-                                Logo <span class="font-normal text-[#717182]">(optionnel)</span>
+                                {{ __('Logo') }} <span class="font-normal text-[#717182]">{{ __('(optionnel)') }}</span>
                             </label>
                             <input
                                 id="institution-logo"
@@ -154,14 +168,14 @@
                             data-close-modal
                             class="inline-flex h-[45px] min-w-[106px] items-center justify-center rounded-[10px] border border-black/10 bg-white px-4 text-sm font-medium text-black transition hover:bg-black/[0.03] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1E3A8A]"
                         >
-                            Annuler
+                            {{ __('Annuler') }}
                         </button>
                         <button
                             type="submit"
                             data-submit-institution
                             class="inline-flex h-11 min-w-[126px] items-center justify-center gap-2 rounded-[10px] bg-[#1E3A8A] px-6 text-sm font-semibold text-white transition hover:bg-[#163171] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1E3A8A] disabled:cursor-not-allowed disabled:opacity-60"
                         >
-                            Enregistrer
+                            {{ __('Enregistrer') }}
                         </button>
                     </div>
                 </form>

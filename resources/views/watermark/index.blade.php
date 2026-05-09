@@ -1,6 +1,6 @@
 @extends('layouts.app')
-@section('page_title', 'Traçabilité des Téléchargements')
-@section('page_subtitle', 'Historique complet des téléchargements')
+@section('page_title', __('Traçabilité des Téléchargements'))
+@section('page_subtitle', __('Historique complet des téléchargements'))
 @section('content')
 
     {{-- ===== Stats Row ===== --}}
@@ -8,28 +8,28 @@
         <x-stat-card
             icon="/upload-blue.svg"
             value="{{ number_format($stats['total']) }}"
-            label="Total Téléchargements"
+            label="{{ __('Total Téléchargements') }}"
             trend="{{ $stats['total'] }}"
             iconStyle="filter: brightness(0) saturate(100%) invert(17%) sepia(65%) saturate(2584%) hue-rotate(214deg) brightness(91%) contrast(98%);"
         />
         <x-stat-card
             icon="/time-orange.svg"
             value="{{ number_format($stats['today']) }}"
-            label="Aujourd'hui"
+            label="{{ __('Aujourd\'hui') }}"
             trend="{{ $stats['today'] }}"
             iconStyle="filter: brightness(0) saturate(100%) invert(17%) sepia(65%) saturate(2584%) hue-rotate(214deg) brightness(91%) contrast(98%);"
         />
         <x-stat-card
             icon="/users-pink.svg"
             value="{{ number_format($stats['unique_users']) }}"
-            label="Utilisateurs Uniques"
+            label="{{ __('Utilisateurs Uniques') }}"
             trend="{{ $stats['unique_users'] }}"
             iconStyle="filter: brightness(0) saturate(100%) invert(17%) sepia(65%) saturate(2584%) hue-rotate(214deg) brightness(91%) contrast(98%);"
         />
         <x-stat-card
             icon="/building-orange.svg"
             value="{{ number_format($stats['institutions']) }}"
-            label="Institutions"
+            label="{{ __('Institutions') }}"
             trend="{{ $stats['institutions'] }}"
             iconStyle="filter: brightness(0) saturate(100%) invert(17%) sepia(65%) saturate(2584%) hue-rotate(214deg) brightness(91%) contrast(98%);"
         />
@@ -44,7 +44,7 @@
                 <div class="flex-1 min-w-48 relative">
                     <img src="/search-blue.svg" alt="" class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 opacity-40">
                     <input type="text" name="q" value="{{ request('q') }}"
-                           placeholder="Rechercher par UUID, document, utilisateur..."
+                           placeholder="{{ __('Rechercher par UUID, document, utilisateur...') }}"
                            class="w-full pl-9 pr-4 py-2 text-sm border border-black/10 rounded-[10px] focus:outline-none focus:ring-2 focus:ring-[color:var(--sikds-primary)]/30">
                 </div>
 
@@ -53,7 +53,7 @@
                     <img src="/time-dark-blue.svg" alt="" class="h-4 w-4 opacity-60">
                     <input type="date" name="date_from" value="{{ request('date_from') }}"
                            class="text-sm border border-black/10 rounded-[10px] px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[color:var(--sikds-primary)]/30">
-                    <span class="text-sm" style="color:var(--sikds-muted)">&ndash;</span>
+                    <span class="text-sm" style="color:var(--sikds-muted)">-</span>
                     <input type="date" name="date_to" value="{{ request('date_to') }}"
                            class="text-sm border border-black/10 rounded-[10px] px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[color:var(--sikds-primary)]/30">
                 </div>
@@ -64,35 +64,35 @@
                         class="flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-[10px] transition-colors flex-shrink-0"
                         :style="filtersOpen ? '' : 'color:var(--sikds-ink)'">
                     <img src="/parameters-blue.svg" alt="" class="h-4 w-4" :class="filtersOpen ? 'brightness-0 invert' : ''">
-                    Filtres
+                    {{ __('Filtres') }}
                 </button>
             </div>
 
             {{-- Expandable filter panel --}}
             <div x-show="filtersOpen" x-transition class="border-t px-5 py-4 grid grid-cols-3 gap-4" style="border-color:rgba(0,0,0,.1);display:none;">
                 <div>
-                    <label class="block text-xs font-medium mb-1" style="color:var(--sikds-muted)">Document</label>
+                    <label class="block text-xs font-medium mb-1" style="color:var(--sikds-muted)">{{ __('Document') }}</label>
                     <input type="text" name="document" value="{{ request('document') }}"
                            class="w-full text-sm border border-black/10 rounded-[10px] px-3 py-2 focus:outline-none"
-                           placeholder="Titre ou référence...">
+                           placeholder="{{ __('Titre ou référence...') }}">
                 </div>
                 <div>
-                    <label class="block text-xs font-medium mb-1" style="color:var(--sikds-muted)">Utilisateur</label>
+                    <label class="block text-xs font-medium mb-1" style="color:var(--sikds-muted)">{{ __('Utilisateur') }}</label>
                     <input type="text" name="user" value="{{ request('user') }}"
                            class="w-full text-sm border border-black/10 rounded-[10px] px-3 py-2 focus:outline-none"
-                           placeholder="Nom ou email...">
+                           placeholder="{{ __('Nom ou email...') }}">
                 </div>
                 <div>
-                    <label class="block text-xs font-medium mb-1" style="color:var(--sikds-muted)">Institution</label>
+                    <label class="block text-xs font-medium mb-1" style="color:var(--sikds-muted)">{{ __('Institution') }}</label>
                     <input type="text" name="institution" value="{{ request('institution') }}"
                            class="w-full text-sm border border-black/10 rounded-[10px] px-3 py-2 focus:outline-none"
-                           placeholder="Nom de l'institution...">
+                           placeholder="{{ __('Nom de l\'institution...') }}">
                 </div>
                 <div class="col-span-3 flex justify-end pt-1">
                     <button type="submit"
                             class="px-5 py-2 text-sm font-semibold text-white rounded-[10px]"
                             style="background-color:var(--sikds-primary);">
-                        Rechercher
+                        {{ __('Rechercher') }}
                     </button>
                 </div>
             </div>
@@ -105,13 +105,13 @@
             <table class="w-full text-sm">
                 <thead>
                     <tr class="border-b" style="border-color:rgba(0,0,0,.1);background:#f9f9fb;">
-                        <th class="text-left px-5 py-3 text-xs font-semibold uppercase tracking-wider" style="color:var(--sikds-muted)">UUID Filigrane</th>
-                        <th class="text-left px-5 py-3 text-xs font-semibold uppercase tracking-wider" style="color:var(--sikds-muted)">Document</th>
-                        <th class="text-left px-5 py-3 text-xs font-semibold uppercase tracking-wider" style="color:var(--sikds-muted)">Utilisateur</th>
-                        <th class="text-left px-5 py-3 text-xs font-semibold uppercase tracking-wider" style="color:var(--sikds-muted)">Institution</th>
-                        <th class="text-left px-5 py-3 text-xs font-semibold uppercase tracking-wider" style="color:var(--sikds-muted)">Date &amp; Heure</th>
-                        <th class="text-left px-5 py-3 text-xs font-semibold uppercase tracking-wider" style="color:var(--sikds-muted)">Adresse IP</th>
-                        <th class="text-left px-5 py-3 text-xs font-semibold uppercase tracking-wider" style="color:var(--sikds-muted)">Actions</th>
+                        <th class="text-left px-5 py-3 text-xs font-semibold uppercase tracking-wider" style="color:var(--sikds-muted)">{{ __('UUID Filigrane') }}</th>
+                        <th class="text-left px-5 py-3 text-xs font-semibold uppercase tracking-wider" style="color:var(--sikds-muted)">{{ __('Document') }}</th>
+                        <th class="text-left px-5 py-3 text-xs font-semibold uppercase tracking-wider" style="color:var(--sikds-muted)">{{ __('Utilisateur') }}</th>
+                        <th class="text-left px-5 py-3 text-xs font-semibold uppercase tracking-wider" style="color:var(--sikds-muted)">{{ __('Institution') }}</th>
+                        <th class="text-left px-5 py-3 text-xs font-semibold uppercase tracking-wider" style="color:var(--sikds-muted)">{{ __('Date & Heure') }}</th>
+                        <th class="text-left px-5 py-3 text-xs font-semibold uppercase tracking-wider" style="color:var(--sikds-muted)">{{ __('Adresse IP') }}</th>
+                        <th class="text-left px-5 py-3 text-xs font-semibold uppercase tracking-wider" style="color:var(--sikds-muted)">{{ __('Actions') }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -133,7 +133,7 @@
 
                             {{-- Document --}}
                             <td class="px-5 py-4">
-                                <p class="font-semibold text-sm truncate max-w-[180px]" style="color:var(--sikds-ink)">{{ $log->document?->title ?? '&mdash;' }}</p>
+                                <p class="font-semibold text-sm truncate max-w-[180px]" style="color:var(--sikds-ink)">{{ $log->document?->title ?? '-' }}</p>
                                 <p class="text-xs mt-0.5" style="color:var(--sikds-muted)">{{ $log->document?->reference_number }}</p>
                             </td>
 
@@ -147,7 +147,7 @@
                             <td class="px-5 py-4">
                                 <div class="flex items-center gap-1.5">
                                     <span class="inline-block h-2 w-2 rounded-full flex-shrink-0" style="background-color:var(--sikds-primary);"></span>
-                                    <span class="text-sm" style="color:var(--sikds-ink)">{{ $log->user?->institution?->name ?? '&mdash;' }}</span>
+                                    <span class="text-sm" style="color:var(--sikds-ink)">{{ $log->user?->institution?->name ?? '-' }}</span>
                                 </div>
                             </td>
 
@@ -170,9 +170,9 @@
                                 <div class="flex items-center gap-2">
                                     <a href="{{ route('watermark.show', $log->watermark_uuid) }}"
                                        class="h-8 w-8 rounded-[8px] flex items-center justify-center transition-colors hover:bg-gray-100"
-                                       title="Voir le détail"
+                                       title="{{ __('Voir le détail') }}"
                                        style="border:1px solid rgba(0,0,0,.1);">
-                                        <img src="/audit-blue.svg" alt="Voir" class="h-4 w-4">
+                                        <img src="/audit-blue.svg" alt="{{ __('Voir') }}" class="h-4 w-4">
                                     </a>
                                 </div>
                             </td>
@@ -180,7 +180,7 @@
                     @empty
                         <tr>
                             <td colspan="7" class="px-5 py-14 text-center text-sm" style="color:var(--sikds-muted)">
-                                Aucun téléchargement trouvé.
+                                {{ __('Aucun téléchargement trouvé.') }}
                             </td>
                         </tr>
                     @endforelse
@@ -191,18 +191,18 @@
         {{-- Pagination --}}
         <div class="px-5 py-4 border-t flex items-center justify-between" style="border-color:rgba(0,0,0,.1);">
             <p class="text-sm" style="color:var(--sikds-muted)">
-                Affichage de {{ $logs->firstItem() ?? 0 }}&ndash;{{ $logs->lastItem() ?? 0 }} sur {{ number_format($logs->total()) }} téléchargements
+                {{ __('Affichage de') }} {{ $logs->firstItem() ?? 0 }}-{{ $logs->lastItem() ?? 0 }} {{ __('sur') }} {{ number_format($logs->total()) }} {{ __('téléchargements') }}
             </p>
             <div class="flex items-center gap-2">
                 @if ($logs->onFirstPage())
-                    <span class="px-4 py-1.5 text-sm border rounded-[10px] opacity-40 cursor-not-allowed" style="border-color:rgba(0,0,0,.1);color:var(--sikds-muted)">Précédent</span>
+                    <span class="px-4 py-1.5 text-sm border rounded-[10px] opacity-40 cursor-not-allowed" style="border-color:rgba(0,0,0,.1);color:var(--sikds-muted)">{{ __('Précédent') }}</span>
                 @else
-                    <a href="{{ $logs->previousPageUrl() }}" class="px-4 py-1.5 text-sm border rounded-[10px] hover:bg-gray-50 transition-colors" style="border-color:rgba(0,0,0,.1);color:var(--sikds-ink)">Précédent</a>
+                    <a href="{{ $logs->previousPageUrl() }}" class="px-4 py-1.5 text-sm border rounded-[10px] hover:bg-gray-50 transition-colors" style="border-color:rgba(0,0,0,.1);color:var(--sikds-ink)">{{ __('Précédent') }}</a>
                 @endif
                 @if ($logs->hasMorePages())
-                    <a href="{{ $logs->nextPageUrl() }}" class="px-4 py-1.5 text-sm border rounded-[10px] hover:bg-gray-50 transition-colors" style="border-color:rgba(0,0,0,.1);color:var(--sikds-ink)">Suivant</a>
+                    <a href="{{ $logs->nextPageUrl() }}" class="px-4 py-1.5 text-sm border rounded-[10px] hover:bg-gray-50 transition-colors" style="border-color:rgba(0,0,0,.1);color:var(--sikds-ink)">{{ __('Suivant') }}</a>
                 @else
-                    <span class="px-4 py-1.5 text-sm border rounded-[10px] opacity-40 cursor-not-allowed" style="border-color:rgba(0,0,0,.1);color:var(--sikds-muted)">Suivant</span>
+                    <span class="px-4 py-1.5 text-sm border rounded-[10px] opacity-40 cursor-not-allowed" style="border-color:rgba(0,0,0,.1);color:var(--sikds-muted)">{{ __('Suivant') }}</span>
                 @endif
             </div>
         </div>

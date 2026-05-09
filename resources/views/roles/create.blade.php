@@ -1,12 +1,12 @@
 @extends('layouts.app')
 
-@section('page_title', 'Créer un Rôle')
-@section('page_subtitle', 'Ajouter un nouveau rôle avec des permissions spécifiques')
+@section('page_title', __('Créer un Rôle'))
+@section('page_subtitle', __('Ajouter un nouveau rôle avec des permissions spécifiques'))
 
 @section('content')
     <div class="max-w-5xl space-y-6">
         <div class="flex items-center justify-between">
-            <x-back-link :href="route('roles.index')" label="Retour aux rôles" />
+            <x-back-link :href="route('roles.index')" :label="__('Retour aux rôles')" />
         </div>
 
         <form action="{{ route('roles.store') }}" method="POST" class="space-y-6">
@@ -23,11 +23,11 @@
             @endif
 
             <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-                <h2 class="text-lg font-semibold text-slate-900">Informations du rôle</h2>
+                <h2 class="text-lg font-semibold text-slate-900">{{ __('Informations du rôle') }}</h2>
                 <div class="mt-4 grid grid-cols-1 gap-4">
                     <div>
                         <label for="name" class="mb-1 block text-sm font-medium text-slate-700">
-                            Nom du rôle <span class="text-red-600">*</span>
+                            {{ __('Nom du rôle') }} <span class="text-red-600">*</span>
                         </label>
                         <input
                             id="name"
@@ -37,17 +37,17 @@
                             maxlength="255"
                             value="{{ old('name') }}"
                             class="w-full rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:border-slate-500 focus:outline-none"
-                            placeholder="Ex: Gestionnaire de Documents"
+                            placeholder="{{ __('Ex: Gestionnaire de Documents') }}"
                         >
                     </div>
                     <div>
-                        <label for="description" class="mb-1 block text-sm font-medium text-slate-700">Description</label>
+                        <label for="description" class="mb-1 block text-sm font-medium text-slate-700">{{ __('Description') }}</label>
                         <textarea
                             id="description"
                             name="description"
                             rows="3"
                             class="w-full rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:border-slate-500 focus:outline-none"
-                            placeholder="Description du rôle"
+                            placeholder="{{ __('Description du rôle') }}"
                         >{{ old('description') }}</textarea>
                     </div>
                 </div>
@@ -55,9 +55,9 @@
 
             <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
                 <h2 class="text-lg font-semibold text-slate-900">
-                    Permissions <span class="text-red-600">*</span>
+                    {{ __('Permissions') }} <span class="text-red-600">*</span>
                 </h2>
-                <p class="mt-1 text-sm text-slate-500">Sélectionnez au moins une permission.</p>
+                <p class="mt-1 text-sm text-slate-500">{{ __('Sélectionnez au moins une permission.') }}</p>
 
                 @php
                     $oldPermissionIds = collect(old('permission_ids', []))->map(fn ($id) => (int) $id)->all();
@@ -89,17 +89,17 @@
                             </div>
                         </div>
                     @empty
-                        <p class="text-sm text-slate-500">Aucune permission disponible.</p>
+                        <p class="text-sm text-slate-500">{{ __('Aucune permission disponible.') }}</p>
                     @endforelse
                 </div>
             </div>
 
             <div class="flex items-center justify-end gap-3">
                 <a href="{{ route('roles.index') }}" class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">
-                    Annuler
+                    {{ __('Annuler') }}
                 </a>
                 <button type="submit" class="rounded-lg bg-[#1E3A8A] px-4 py-2 text-sm font-semibold text-white hover:bg-[#163171]">
-                    Créer le rôle
+                    {{ __('Créer le rôle') }}
                 </button>
             </div>
         </form>

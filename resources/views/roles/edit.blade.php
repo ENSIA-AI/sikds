@@ -1,12 +1,12 @@
 @extends('layouts.app')
 
-@section('page_title', 'Modifier un Rôle')
-@section('page_subtitle', 'Mettre à jour les informations et permissions du rôle')
+@section('page_title', __('Modifier un Rôle'))
+@section('page_subtitle', __('Mettre à jour les informations et permissions du rôle'))
 
 @section('content')
     <div class="max-w-5xl space-y-6">
         <div class="flex items-center justify-between">
-            <x-back-link :href="route('roles.show', $role)" label="Retour au rôle" />
+            <x-back-link :href="route('roles.show', $role)" :label="__('Retour au rôle')" />
         </div>
 
         <form action="{{ route('roles.update', $role) }}" method="POST" class="space-y-6">
@@ -24,11 +24,11 @@
             @endif
 
             <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-                <h2 class="text-lg font-semibold text-slate-900">Informations du rôle</h2>
+                <h2 class="text-lg font-semibold text-slate-900">{{ __('Informations du rôle') }}</h2>
                 <div class="mt-4 grid grid-cols-1 gap-4">
                     <div>
                         <label for="name" class="mb-1 block text-sm font-medium text-slate-700">
-                            Nom du rôle <span class="text-red-600">*</span>
+                            {{ __('Nom du rôle') }} <span class="text-red-600">*</span>
                         </label>
                         <input
                             id="name"
@@ -41,7 +41,7 @@
                         >
                     </div>
                     <div>
-                        <label for="description" class="mb-1 block text-sm font-medium text-slate-700">Description</label>
+                        <label for="description" class="mb-1 block text-sm font-medium text-slate-700">{{ __('Description') }}</label>
                         <textarea
                             id="description"
                             name="description"
@@ -54,9 +54,9 @@
 
             <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
                 <h2 class="text-lg font-semibold text-slate-900">
-                    Permissions <span class="text-red-600">*</span>
+                    {{ __('Permissions') }} <span class="text-red-600">*</span>
                 </h2>
-                <p class="mt-1 text-sm text-slate-500">Sélectionnez au moins une permission.</p>
+                <p class="mt-1 text-sm text-slate-500">{{ __('Sélectionnez au moins une permission.') }}</p>
 
                 @php
                     $selectedPermissionIds = collect(old('permission_ids', $role->permissions->pluck('id')->all()))
@@ -90,17 +90,17 @@
                             </div>
                         </div>
                     @empty
-                        <p class="text-sm text-slate-500">Aucune permission disponible.</p>
+                        <p class="text-sm text-slate-500">{{ __('Aucune permission disponible.') }}</p>
                     @endforelse
                 </div>
             </div>
 
             <div class="flex items-center justify-end gap-3">
                 <a href="{{ route('roles.show', $role) }}" class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">
-                    Annuler
+                    {{ __('Annuler') }}
                 </a>
                 <button type="submit" class="rounded-lg bg-[#1E3A8A] px-4 py-2 text-sm font-semibold text-white hover:bg-[#163171]">
-                    Enregistrer les modifications
+                    {{ __('Enregistrer les modifications') }}
                 </button>
             </div>
         </form>

@@ -4,6 +4,7 @@
 @import 'flowbite/src/themes/default';
 @import './custom.css';
 @import './sikds-dashboard.css';
+@import './rtl.css';
 
 @plugin 'flowbite/plugin';
 

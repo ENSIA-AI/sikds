@@ -3,8 +3,8 @@
 use App\Domain\Documents\Models\Document;
 use App\Domain\Institutions\Models\Institution;
 use App\Domain\Users\Models\User;
-use App\Models\Permission;
-use App\Models\Role;
+use App\Domain\Users\Models\Permission;
+use App\Domain\Users\Models\Role;
 use Illuminate\Support\Str;
 use Spatie\Permission\PermissionRegistrar;
 
@@ -75,7 +75,7 @@ test('authenticated users can access the documents list page', function () {
     $response = $this->get(route('documents.index'));
 
     $response->assertOk();
-    $response->assertSee('Titre & Référence', false);
+    $response->assertSee('Titre &amp; Référence', false);
     $response->assertDontSee('Téléverser un Document', false);
     $response->assertSee('Circulaire active', false);
 });
@@ -188,7 +188,7 @@ test('super-admin document show page includes archive and delete confirmation al
 
     $response->assertOk();
     $response->assertSee('Archiver le Document', false);
-    $response->assertSee("Confirmer l'archivage", false);
+    $response->assertSeeText("Confirmer l'archivage");
     $response->assertSee('Supprimer le Document', false);
     $response->assertSee('Action irréversible', false);
 });
@@ -204,7 +204,7 @@ test('super-admin document show page includes download traceability warning moda
     $response->assertOk();
     $response->assertSee('Avertissement de traçabilité du document', false);
     $response->assertSee('En poursuivant ce téléchargement, ce document officiel sera filigrané de manière permanente', false);
-    $response->assertSee("J\\'accepte, télécharger", false);
+    $response->assertSee('Téléchargement...', false);
 });
 
 test('users with edit permission can access the document edit page', function () {
@@ -236,7 +236,9 @@ test('document edit page includes cancel confirmation alert', function () {
 });
 
 test('authenticated users can access the document upload page', function () {
-    $this->actingAs(User::factory()->create());
+    $user = User::factory()->create();
+    webGrantPermission($user, 'document.create');
+    $this->actingAs($user);
 
     $response = $this->get(route('documents.create'));
 
