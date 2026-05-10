@@ -179,7 +179,7 @@
                                 $statusTs = $user->is_active
                                     ? ($user->last_login_at ?? $user->created_at)
                                     : ($user->last_login_at ?? $user->updated_at);
-                                $statusLabelFr = $statusTs ? $statusTs->locale('fr')->isoFormat('D MMM YYYY, HH:mm') : '—';
+                                $statusLabelFr = $statusTs ? $statusTs->locale(app()->getLocale())->isoFormat('D MMM YYYY, HH:mm') : '—';
                             @endphp
                             <tr
                                 data-user-row

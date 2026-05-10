@@ -14,10 +14,16 @@ use Illuminate\View\View;
 
 class TagsController
 {
-    private const CATEGORY_LABELS = [
-        'type_document' => 'Type de Document',
-        'priority'      => 'Priorité',
-    ];
+    /**
+     * @return array<string, string>
+     */
+    private static function categoryLabels(): array
+    {
+        return [
+            'type_document' => __('Type de Document'),
+            'priority'      => __('Priorité'),
+        ];
+    }
 
     public function __construct(
         private readonly AuditService $audit,
@@ -45,7 +51,7 @@ class TagsController
             ->all();
 
         $categoryLabels = collect($existingCategories)
-            ->mapWithKeys(fn (string $c) => [$c => self::CATEGORY_LABELS[$c] ?? Str::headline($c)])
+            ->mapWithKeys(fn (string $c) => [$c => self::categoryLabels()[$c] ?? Str::headline($c)])
             ->all();
 
         $allTags = Tag::get(['id', 'name', 'color'])
@@ -279,13 +285,13 @@ class TagsController
             if ($this->normalizeName($slug) === $norm) {
                 return true;
             }
-            $label = self::CATEGORY_LABELS[$slug] ?? Str::headline($slug);
+            $label = self::categoryLabels()[$slug] ?? Str::headline($slug);
             if ($this->normalizeName($label) === $norm) {
                 return true;
             }
         }
 
-        foreach (self::CATEGORY_LABELS as $slug => $label) {
+        foreach (self::categoryLabels() as $slug => $label) {
             if ($slug === $candidateSlug) {
                 return true;
             }

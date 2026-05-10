@@ -153,7 +153,7 @@
                                       aria-hidden="true"></span>
                                 <div class="flex-1 min-w-0">
                                     <p class="text-sm {{ $isRead ? 'text-slate-700' : 'font-semibold text-slate-900' }}">{{ $message }}</p>
-                                    <p class="text-xs mt-1" style="color:var(--sikds-muted);">{{ $notification->created_at?->locale('fr')->diffForHumans() }}</p>
+                                    <p class="text-xs mt-1" style="color:var(--sikds-muted);">{{ $notification->created_at?->locale(app()->getLocale())->diffForHumans() }}</p>
                                 </div>
                             </button>
                         </form>
@@ -163,7 +163,7 @@
                                   aria-hidden="true"></span>
                             <div class="flex-1 min-w-0">
                                 <p class="text-sm {{ $isRead ? 'text-slate-700' : 'font-semibold text-slate-900' }}">{{ $message }}</p>
-                                <p class="text-xs mt-1" style="color:var(--sikds-muted);">{{ $notification->created_at?->locale('fr')->diffForHumans() }}</p>
+                                <p class="text-xs mt-1" style="color:var(--sikds-muted);">{{ $notification->created_at?->locale(app()->getLocale())->diffForHumans() }}</p>
                             </div>
                         </div>
                     @endif

@@ -64,7 +64,7 @@ class NotificationInboxController extends Controller
                 'document_id' => $documentId,
                 'document_title' => $notification->document?->title,
                 'created_at' => $notification->created_at?->toIso8601String(),
-                'created_at_human' => $notification->created_at?->locale('fr')->diffForHumans(),
+                'created_at_human' => $notification->created_at?->locale(app()->getLocale())->diffForHumans(),
                 'read_at' => $notification->read_at?->toIso8601String(),
                 'read' => $notification->read_at !== null,
                 'url' => $url,

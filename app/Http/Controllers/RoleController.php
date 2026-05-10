@@ -92,7 +92,7 @@ final class RoleController extends Controller
                 ])->render();
 
                 return response()->json([
-                    'message' => __("Le rôle « {$name} » a été créé avec succès.", ['name' => $role->name]),
+                    'message' => "Le rôle « {$role->name} » a été créé avec succès.",
                     'role' => [
                         'id' => $role->id,
                         'name' => $role->name,
@@ -105,7 +105,7 @@ final class RoleController extends Controller
 
             return redirect()
                 ->route('roles.show', $role)
-                ->with('success', __("Le rôle « {$name} » a été créé avec succès.", ['name' => $role->name]));
+                ->with('success', "Le rôle « {$role->name} » a été créé avec succès.");
         } catch (\Exception $e) {
             if ($request->wantsJson()) {
                 return response()->json([
@@ -175,7 +175,7 @@ final class RoleController extends Controller
             
             return redirect()
                 ->route('roles.show', $role)
-                ->with('success', __("Le rôle « {$name} » a été mis à jour.", ['name' => $role->name]));
+                ->with('success', "Le rôle « {$role->name} » a été mis à jour.");
                 
         } catch (\Exception $e) {
             return back()
@@ -195,7 +195,7 @@ final class RoleController extends Controller
             
             return redirect()
                 ->route('roles.index')
-                ->with('success', __("Le rôle « {$name} » a été supprimé.", ['name' => $roleName]));
+                ->with('success', "Le rôle « {$roleName} » a été supprimé.");
                 
         } catch (\Exception $e) {
             return back()

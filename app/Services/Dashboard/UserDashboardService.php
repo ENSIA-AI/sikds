@@ -85,8 +85,8 @@ class UserDashboardService
                 'id' => (int) $doc->id,
                 'title' => (string) $doc->title,
                 'reference' => $doc->reference_number ? (string) $doc->reference_number : null,
-                'updated_at' => $doc->updated_at?->locale('fr')->isoFormat('D MMM YYYY'),
-                'time' => $doc->updated_at?->locale('fr')->diffForHumans(),
+                'updated_at' => $doc->updated_at?->locale(app()->getLocale())->isoFormat('D MMM YYYY'),
+                'time' => $doc->updated_at?->locale(app()->getLocale())->diffForHumans(),
             ])
             ->all();
     }
@@ -112,7 +112,7 @@ class UserDashboardService
                     'reference' => $document?->reference_number,
                     'document_id' => $document?->id,
                     'time' => $log->downloaded_at
-                        ? \Illuminate\Support\Carbon::parse($log->downloaded_at)->locale('fr')->diffForHumans()
+                        ? \Illuminate\Support\Carbon::parse($log->downloaded_at)->locale(app()->getLocale())->diffForHumans()
                         : '—',
                 ];
             })
