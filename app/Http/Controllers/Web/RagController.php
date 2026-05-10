@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Web;
 
 use App\Http\Controllers\Controller;
 use App\Services\Rag\RagQueryService;
+use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -34,6 +35,12 @@ class RagController extends Controller
             $result = $rag->query((string) $validated['question'], (int) $user->id);
 
             return response()->json($result);
+        } catch (ConnectionException $e) {
+            report($e);
+
+            return response()->json([
+                'message' => 'Le service IA configuré est injoignable ou a expiré. Vérifiez la connexion réseau et l’URL du service.',
+            ], 503);
         } catch (\Throwable $e) {
             report($e);
 
@@ -43,4 +50,3 @@ class RagController extends Controller
         }
     }
 }
-

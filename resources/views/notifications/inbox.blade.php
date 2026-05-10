@@ -60,7 +60,7 @@
                                     {{ $typeLabel }}
                                 </span>
                                 <span class="text-xs" style="color:var(--sikds-muted)">
-                                    {{ $notification->created_at?->locale('fr')->isoFormat('D MMMM YYYY, HH:mm') }}
+                                    {{ $notification->created_at?->locale(app()->getLocale())->isoFormat('D MMMM YYYY, HH:mm') }}
                                 </span>
                             </div>
                             <p class="mt-1 text-sm {{ $isRead ? 'font-normal text-slate-700' : 'font-semibold text-slate-900' }}">

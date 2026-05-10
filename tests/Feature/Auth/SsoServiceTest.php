@@ -139,3 +139,139 @@ test('normalize profile allows all domains when allowlist is empty', function ()
     expect($result['auth_domain'])->toBe('future-domain.dz');
 });
 
+test('extract roles reads array of role-code strings', function () {
+    config()->set('sso.roles_path', 'roles');
+
+    $service = new SsoService();
+    $method = new ReflectionMethod(SsoService::class, 'extractRoles');
+    $method->setAccessible(true);
+
+    $codes = $method->invoke($service, [
+        'roles' => ['skids_user', 'OTHER_ROLE'],
+    ]);
+
+    expect($codes)->toBe(['SKIDS_USER', 'OTHER_ROLE']);
+});
+
+test('extract roles reads array of objects with code field', function () {
+    config()->set('sso.roles_path', 'roles');
+
+    $service = new SsoService();
+    $method = new ReflectionMethod(SsoService::class, 'extractRoles');
+    $method->setAccessible(true);
+
+    $codes = $method->invoke($service, [
+        'roles' => [
+            ['id' => 1623, 'code' => 'SKIDS_USER', 'name' => 'SKIDS [user]'],
+            ['id' => 1624, 'code' => 'SKIDS_MANAGER', 'name' => 'SKIDS [manager]'],
+        ],
+    ]);
+
+    expect($codes)->toBe(['SKIDS_USER', 'SKIDS_MANAGER']);
+});
+
+test('extract roles returns empty array when path is missing or not iterable', function () {
+    config()->set('sso.roles_path', 'roles');
+
+    $service = new SsoService();
+    $method = new ReflectionMethod(SsoService::class, 'extractRoles');
+    $method->setAccessible(true);
+
+    expect($method->invoke($service, []))->toBe([]);
+    expect($method->invoke($service, ['roles' => 'not-an-array']))->toBe([]);
+});
+
+test('extract roles honors a custom roles_path', function () {
+    config()->set('sso.roles_path', 'application_roles.skids');
+
+    $service = new SsoService();
+    $method = new ReflectionMethod(SsoService::class, 'extractRoles');
+    $method->setAccessible(true);
+
+    $codes = $method->invoke($service, [
+        'application_roles' => [
+            'skids' => ['SKIDS_MANAGER'],
+        ],
+    ]);
+
+    expect($codes)->toBe(['SKIDS_MANAGER']);
+});
+
+test('assert has authorized role rejects profile without any authorized SSO role', function () {
+    config()->set('sso.authorized_roles', [
+        'SKIDS_USER' => 'User',
+        'SKIDS_MANAGER' => 'Manager',
+    ]);
+
+    $service = new SsoService();
+    $method = new ReflectionMethod(SsoService::class, 'assertHasAuthorizedRole');
+    $method->setAccessible(true);
+
+    $method->invoke($service, ['SOME_OTHER_ROLE']);
+})->throws(SsoAuthenticationException::class, 'Your SSO account is not authorized to access this application.');
+
+test('assert has authorized role rejects profile with empty role list', function () {
+    config()->set('sso.authorized_roles', [
+        'SKIDS_USER' => 'User',
+    ]);
+
+    $service = new SsoService();
+    $method = new ReflectionMethod(SsoService::class, 'assertHasAuthorizedRole');
+    $method->setAccessible(true);
+
+    $method->invoke($service, []);
+})->throws(SsoAuthenticationException::class);
+
+test('assert has authorized role accepts SKIDS_USER', function () {
+    config()->set('sso.authorized_roles', [
+        'SKIDS_USER' => 'User',
+        'SKIDS_MANAGER' => 'Manager',
+    ]);
+
+    $service = new SsoService();
+    $method = new ReflectionMethod(SsoService::class, 'assertHasAuthorizedRole');
+    $method->setAccessible(true);
+
+    $method->invoke($service, ['SKIDS_USER']);
+
+    expect(true)->toBeTrue();
+});
+
+test('resolve system role from sso prefers Manager when both codes are present', function () {
+    config()->set('sso.authorized_roles', [
+        'SKIDS_USER' => 'User',
+        'SKIDS_MANAGER' => 'Manager',
+    ]);
+
+    $service = new SsoService();
+    $method = new ReflectionMethod(SsoService::class, 'resolveSystemRoleFromSso');
+    $method->setAccessible(true);
+
+    expect($method->invoke($service, ['SKIDS_USER', 'SKIDS_MANAGER']))->toBe('Manager');
+});
+
+test('resolve system role from sso returns User when only SKIDS_USER is present', function () {
+    config()->set('sso.authorized_roles', [
+        'SKIDS_USER' => 'User',
+        'SKIDS_MANAGER' => 'Manager',
+    ]);
+
+    $service = new SsoService();
+    $method = new ReflectionMethod(SsoService::class, 'resolveSystemRoleFromSso');
+    $method->setAccessible(true);
+
+    expect($method->invoke($service, ['SKIDS_USER']))->toBe('User');
+});
+
+test('resolve system role from sso returns null when no mapping matches', function () {
+    config()->set('sso.authorized_roles', [
+        'SKIDS_USER' => 'User',
+    ]);
+
+    $service = new SsoService();
+    $method = new ReflectionMethod(SsoService::class, 'resolveSystemRoleFromSso');
+    $method->setAccessible(true);
+
+    expect($method->invoke($service, ['SKIDS_MANAGER']))->toBeNull();
+});
+

@@ -424,5 +424,22 @@
             })();
         </script>
     @endif
+
+    {{-- Global i18n object for JS files (Path B: French source string + Laravel handles translation). --}}
+    {{-- Add new keys here when a JS file needs a translated string; never use __() inside .js files. --}}
+    @php
+        $sikdsJsI18n = [
+            'edit'              => __('Modifier'),
+            'genericError'      => __('Une erreur est survenue.'),
+            'serverUnreachable' => __('Impossible de contacter le serveur.'),
+            'statusActive'      => __('Actif'),
+            'statusInactive'    => __('Inactif'),
+            'chatbotOpen'       => __("Ouvrir l'assistant"),
+            'citationMeta'      => __('Section : :section | Page :page | Score :score%'),
+        ];
+    @endphp
+    <script>
+        window.i18n = @json($sikdsJsI18n);
+    </script>
 </body>
 </html>

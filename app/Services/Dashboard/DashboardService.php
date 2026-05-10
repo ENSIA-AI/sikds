@@ -179,7 +179,7 @@ class DashboardService
             ->pluck('total', 'day');
 
         return [
-            'labels'    => $days->map(fn (string $d) => Carbon::parse($d)->locale('fr')->isoFormat('D MMM'))->values()->all(),
+            'labels'    => $days->map(fn (string $d) => Carbon::parse($d)->locale(app()->getLocale())->isoFormat('D MMM'))->values()->all(),
             'downloads' => $days->map(fn (string $d) => (int) ($downloads[$d] ?? 0))->values()->all(),
             'uploads'   => $days->map(fn (string $d) => (int) ($uploads[$d] ?? 0))->values()->all(),
         ];

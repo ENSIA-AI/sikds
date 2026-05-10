@@ -322,6 +322,8 @@ CREATE INDEX idx_document_tags_assigned_by ON document_tags (assigned_by);
 ### 5.1 Document Chunks Table with pgvector
 
 ### WARNING
+
+
 Embedding dimension depends on the selected embedding model. `1536` is a placeholder and must be adjusted.
 
 ```sql
