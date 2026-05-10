@@ -178,7 +178,12 @@ test('it creates user via json', function () {
 
     $response = $this->postJson(route('users.store'), $payload);
 
-    $response->assertStatus(422);
+    $response->assertCreated();
+
+    $this->assertDatabaseHas('users', [
+        'email' => 'newuser@example.com',
+        'full_name' => 'New User',
+    ]);
 });
 
 test('it validates required fields when creating user', function () {
@@ -235,7 +240,7 @@ test('it updates user permissions via json', function () {
 
     $response = $this->putJson(route('users.update-permissions', $user), $payload);
 
-    $response->assertStatus(422);
+    $response->assertOk();
 });
 
 test('it can deactivate user', function () {
