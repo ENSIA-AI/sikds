@@ -97,7 +97,7 @@
                         stroke-linejoin="round"
                     />
                 </svg>
-                <span><span class="font-medium text-[#0A0A0A]">{{ $usersCount }}</span> utilisateurs</span>
+                <span><span class="font-medium text-[#0A0A0A]">{{ $usersCount }}</span> {{ __('utilisateurs') }}</span>
             </div>
             <div class="flex items-center gap-2">
                 <svg viewBox="0 0 24 24" fill="none" class="size-4 shrink-0 text-[#717182]" aria-hidden="true">
@@ -109,7 +109,7 @@
                     />
                     <path d="M14 2v6h6" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" />
                 </svg>
-                <span><span class="font-medium text-[#0A0A0A]">{{ $documentsCount }}</span> documents</span>
+                <span><span class="font-medium text-[#0A0A0A]">{{ $documentsCount }}</span> {{ __('documents') }}</span>
             </div>
         </div>
     </div>

@@ -64,12 +64,12 @@ final class UpdateUserRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'full_name.required' => 'Le nom complet est requis.',
-            'email.required' => 'L\'email est requis.',
-            'email.email' => 'L\'email doit être valide.',
-            'email.unique' => 'Cet email est déjà utilisé.',
-            'institution_id.required' => 'L\'institution est requise.',
-            'institution_id.exists' => 'Institution invalide.',
+            'full_name.required' => __('Le nom complet est requis.'),
+            'email.required' => __('L\'email est requis.'),
+            'email.email' => __('L\'email doit être valide.'),
+            'email.unique' => __('Cet email est déjà utilisé.'),
+            'institution_id.required' => __('L\'institution est requise.'),
+            'institution_id.exists' => __('Institution invalide.'), 
         ];
     }
 }

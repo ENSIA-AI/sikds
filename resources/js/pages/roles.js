@@ -15,7 +15,8 @@ function updateSelectedCount(root) {
         return;
     }
     const n = root.querySelectorAll('.perm-checkbox:checked').length;
-    countEl.textContent = `${n} sélectionnées`;
+    const tpl = window.i18n?.permissionsSelectedCount ?? ':count sélectionnées';
+    countEl.textContent = tpl.replace(':count', String(n));
 }
 
 function wireModal(root) {
@@ -135,7 +136,7 @@ function wireModal(root) {
 
             if (!res.ok) {
                 if (errBox) {
-                    errBox.textContent = data.message ?? 'Une erreur est survenue.';
+                    errBox.textContent = data.message ?? window.i18n?.genericError ?? 'Une erreur est survenue.';
                     errBox.classList.remove('hidden');
                 }
                 return;
@@ -149,7 +150,7 @@ function wireModal(root) {
             close();
         } catch {
             if (errBox) {
-                errBox.textContent = 'Impossible de contacter le serveur.';
+                errBox.textContent = window.i18n?.serverUnreachable ?? 'Impossible de contacter le serveur.';
                 errBox.classList.remove('hidden');
             }
         } finally {

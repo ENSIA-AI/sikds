@@ -58,10 +58,10 @@ final class StoreRoleRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'name.required' => 'Le nom du rôle est requis.',
-            'name.unique' => 'Ce nom de rôle existe déjà.',
-            'permission_ids.required' => 'Vous devez sélectionner au moins une permission.',
-            'permission_ids.*.exists' => 'Permission invalide sélectionnée.',
+            'name.required' => __('Le nom du rôle est requis.'),
+            'name.unique' => __('Ce nom de rôle existe déjà.'),
+            'permission_ids.required' => __('Vous devez sélectionner au moins une permission.'),
+            'permission_ids.*.exists' => __('Permission invalide sélectionnée.'),
         ];
     }
 }

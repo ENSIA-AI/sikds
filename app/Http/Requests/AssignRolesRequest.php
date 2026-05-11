@@ -24,8 +24,8 @@ final class AssignRolesRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'role_ids.required' => 'Vous devez sélectionner au moins un rôle.',
-            'role_ids.*.exists' => 'Rôle invalide sélectionné.',
+            'role_ids.required' => __('Vous devez sélectionner au moins un rôle.'),
+            'role_ids.*.exists' => __('Rôle invalide sélectionné.'),
         ];
     }
 }

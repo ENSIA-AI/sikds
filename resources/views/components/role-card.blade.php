@@ -75,7 +75,7 @@
             class="inline-flex h-10 w-full items-center justify-center rounded-[10px] border border-black/10 bg-[#ECECF04D] px-4 text-sm font-medium text-black transition hover:bg-[#ECECF04D]/70 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1C398E]"
             style="font-family: Inter, ui-sans-serif, system-ui, sans-serif;"
         >
-            Voir Les Permissions
+           {{ __('Voir les permissions') }}
         </a>
     </div>
 </article>

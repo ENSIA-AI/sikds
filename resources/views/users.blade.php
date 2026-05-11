@@ -23,6 +23,13 @@
     data-i18n-user-updated="{{ __('Utilisateur mis à jour.') }}"
     data-i18n-user-role-updated="{{ __('Utilisateur et rôle mis à jour.') }}"
     data-i18n-required-fields="{{ __('Le nom, l’email et l’institution sont obligatoires.') }}"
+    data-i18n-permissions-for-role="{{ __('Permissions pour le rôle') }}"
+    data-i18n-permissions-for-role-named="{{ __('Permissions pour :role') }}"
+    data-i18n-since="{{ __('depuis') }}"
+    data-i18n-last-activity="{{ __('dernière activité') }}"
+    data-i18n-deactivate="{{ __('Désactiver') }}"
+    data-i18n-activate="{{ __('Activer') }}"
+    data-i18n-user-actions-aria="{{ __('Actions utilisateur') }}"
 >
     <script type="application/json" id="users-roles-bootstrap">
         @json($rolesForUi)
