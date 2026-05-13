@@ -54,7 +54,7 @@ final class InstitutionController extends Controller
         $institution->loadCount(['users', 'documentInstitutionTargets as documents_count']);
 
         if (! $request->wantsJson()) {
-            return response()->json(['message' => 'Accept JSON requis.'], 406);
+            return response()->json(['message' => __('Accept JSON requis.')], 406);
         }
 
         $cardHtml = view('components.institution-card', [
@@ -62,7 +62,7 @@ final class InstitutionController extends Controller
         ])->render();
 
         return response()->json([
-            'message' => "L'institution « {$institution->name} » a été créée.",
+            'message' => __('L\'institution « :name » a été créée.', ['name' => $institution->name]),
             'institution' => [
                 'id' => $institution->id,
                 'name' => $institution->name,
@@ -88,7 +88,7 @@ final class InstitutionController extends Controller
         $institution->loadCount(['users', 'documentInstitutionTargets as documents_count']);
 
         if (! $request->wantsJson()) {
-            return response()->json(['message' => 'Accept JSON requis.'], 406);
+            return response()->json(['message' => __('Accept JSON requis.')], 406);
         }
 
         $cardHtml = view('components.institution-card', [
@@ -96,7 +96,7 @@ final class InstitutionController extends Controller
         ])->render();
 
         return response()->json([
-            'message' => "L'institution « {$institution->name} » a été mise à jour.",
+            'message' => __('L\'institution « :name » a été mise à jour.', ['name' => $institution->name]),
             'html' => $cardHtml,
             'institution' => [
                 'id' => $institution->id,
@@ -123,17 +123,17 @@ final class InstitutionController extends Controller
             $institution->delete();
         } catch (QueryException) {
             return response()->json([
-                'message' => 'Impossible de supprimer cette institution : des utilisateurs y sont encore rattachés.',
+                'message' => __('Impossible de supprimer cette institution : des utilisateurs y sont encore rattachés.'),
             ], 422);
         }
 
         if ($request->wantsJson()) {
             return response()->json([
-                'message' => 'L\'institution a été supprimée.',
+                'message' => __('L\'institution a été supprimée.'),
                 'id' => $deletedId,
             ]);
         }
 
-        return response()->json(['message' => 'Accept JSON requis.'], 406);
+        return response()->json(['message' => __('Accept JSON requis.')], 406);
     }
 }

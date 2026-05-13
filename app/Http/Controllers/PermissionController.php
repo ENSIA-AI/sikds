@@ -36,6 +36,8 @@ final class PermissionController extends Controller
             'Autres',
         ];
 
+        
+
         $canonicalizeCategory = static function (string $raw): string {
             $c = trim($raw);
             if ($c === '') {
@@ -151,7 +153,7 @@ final class PermissionController extends Controller
         $filters = array_map(static function (string $cat) use ($orderedCountsByCategory): array {
             return [
                 'key' => $cat,
-                'label' => $cat,
+                'label' => __($cat),
                 'count' => (int) ($orderedCountsByCategory[$cat] ?? 0),
             ];
         }, $categoryOrder);

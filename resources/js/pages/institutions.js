@@ -16,27 +16,27 @@ function setBodyModalOpen(open) {
     document.body.classList.toggle('overflow-hidden', open);
 }
 
+/**
+ * Strings for institutions.js (same idea as readUsersI18n in utilisateurs.js):
+ * read from data-* on the page root via getAttribute — not dataset.*, because
+ * names like data-i18n-create-title do not map reliably to i18nCreateTitle in all browsers.
+ */
 function readI18n() {
-    const root = document.getElementById('institution-modal-root');
-    const defaults = {
-        createTitle: 'Nouvelle institution',
-        createSubtitle: "Renseigner les informations de l'institution",
-        editTitle: "Modifier l'Institution",
-        editSubtitle: "Modifier les informations de l'institution",
-        unexpectedError: 'Une erreur est survenue.',
-        serverUnreachable: 'Impossible de contacter le serveur.',
-        deleteConfirm: "Supprimer l'institution « :name » ?",
-        deleteFailed: 'Suppression impossible.',
-        emptyState: 'Aucune institution pour le moment.',
+    const pageRoot = document.querySelector('[data-institutions-api-base]');
+    const g = typeof window !== 'undefined' ? window.i18n ?? {} : {};
+    const attr = (name) => (pageRoot?.getAttribute(name) ?? '').trim();
+
+    return {
+        createTitle: attr('data-institutions-modal-create-title'),
+        createSubtitle: attr('data-institutions-modal-create-subtitle'),
+        editTitle: attr('data-institutions-modal-edit-title'),
+        editSubtitle: attr('data-institutions-modal-edit-subtitle'),
+        unexpectedError: attr('data-institutions-modal-unexpected-error') || g.genericError || '',
+        serverUnreachable: attr('data-institutions-modal-server-unreachable') || g.serverUnreachable || '',
+        deleteConfirm: attr('data-institutions-modal-delete-confirm'),
+        deleteFailed: attr('data-institutions-modal-delete-failed'),
+        emptyState: attr('data-institutions-modal-empty-state'),
     };
-    if (!root) {
-        return defaults;
-    }
-    try {
-        return Object.assign(defaults, JSON.parse(root.dataset.i18n || '{}'));
-    } catch {
-        return defaults;
-    }
 }
 
 function showToast(message, variant = 'success') {
@@ -82,7 +82,6 @@ function setMethodSpoof(container, method) {
 }
 
 function wireInstitutionModal(root) {
-    const i18n = readI18n();
     const overlay = root.querySelector('[data-modal-overlay]');
     const panel = root.querySelector('[data-modal-panel]');
     const form = root.querySelector('[data-institution-form]');
@@ -121,6 +120,7 @@ function wireInstitutionModal(root) {
 
     function openCreate() {
         mode = 'create';
+        const i18n = readI18n();
         if (titleEl) {
             titleEl.textContent = i18n.createTitle;
         }
@@ -142,6 +142,7 @@ function wireInstitutionModal(root) {
 
     function openEdit(payload) {
         mode = 'edit';
+        const i18n = readI18n();
         if (titleEl) {
             titleEl.textContent = i18n.editTitle;
         }
@@ -245,7 +246,7 @@ function wireInstitutionModal(root) {
             }
 
             if (!res.ok) {
-                const msg = data.message ?? i18n.unexpectedError;
+                const msg = data.message ?? readI18n().unexpectedError;
                 if (errBox) {
                     errBox.textContent = msg;
                     errBox.classList.remove('hidden');
@@ -280,11 +281,12 @@ function wireInstitutionModal(root) {
 
             close();
         } catch {
+            const loc = readI18n();
             if (errBox) {
-                errBox.textContent = i18n.serverUnreachable;
+                errBox.textContent = loc.serverUnreachable;
                 errBox.classList.remove('hidden');
             } else {
-                showToast(i18n.serverUnreachable, 'error');
+                showToast(loc.serverUnreachable, 'error');
             }
         } finally {
             if (submitBtn instanceof HTMLButtonElement) {
@@ -326,7 +328,8 @@ function wireInstitutionModal(root) {
                 if (!id) {
                     return;
                 }
-                if (!window.confirm(i18n.deleteConfirm.replace(':name', name))) {
+                const loc = readI18n();
+                if (!window.confirm(loc.deleteConfirm.replace(':name', name))) {
                     return;
                 }
                 try {
@@ -340,7 +343,7 @@ function wireInstitutionModal(root) {
                     });
                     const data = await res.json().catch(() => ({}));
                     if (!res.ok) {
-                        showToast(data.message ?? i18n.deleteFailed, 'error');
+                        showToast(data.message ?? loc.deleteFailed, 'error');
                         return;
                     }
                     document.getElementById(`institution-card-${id}`)?.remove();
@@ -350,11 +353,11 @@ function wireInstitutionModal(root) {
                     if (grid && !grid.querySelector('[data-institution-card]')) {
                         grid.insertAdjacentHTML(
                             'beforeend',
-                            `<p data-institutions-empty class="col-span-full w-full rounded-[14px] border border-black/10 bg-white p-6 text-sm text-[#717182] shadow-[0px_1px_2px_-1px_rgba(0,0,0,0.10),0px_1px_3px_0px_rgba(0,0,0,0.10)]">${i18n.emptyState}</p>`,
+                            `<p data-institutions-empty class="col-span-full w-full rounded-[14px] border border-black/10 bg-white p-6 text-sm text-[#717182] shadow-[0px_1px_2px_-1px_rgba(0,0,0,0.10),0px_1px_3px_0px_rgba(0,0,0,0.10)]">${loc.emptyState}</p>`,
                         );
                     }
                 } catch {
-                    showToast(i18n.serverUnreachable, 'error');
+                    showToast(readI18n().serverUnreachable, 'error');
                 }
             });
         });
@@ -365,7 +368,6 @@ function wireInstitutionModal(root) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    const i18n = readI18n();
     const root = document.getElementById('institution-modal-root');
     if (root) {
         wireInstitutionModal(root);
@@ -380,7 +382,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 const apiBase = readApiBase();
                 const id = btn.getAttribute('data-institution-id');
                 const name = btn.getAttribute('data-institution-name') ?? '';
-                if (!id || !window.confirm(i18n.deleteConfirm.replace(':name', name))) {
+                const loc = readI18n();
+                if (!id || !window.confirm(loc.deleteConfirm.replace(':name', name))) {
                     return;
                 }
                 try {
@@ -394,7 +397,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     });
                     const data = await res.json().catch(() => ({}));
                     if (!res.ok) {
-                        showToast(data.message ?? i18n.deleteFailed, 'error');
+                        showToast(data.message ?? loc.deleteFailed, 'error');
                         return;
                     }
                     document.getElementById(`institution-card-${id}`)?.remove();
@@ -402,7 +405,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         showToast(data.message, 'success');
                     }
                 } catch {
-                    showToast(i18n.serverUnreachable, 'error');
+                    showToast(readI18n().serverUnreachable, 'error');
                 }
             });
         });

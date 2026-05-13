@@ -41,8 +41,8 @@ final class SyncUserPermissionsRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'role_ids.*.exists' => 'Un ou plusieurs rôles sélectionnés sont invalides.',
-            'permission_ids.*.exists' => 'Une ou plusieurs permissions sélectionnées sont invalides.',
+            'role_ids.*.exists' => __('Un ou plusieurs rôles sélectionnés sont invalides.'),
+            'permission_ids.*.exists' => __('Une ou plusieurs permissions sélectionnées sont invalides.'),
         ];
     }
 
@@ -52,8 +52,8 @@ final class SyncUserPermissionsRequest extends FormRequest
     public function attributes(): array
     {
         return [
-            'role_ids' => 'rôles',
-            'permission_ids' => 'permissions personnalisées',
+            'role_ids' => __('rôles'),
+            'permission_ids' => __('permissions personnalisées'),
         ];
     }
 }

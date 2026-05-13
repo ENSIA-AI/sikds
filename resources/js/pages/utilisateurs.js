@@ -13,14 +13,22 @@ function readApiBase() {
 
 function readUsersI18n() {
     const root = document.querySelector('[data-users-api-base]');
+    const g = typeof window !== 'undefined' ? window.i18n ?? {} : {};
     return {
-        networkError: root?.dataset?.i18nNetworkError || 'Erreur réseau.',
-        genericError: root?.dataset?.i18nGenericError || 'Une erreur est survenue.',
+        networkError: root?.dataset?.i18nNetworkError || g.serverUnreachable || 'Erreur réseau.',
+        genericError: root?.dataset?.i18nGenericError || g.genericError || 'Une erreur est survenue.',
         statusUpdated: root?.dataset?.i18nStatusUpdated || 'Statut mis à jour.',
         userCreated: root?.dataset?.i18nUserCreated || 'Utilisateur créé.',
         userUpdated: root?.dataset?.i18nUserUpdated || 'Utilisateur mis à jour.',
         userRoleUpdated: root?.dataset?.i18nUserRoleUpdated || 'Utilisateur et rôle mis à jour.',
         requiredFields: root?.dataset?.i18nRequiredFields || 'Le nom, l’email et l’institution sont obligatoires.',
+        permissionsForRole: root?.dataset?.i18nPermissionsForRole || 'Permissions pour le rôle',
+        permissionsForRoleNamed: root?.dataset?.i18nPermissionsForRoleNamed || 'Permissions pour :role',
+        since: root?.dataset?.i18nSince || 'depuis',
+        lastActivity: root?.dataset?.i18nLastActivity || 'dernière activité',
+        deactivate: root?.dataset?.i18nDeactivate || 'Désactiver',
+        activate: root?.dataset?.i18nActivate || 'Activer',
+        userActionsAria: root?.dataset?.i18nUserActionsAria || 'Actions utilisateur',
     };
 }
 
@@ -59,6 +67,18 @@ function showToast(message, variant = 'success') {
     }, 4200);
 }
 
+function readUsersPageLocaleTag() {
+    const lang = document.documentElement.getAttribute('lang') || 'fr';
+    const lower = lang.toLowerCase();
+    if (lower.startsWith('ar')) {
+        return 'ar';
+    }
+    if (lower.startsWith('en')) {
+        return 'en-GB';
+    }
+    return 'fr-FR';
+}
+
 function formatFrTs(iso) {
     if (!iso) {
         return '—';
@@ -67,7 +87,7 @@ function formatFrTs(iso) {
     if (Number.isNaN(d.getTime())) {
         return '—';
     }
-    return d.toLocaleString('fr-FR', {
+    return d.toLocaleString(readUsersPageLocaleTag(), {
         day: '2-digit',
         month: 'short',
         year: 'numeric',
@@ -84,12 +104,13 @@ function updateRolePreview(role, titleEl, listEl) {
     if (!titleEl || !listEl) {
         return;
     }
+    const labels = readUsersI18n();
     if (!role) {
-        titleEl.textContent = 'Permissions pour le rôle';
+        titleEl.textContent = labels.permissionsForRole;
         listEl.innerHTML = '';
         return;
     }
-    titleEl.textContent = `Permissions pour ${role.name}`;
+    titleEl.textContent = labels.permissionsForRoleNamed.replace(':role', role.name);
     listEl.innerHTML = (role.permissions ?? [])
         .map(
             (p) =>
@@ -188,22 +209,27 @@ function buildUserRow(payload) {
     const active = payload.is_active;
     const ts = active ? payload.last_login_at || payload.created_at : payload.last_login_at || payload.updated_at;
     const tsLabel = formatFrTs(ts);
+    const ui = readUsersI18n();
+    const g = typeof window !== 'undefined' ? window.i18n ?? {} : {};
+    const statusActiveLabel = g.statusActive ?? 'Actif';
+    const statusInactiveLabel = g.statusInactive ?? 'Inactif';
+    const editLabel = g.edit ?? 'Modifier';
     const statusPrimary = active
-        ? `<p class="font-inter text-sm font-medium text-[#008236]">Actif</p><p class="font-inter text-xs text-[#717182]">depuis ${escapeHtml(tsLabel)}</p>`
-        : `<p class="font-inter text-sm font-medium text-[#B91C1C]">Inactif</p><p class="font-inter text-xs text-[#717182]">dernière activité ${escapeHtml(tsLabel)}</p>`;
+        ? `<p class="font-inter text-sm font-medium text-[#008236]">${escapeHtml(statusActiveLabel)}</p><p class="font-inter text-xs text-[#717182]">${escapeHtml(ui.since)} ${escapeHtml(tsLabel)}</p>`
+        : `<p class="font-inter text-sm font-medium text-[#B91C1C]">${escapeHtml(statusInactiveLabel)}</p><p class="font-inter text-xs text-[#717182]">${escapeHtml(ui.lastActivity)} ${escapeHtml(tsLabel)}</p>`;
     const roleName = payload.roles?.[0]?.name ?? '—';
     const instName = payload.institution?.name ?? '—';
     const root = document.querySelector('[data-users-api-base]');
     const canDeactivate = root?.dataset?.usersCanDeactivate === '1';
     const hasEdit = document.querySelector('[data-open-edit-user]') !== null;
-    const menuToggle = `<button type="button" data-user-menu-toggle class="inline-flex size-10 items-center justify-center rounded-[10px] text-[#0A0A0A] transition hover:bg-[#F4F4F5] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1E3A8A]" aria-haspopup="menu" aria-expanded="false" aria-label="Actions utilisateur"><svg class="size-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="6" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="18" cy="12" r="1.6"/></svg></button>`;
+    const menuToggle = `<button type="button" data-user-menu-toggle class="inline-flex size-10 items-center justify-center rounded-[10px] text-[#0A0A0A] transition hover:bg-[#F4F4F5] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1E3A8A]" aria-haspopup="menu" aria-expanded="false" aria-label="${escapeHtml(ui.userActionsAria)}"><svg class="size-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="6" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="18" cy="12" r="1.6"/></svg></button>`;
 
     const editItem = hasEdit
-        ? `<button type="button" data-open-edit-user class="flex w-full items-center gap-3 px-3 py-2.5 text-left font-inter text-sm font-medium text-[#0A0A0A] transition hover:bg-[#f3f4f6]" role="menuitem"><i class="fa-solid fa-pen-to-square text-xs text-[#717182]"></i>Modifier</button>`
+        ? `<button type="button" data-open-edit-user class="flex w-full items-center gap-3 px-3 py-2.5 text-left font-inter text-sm font-medium text-[#0A0A0A] transition hover:bg-[#f3f4f6]" role="menuitem"><i class="fa-solid fa-pen-to-square text-xs text-[#717182]"></i>${escapeHtml(editLabel)}</button>`
         : '';
 
     const toggleItem = canDeactivate
-        ? `<button type="button" data-user-toggle-active class="flex w-full items-center gap-3 px-3 py-2.5 text-left font-inter text-sm font-medium transition hover:bg-[#f3f4f6] ${active ? 'text-[#ef4444]' : 'text-[#22c55e]'}" role="menuitem">${active ? '<i class="fa-solid fa-ban text-xs text-[#ef4444]"></i>Désactiver' : '<i class="fa-solid fa-circle-check text-xs text-[#22c55e]"></i>Activer'}</button>`
+        ? `<button type="button" data-user-toggle-active class="flex w-full items-center gap-3 px-3 py-2.5 text-left font-inter text-sm font-medium transition hover:bg-[#f3f4f6] ${active ? 'text-[#ef4444]' : 'text-[#22c55e]'}" role="menuitem">${active ? `<i class="fa-solid fa-ban text-xs text-[#ef4444]"></i>${escapeHtml(ui.deactivate)}` : `<i class="fa-solid fa-circle-check text-xs text-[#22c55e]"></i>${escapeHtml(ui.activate)}`}</button>`
         : '';
 
     const menu = `<div data-user-menu hidden class="z-50 w-[202px] overflow-hidden rounded-[8px] border border-[#e5e7eb] bg-white py-1 shadow-[0_4px_12px_rgba(0,0,0,0.12)]" role="menu"><div class="flex flex-col">${editItem}${toggleItem}</div></div>`;

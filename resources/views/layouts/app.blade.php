@@ -436,6 +436,10 @@
             'statusInactive'    => __('Inactif'),
             'chatbotOpen'       => __("Ouvrir l'assistant"),
             'citationMeta'      => __('Section : :section | Page :page | Score :score%'),
+            'noRole'            => __('Aucun rôle pour le moment. Créez un rôle pour commencer.'),
+            'noPermission'      => __('Aucune permission pour le moment. Créez une permission pour commencer.'),
+            'noUser'            => __('Aucun utilisateur pour le moment. Créez un utilisateur pour commencer.'),
+            'permissionsSelectedCount' => __(':count sélectionnées'),
         ];
     @endphp
     <script>

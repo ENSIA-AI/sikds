@@ -125,7 +125,7 @@
                                 </div>
                             @endif
                             <div class="min-w-0">
-                                <h3 class="text-lg font-semibold leading-[27px] text-black">{{ $catKey }}</h3>
+                                <h3 class="text-lg font-semibold leading-[27px] text-black">{{ __($catKey) }}</h3>
                                 <p class="text-sm leading-5 text-[#717182]">{{ $permCount }} {{ __('permission(s)') }}</p>
                             </div>
                         </div>

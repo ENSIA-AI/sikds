@@ -76,11 +76,11 @@ final class UpdateInstitutionRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'logo.image' => 'Le logo doit être une image valide.',
-            'logo.mimes' => 'Le logo doit être un fichier de type: jpg, jpeg, png, gif ou webp.',
-            'logo.mimetypes' => 'Le contenu du fichier ne correspond pas à une image autorisée.',
-            'logo.max' => 'Le logo ne doit pas dépasser 2 Mo.',
-            'logo.dimensions' => 'Le logo ne doit pas dépasser 2000 × 2000 pixels.',
+            'logo.image' => __('Le logo doit être une image valide.'),
+            'logo.mimes' => __('Le logo doit être un fichier de type: jpg, jpeg, png, gif ou webp.'),
+            'logo.mimetypes' => __('Le contenu du fichier ne correspond pas à une image autorisée.'),
+            'logo.max' => __('Le logo ne doit pas dépasser 2 Mo.'),
+            'logo.dimensions' => __('Le logo ne doit pas dépasser 2000 × 2000 pixels.'),
         ];
     }
 }
