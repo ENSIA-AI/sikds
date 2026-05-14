@@ -204,7 +204,7 @@
                 type="button"
                 id="sikds-chatbot-toggle"
                 class="h-14 w-14 rounded-full bg-[#1E3A8A] text-white shadow-xl hover:bg-[#163171] inline-flex items-center justify-center"
-                aria-label="Ouvrir l'assistant"
+                aria-label="{{ __('Ouvrir l\'assistant') }}"
             >
                 <i class="fa-regular fa-comments text-white text-lg leading-none" aria-hidden="true"></i>
             </button>
@@ -239,6 +239,7 @@
                     insufficientContext: @json(__('Je n ai pas de contexte suffisant pour repondre avec fiabilite.')),
                     noAnswer: @json(__('Aucune reponse disponible.')),
                     networkError: @json(__('Erreur reseau. Veuillez reessayer.')),
+                    citationMeta: @json(__('Section: :section | Page :page | Score :score%')),
                 };
                 const seedMessage = i18n.seedMessage;
 
@@ -285,8 +286,12 @@
                             const score = Math.round((Number(c.relevance_score || 0)) * 100);
                             const item = document.createElement('div');
                             item.className = 'rounded-md border border-slate-200 px-2 py-1 text-xs';
+                            const meta = i18n.citationMeta
+                                .replace(':section', section)
+                                .replace(':page', page)
+                                .replace(':score', score);
                             item.innerHTML = `<p class="font-medium text-slate-800">${idx + 1}. ${title}</p>
-                                <p class="text-slate-500">Section: ${section} | Page ${page} | Score ${score}%</p>`;
+                                <p class="text-slate-500">${meta}</p>`;
                             list.appendChild(item);
                         });
 

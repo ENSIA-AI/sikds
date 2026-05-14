@@ -24,25 +24,25 @@ class DashboardService
             [
                 'icon'  => '/document.svg',
                 'value' => number_format((int) ($docCounts->total ?? 0)),
-                'label' => 'Total Documents',
+                'label' => __('Total Documents'),
                 'trend' => null,
             ],
             [
                 'icon'  => '/upload-blue.svg',
                 'value' => number_format((int) ($docCounts->recent ?? 0)),
-                'label' => 'Téléversements Récents',
+                'label' => __('Téléversements Récents'),
                 'trend' => null,
             ],
             [
                 'icon'  => '/people.svg',
                 'value' => number_format(User::count()),
-                'label' => 'Utilisateurs',
+                'label' => __('Utilisateurs'),
                 'trend' => null,
             ],
             [
                 'icon'  => '/building-blue.svg',
                 'value' => number_format(DownloadLog::count()),
-                'label' => 'Téléchargements',
+                'label' => __('Téléchargements'),
                 'trend' => null,
             ],
         ];
@@ -56,10 +56,10 @@ class DashboardService
             ->pluck('total', 'status');
 
         return [
-            ['label' => 'Brouillon', 'value' => number_format((int) ($counts['draft'] ?? 0))],
-            ['label' => 'Actif',     'value' => number_format((int) ($counts['active'] ?? 0))],
-            ['label' => 'Archivé',   'value' => number_format((int) ($counts['archived'] ?? 0))],
-            ['label' => 'Supprimé',  'value' => number_format((int) ($counts['soft_deleted'] ?? 0))],
+            ['label' => __('Brouillon'), 'value' => number_format((int) ($counts['draft'] ?? 0))],
+            ['label' => __('Actif'),     'value' => number_format((int) ($counts['active'] ?? 0))],
+            ['label' => __('Archivé'),   'value' => number_format((int) ($counts['archived'] ?? 0))],
+            ['label' => __('Supprimé'),  'value' => number_format((int) ($counts['soft_deleted'] ?? 0))],
         ];
     }
 
@@ -91,7 +91,11 @@ class DashboardService
         if ($failedCount > 0) {
             $alerts[] = [
                 'type'      => 'danger',
-                'message'   => "Échec d'indexation pour {$failedCount} document" . ($failedCount > 1 ? 's' : ''),
+                'message'   => trans_choice(
+                    "{1} Échec d'indexation pour :count document|[2,*] Échec d'indexation pour :count documents",
+                    $failedCount,
+                    ['count' => $failedCount],
+                ),
                 'timestamp' => null,
             ];
         }
@@ -103,7 +107,11 @@ class DashboardService
         if ($expiringCount > 0) {
             $alerts[] = [
                 'type'      => 'warning',
-                'message'   => "{$expiringCount} document" . ($expiringCount > 1 ? 's expirent' : ' expire') . ' dans les 7 prochains jours',
+                'message'   => trans_choice(
+                    '{1} :count document expire dans les 7 prochains jours|[2,*] :count documents expirent dans les 7 prochains jours',
+                    $expiringCount,
+                    ['count' => $expiringCount],
+                ),
                 'timestamp' => null,
             ];
         }
@@ -112,7 +120,11 @@ class DashboardService
         if ($processingCount > 0) {
             $alerts[] = [
                 'type'      => 'info',
-                'message'   => "{$processingCount} document" . ($processingCount > 1 ? 's en cours' : ' en cours') . " d'indexation",
+                'message'   => trans_choice(
+                    "{1} :count document en cours d'indexation|[2,*] :count documents en cours d'indexation",
+                    $processingCount,
+                    ['count' => $processingCount],
+                ),
                 'timestamp' => null,
             ];
         }
@@ -127,7 +139,7 @@ class DashboardService
             ->get()
             ->map(fn (AuditLog $log) => [
                 'icon'     => $this->iconForEvent($log->event_type),
-                'user'     => $log->user_email ?? 'Système',
+                'user'     => $log->user_email ?? __('Système'),
                 'action'   => $this->labelForEvent($log->event_type),
                 'document' => $this->documentLabelFromLog($log),
                 'time'     => $log->created_at?->diffForHumans() ?? '—',
@@ -144,7 +156,7 @@ class DashboardService
             ->get()
             ->map(fn (Institution $i) => [
                 'label' => $i->code ?? $i->name,
-                'value' => $i->users_count . ' utilisateur' . ($i->users_count !== 1 ? 's' : ''),
+                'value' => trans_choice('{1} :count utilisateur|[2,*] :count utilisateurs', $i->users_count, ['count' => $i->users_count]),
             ])
             ->all();
     }
@@ -199,14 +211,14 @@ class DashboardService
     private function labelForEvent(string $eventType): string
     {
         return match (true) {
-            str_contains($eventType, 'upload') || str_contains($eventType, 'creat') => 'a téléversé',
-            str_contains($eventType, 'download')                                     => 'a téléchargé',
-            str_contains($eventType, 'updat') || str_contains($eventType, 'edit')   => 'a modifié',
-            str_contains($eventType, 'archiv')                                       => 'a archivé',
-            str_contains($eventType, 'delet')                                        => 'a supprimé',
-            str_contains($eventType, 'login')                                        => "s'est connecté",
-            str_contains($eventType, 'logout')                                       => "s'est déconnecté",
-            default                                                                   => 'a effectué une action',
+            str_contains($eventType, 'upload') || str_contains($eventType, 'creat') => __('a téléversé'),
+            str_contains($eventType, 'download')                                     => __('a téléchargé'),
+            str_contains($eventType, 'updat') || str_contains($eventType, 'edit')   => __('a modifié'),
+            str_contains($eventType, 'archiv')                                       => __('a archivé'),
+            str_contains($eventType, 'delet')                                        => __('a supprimé'),
+            str_contains($eventType, 'login')                                        => __("s'est connecté"),
+            str_contains($eventType, 'logout')                                       => __("s'est déconnecté"),
+            default                                                                   => __('a effectué une action'),
         };
     }
 

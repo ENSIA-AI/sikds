@@ -265,7 +265,7 @@ class DocumentsController
                 $email = $download->user?->email ?? __('Email indisponible');
 
                 return [
-                    'title' => __('Téléchargement #').($index + 1),
+                    'title' => __('Téléchargement #:n', ['n' => $index + 1]),
                     'meta' => $name.' • '.$email.' • '.$download->downloaded_at?->format('d/m/Y H:i'),
                     'uuid' => $download->watermark_uuid,
                 ];
@@ -281,28 +281,28 @@ class DocumentsController
             ->get()
             ->map(function (AuditLog $activity): array {
                 $map = [
-                    'document.download' => ['title' => 'Document téléchargé', 'icon' => 'fa-solid fa-download', 'class' => 'sikds-doc-event-icon--download'],
-                    'document.published' => ['title' => 'Document publié', 'icon' => 'fa-regular fa-file-lines', 'class' => 'sikds-doc-event-icon--version'],
-                    'document.updated' => ['title' => 'Document mis à jour', 'icon' => 'fa-regular fa-file-lines', 'class' => 'sikds-doc-event-icon--version'],
-                    'document.uploaded' => ['title' => 'Document téléversé', 'icon' => 'fa-regular fa-file-lines', 'class' => 'sikds-doc-event-icon--version'],
-                    'document.soft_deleted' => ['title' => 'Document supprimé', 'icon' => 'fa-regular fa-trash-can', 'class' => 'sikds-doc-event-icon--share'],
-                    'document.restored' => ['title' => 'Document restauré', 'icon' => 'fa-solid fa-rotate-left', 'class' => 'sikds-doc-event-icon--share'],
-                    'document.archived' => ['title' => 'Document archivé', 'icon' => 'fa-solid fa-box-archive', 'class' => 'sikds-doc-event-icon--share'],
-                    'document.forwarded' => ['title' => 'Document transféré', 'icon' => 'fa-solid fa-share-from-square', 'class' => 'sikds-doc-event-icon--share'],
-                    'tag.assigned' => ['title' => 'Étiquette ajoutée', 'icon' => 'fa-solid fa-tag', 'class' => 'sikds-doc-event-icon--version'],
-                    'tag.removed' => ['title' => 'Étiquette retirée', 'icon' => 'fa-solid fa-tag', 'class' => 'sikds-doc-event-icon--share'],
-                    'DOCUMENT_INDEXING_STARTED' => ['title' => 'Indexation démarrée', 'icon' => 'fa-solid fa-bolt', 'class' => 'sikds-doc-event-icon--version'],
-                    'DOCUMENT_INDEXING_COMPLETED' => ['title' => 'Indexation terminée', 'icon' => 'fa-solid fa-circle-check', 'class' => 'sikds-doc-event-icon--version'],
-                    'DOCUMENT_INDEXING_FAILED' => ['title' => "Échec d'indexation", 'icon' => 'fa-solid fa-triangle-exclamation', 'class' => 'sikds-doc-event-icon--share'],
+                    'document.download' => ['title' => __('Document téléchargé'), 'icon' => 'fa-solid fa-download', 'class' => 'sikds-doc-event-icon--download'],
+                    'document.published' => ['title' => __('Document publié'), 'icon' => 'fa-regular fa-file-lines', 'class' => 'sikds-doc-event-icon--version'],
+                    'document.updated' => ['title' => __('Document mis à jour'), 'icon' => 'fa-regular fa-file-lines', 'class' => 'sikds-doc-event-icon--version'],
+                    'document.uploaded' => ['title' => __('Document téléversé'), 'icon' => 'fa-regular fa-file-lines', 'class' => 'sikds-doc-event-icon--version'],
+                    'document.soft_deleted' => ['title' => __('Document supprimé'), 'icon' => 'fa-regular fa-trash-can', 'class' => 'sikds-doc-event-icon--share'],
+                    'document.restored' => ['title' => __('Document restauré'), 'icon' => 'fa-solid fa-rotate-left', 'class' => 'sikds-doc-event-icon--share'],
+                    'document.archived' => ['title' => __('Document archivé'), 'icon' => 'fa-solid fa-box-archive', 'class' => 'sikds-doc-event-icon--share'],
+                    'document.forwarded' => ['title' => __('Document transféré'), 'icon' => 'fa-solid fa-share-from-square', 'class' => 'sikds-doc-event-icon--share'],
+                    'tag.assigned' => ['title' => __('Étiquette ajoutée'), 'icon' => 'fa-solid fa-tag', 'class' => 'sikds-doc-event-icon--version'],
+                    'tag.removed' => ['title' => __('Étiquette retirée'), 'icon' => 'fa-solid fa-tag', 'class' => 'sikds-doc-event-icon--share'],
+                    'DOCUMENT_INDEXING_STARTED' => ['title' => __('Indexation démarrée'), 'icon' => 'fa-solid fa-bolt', 'class' => 'sikds-doc-event-icon--version'],
+                    'DOCUMENT_INDEXING_COMPLETED' => ['title' => __('Indexation terminée'), 'icon' => 'fa-solid fa-circle-check', 'class' => 'sikds-doc-event-icon--version'],
+                    'DOCUMENT_INDEXING_FAILED' => ['title' => __("Échec d'indexation"), 'icon' => 'fa-solid fa-triangle-exclamation', 'class' => 'sikds-doc-event-icon--share'],
                 ];
                 $data = $map[$activity->event_type] ?? ['title' => $activity->event_type, 'icon' => 'fa-regular fa-circle', 'class' => 'sikds-doc-event-icon--version'];
 
-                $resultLabels = ['success' => 'Succès', 'failed' => 'Échec', 'warning' => 'Avertissement'];
+                $resultLabels = ['success' => __('Succès'), 'failed' => __('Échec'), 'warning' => __('Avertissement')];
                 $resultLabel = $activity->result ? ($resultLabels[$activity->result] ?? $activity->result) : null;
 
                 return [
                     'title' => $data['title'],
-                    'meta' => ($activity->user_email ?? 'Système').($resultLabel ? ' • '.$resultLabel : ''),
+                    'meta' => ($activity->user_email ?? __('Système')).($resultLabel ? ' • '.$resultLabel : ''),
                     'timestamp' => $activity->created_at?->format('d/m/Y H:i') ?? '-',
                     'icon' => $data['icon'],
                     'icon_class' => $data['class'],
@@ -319,7 +319,7 @@ class DocumentsController
                 $metadata = is_array($version->metadata) ? $version->metadata : [];
 
                 return [
-                    'title' => 'Version '.$version->version_number,
+                    'title' => __('Version :n', ['n' => $version->version_number]),
                     'status' => null,
                     'status_class' => null,
                     'meta' => ($version->created_at?->format('d/m/Y') ?? '-').' • '.$this->formatBytes((int) (DB::table('documents')->where('id', $version->document_id)->value('file_size') ?? 0)),
@@ -329,8 +329,8 @@ class DocumentsController
             ->values();
 
         $versions = collect([[
-            'title' => 'Version '.$document->version_number,
-            'status' => 'Actuelle',
+            'title' => __('Version :n', ['n' => $document->version_number]),
+            'status' => __('Actuelle'),
             'status_class' => 'sikds-doc-pill--current',
             'meta' => $this->formatDate($document->updated_at).' • '.$this->formatBytes((int) $document->file_size),
             'description' => $document->description ?: __('Version courante du document.'),

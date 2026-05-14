@@ -49,7 +49,7 @@ class StoreDocumentsRequest extends FormRequest
             $metaList = (array) $this->input('documents_meta', []);
 
             if (count($files) !== count($metaList)) {
-                $validator->errors()->add('documents_meta', 'Chaque fichier doit avoir ses métadonnées correspondantes.');
+                $validator->errors()->add('documents_meta', __('Chaque fichier doit avoir ses métadonnées correspondantes.'));
             }
 
             foreach ($metaList as $idx => $meta) {
@@ -57,13 +57,13 @@ class StoreDocumentsRequest extends FormRequest
                 $audience = (string) ($meta['target_audience'] ?? '');
 
                 if ($audience === 'specific_institutions' && empty($meta['target_institution_ids'])) {
-                    $validator->errors()->add($label, 'Institutions cibles requises pour ce document.');
+                    $validator->errors()->add($label, __('Institutions cibles requises pour ce document.'));
                 }
                 if ($audience === 'specific_roles' && empty($meta['target_role_ids'])) {
-                    $validator->errors()->add($label, 'Rôles cibles requis pour ce document.');
+                    $validator->errors()->add($label, __('Rôles cibles requis pour ce document.'));
                 }
                 if ($audience === 'specific_users' && empty($meta['target_user_ids'])) {
-                    $validator->errors()->add($label, 'Utilisateurs cibles requis pour ce document.');
+                    $validator->errors()->add($label, __('Utilisateurs cibles requis pour ce document.'));
                 }
 
                 $issue = isset($meta['issue_date']) ? strtotime((string) $meta['issue_date']) : false;
@@ -75,10 +75,10 @@ class StoreDocumentsRequest extends FormRequest
                     : false;
 
                 if ($issue !== false && $effective !== false && $effective < $issue) {
-                    $validator->errors()->add($label, 'effective_date doit être >= issue_date.');
+                    $validator->errors()->add($label, __('effective_date doit être >= issue_date.'));
                 }
                 if ($issue !== false && $expiration !== false && $expiration <= $issue) {
-                    $validator->errors()->add($label, 'expiration_date doit être > issue_date.');
+                    $validator->errors()->add($label, __('expiration_date doit être > issue_date.'));
                 }
             }
 

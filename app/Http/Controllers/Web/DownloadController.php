@@ -33,7 +33,7 @@ class DownloadController extends Controller
         //   target_audience=all → open
         //   specific_institutions / specific_roles → checked via pivot tables
         if (! $document->isAccessibleBy($user)) {
-            abort(403, 'Vous n\'avez pas l\'autorisation de télécharger ce document.');
+            abort(403, __('Vous n\'avez pas l\'autorisation de télécharger ce document.'));
         }
 
         // Track the download and generate unique watermark UUID
@@ -51,7 +51,7 @@ class DownloadController extends Controller
         try {
             $watermarkedPdfPath = $this->watermarkService->generateWatermarkedPdf($document, $downloadLog);
         } catch (\Exception $e) {
-            abort(500, 'Erreur lors de la génération du filigrane : ' . $e->getMessage());
+            abort(500, __('Erreur lors de la génération du filigrane : :message', ['message' => $e->getMessage()]));
         }
 
         // Write immutable audit entry

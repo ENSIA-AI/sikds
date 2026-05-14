@@ -5,116 +5,102 @@
     <script type="application/json" id="audit-selected-events">@json(is_array(request('event_type')) ? request('event_type') : (request('event_type') ? [request('event_type')] : []))</script>
     <script type="application/json" id="audit-selected-statuses">@json(is_array(request('result')) ? request('result') : (request('result') ? [request('result')] : []))</script>
     @php
-        $resultLabels = ['success' => 'Succès', 'warning' => 'Avertissement', 'failed' => 'Échec'];
-        $eventTypeLabels = [
-            'document.uploaded' => 'Téléversement de document',
-            'document.updated' => 'Modification de document',
-            'document.published' => 'Publication de document',
-            'document.archived' => 'Archivage de document',
-            'document.soft_deleted' => 'Suppression logique de document',
-            'document.restored' => 'Restauration de document',
-            'document.download' => 'Téléchargement de document',
-            'document.forwarded' => 'Document transféré',
-            'auth.login.success' => 'Connexion réussie',
-            'auth.login.failed' => 'Tentative de connexion échouée',
-            'auth.logout' => 'Déconnexion',
-            'user.created' => 'Création utilisateur',
-            'user.updated' => 'Modification utilisateur',
-            'user.deactivated' => 'Désactivation utilisateur',
-            'user.activated' => 'Activation utilisateur',
-            'role.assigned' => 'Attribution de rôle',
-            'role.removed' => 'Retrait de rôle',
-            'role.created' => 'Création de rôle',
-            'role.updated' => 'Modification de rôle',
-            'role.deleted' => 'Suppression de rôle',
-            'role.permissions.changed' => 'Permissions du rôle modifiées',
-            'permission.assigned' => 'Permission attribuée',
-            'permission.removed' => 'Permission retirée',
-            'permissions.changed' => 'Permissions modifiées',
-            'permission.updated' => 'Modification de permissions',
-            'tag.created' => 'Tag créé',
-            'tag.updated' => 'Tag modifié',
-            'tag.deleted' => 'Tag supprimé',
-            'tag.assigned' => 'Tag attribué',
-            'tag.removed' => 'Tag retiré',
-            'settings.updated' => 'Paramètres mis à jour',
-            'indexing.started' => 'Démarrage indexation',
-            'indexing.completed' => 'Indexation terminée',
-            'indexing.failed' => 'Échec indexation',
-            'DOCUMENT_INDEXING_STARTED' => 'Démarrage indexation',
-            'DOCUMENT_INDEXING_COMPLETED' => 'Indexation terminée',
-            'DOCUMENT_INDEXING_FAILED' => 'Échec indexation',
-            'QUEUE_JOB_FAILED' => "Échec d'un travail en file",
-            'QUEUE_LONG_WAIT_DETECTED' => 'Attente prolongée détectée',
-            'notification.sent' => 'Notification envoyée',
-            'notification.failed' => 'Échec notification',
-            // Defensive aliases for shorter event keys that may appear via legacy or future emitters.
-            'login' => 'Connexion',
-            'logout' => 'Déconnexion',
-            'upload' => 'Téléversement',
-            'download' => 'Téléchargement',
-            'create' => 'Création',
-            'delete' => 'Suppression',
-            'update' => 'Mise à jour',
-            'view' => 'Consultation',
-            'document.upload' => 'Téléversement',
-            'document.create' => 'Création',
-            'document.delete' => 'Suppression',
-            'document.update' => 'Mise à jour',
-            'document.view' => 'Consultation',
-            'user.create' => "Création d'utilisateur",
-            'user.update' => "Modification d'utilisateur",
+        $resultLabels = [
+            'success' => __('Succès'),
+            'warning' => __('Avertissement'),
+            'failed' => __('Échec'),
         ];
-        $fallbackEventLabel = static function (string $event): string {
-            return str($event)
-                ->replace('.', ' ')
-                ->replace('_', ' ')
-                ->replace('document', 'document')
-                ->replace('uploaded', 'téléversement')
-                ->replace('updated', 'modification')
-                ->replace('published', 'publication')
-                ->replace('archived', 'archivage')
-                ->replace('deleted', 'suppression')
-                ->replace('restored', 'restauration')
-                ->replace('download', 'téléchargement')
-                ->replace('auth', 'authentification')
-                ->replace('login', 'connexion')
-                ->replace('logout', 'déconnexion')
-                ->replace('failed', 'échouée')
-                ->replace('success', 'réussie')
-                ->title()
-                ->toString();
-        };
+        $eventTypeLabels = [
+            'document.uploaded' => __('Téléversement de document'),
+            'document.updated' => __('Modification de document'),
+            'document.published' => __('Publication de document'),
+            'document.archived' => __('Archivage de document'),
+            'document.soft_deleted' => __('Suppression logique de document'),
+            'document.restored' => __('Restauration de document'),
+            'document.download' => __('Téléchargement de document'),
+            'document.forwarded' => __('Document transféré'),
+            'auth.login.success' => __('Connexion réussie'),
+            'auth.login.failed' => __('Tentative de connexion échouée'),
+            'auth.logout' => __('Déconnexion'),
+            'user.created' => __('Création utilisateur'),
+            'user.updated' => __('Modification utilisateur'),
+            'user.deactivated' => __('Désactivation utilisateur'),
+            'user.activated' => __('Activation utilisateur'),
+            'role.assigned' => __('Attribution de rôle'),
+            'role.removed' => __('Retrait de rôle'),
+            'role.created' => __('Création de rôle'),
+            'role.updated' => __('Modification de rôle'),
+            'role.deleted' => __('Suppression de rôle'),
+            'role.permissions.changed' => __('Permissions du rôle modifiées'),
+            'permission.assigned' => __('Permission attribuée'),
+            'permission.removed' => __('Permission retirée'),
+            'permissions.changed' => __('Permissions modifiées'),
+            'permission.updated' => __('Modification de permissions'),
+            'tag.created' => __('Tag créé'),
+            'tag.updated' => __('Tag modifié'),
+            'tag.deleted' => __('Tag supprimé'),
+            'tag.assigned' => __('Tag attribué'),
+            'tag.removed' => __('Tag retiré'),
+            'settings.updated' => __('Paramètres mis à jour'),
+            'indexing.started' => __('Démarrage indexation'),
+            'indexing.completed' => __('Indexation terminée'),
+            'indexing.failed' => __('Échec indexation'),
+            'DOCUMENT_INDEXING_STARTED' => __('Démarrage indexation'),
+            'DOCUMENT_INDEXING_COMPLETED' => __('Indexation terminée'),
+            'DOCUMENT_INDEXING_FAILED' => __('Échec indexation'),
+            'QUEUE_JOB_FAILED' => __("Échec d'un travail en file"),
+            'QUEUE_LONG_WAIT_DETECTED' => __('Attente prolongée détectée'),
+            'notification.sent' => __('Notification envoyée'),
+            'notification.failed' => __('Échec notification'),
+            // Defensive aliases for shorter event keys that may appear via legacy or future emitters.
+            'login' => __('Connexion'),
+            'logout' => __('Déconnexion'),
+            'upload' => __('Téléversement'),
+            'download' => __('Téléchargement'),
+            'create' => __('Création'),
+            'delete' => __('Suppression'),
+            'update' => __('Mise à jour'),
+            'view' => __('Consultation'),
+            'document.upload' => __('Téléversement'),
+            'document.create' => __('Création'),
+            'document.delete' => __('Suppression'),
+            'document.update' => __('Mise à jour'),
+            'document.view' => __('Consultation'),
+            'user.create' => __("Création d'utilisateur"),
+            'user.update' => __("Modification d'utilisateur"),
+        ];
         $filterLabelMap = [
-            'date' => 'Date',
-            'event_type' => "Type d'événement",
-            'user' => 'Utilisateur',
-            'result' => 'Statut',
+            'date' => __('Date'),
+            'event_type' => __("Type d'événement"),
+            'user' => __('Utilisateur'),
+            'result' => __('Statut'),
         ];
         $statusLabels = [
-            'draft' => 'Brouillon',
-            'active' => 'Actif',
-            'archived' => 'Archivé',
-            'soft_deleted' => 'Supprimé',
+            'draft' => __('Brouillon'),
+            'active' => __('Actif'),
+            'archived' => __('Archivé'),
+            'soft_deleted' => __('Supprimé'),
         ];
         $canViewAuditTechnicalDetails = auth()->user()?->can('audit.view') ?? false;
-        $contextSummary = static function (string $event, array $meta) use ($statusLabels, $eventTypeLabels, $fallbackEventLabel): array {
+        $contextSummary = static function (string $event, array $meta) use ($statusLabels, $eventTypeLabels): array {
             $lines = [];
 
             $ref = isset($meta['reference_number']) && is_string($meta['reference_number']) ? $meta['reference_number'] : null;
             if ($ref) {
-                $lines[] = "Référence: {$ref}";
+                $lines[] = __('Référence: :ref', ['ref' => $ref]);
             }
 
             if (isset($meta['watermark_uuid']) && is_string($meta['watermark_uuid'])) {
-                $lines[] = "ID filigrane: {$meta['watermark_uuid']}";
+                $lines[] = __('ID filigrane: :uuid', ['uuid' => $meta['watermark_uuid']]);
             }
 
             if (isset($meta['previous_status']) && is_string($meta['previous_status'])) {
                 $before = $statusLabels[$meta['previous_status']] ?? $meta['previous_status'];
                 $afterRaw = is_string($meta['status_after'] ?? null) ? $meta['status_after'] : null;
                 $after = $afterRaw ? ($statusLabels[$afterRaw] ?? $afterRaw) : null;
-                $lines[] = $after ? "Statut: {$before} → {$after}" : "Statut précédent: {$before}";
+                $lines[] = $after
+                    ? __('Statut: :before → :after', ['before' => $before, 'after' => $after])
+                    : __('Statut précédent: :before', ['before' => $before]);
             }
 
             if (isset($meta['status_before']) && is_string($meta['status_before'])) {
@@ -122,36 +108,36 @@
                 $afterRaw = is_string($meta['status_after'] ?? null) ? $meta['status_after'] : null;
                 $after = $afterRaw ? ($statusLabels[$afterRaw] ?? $afterRaw) : null;
                 if ($after) {
-                    $lines[] = "Statut: {$before} → {$after}";
+                    $lines[] = __('Statut: :before → :after', ['before' => $before, 'after' => $after]);
                 }
             }
 
             if (isset($meta['new_version']) && (is_int($meta['new_version']) || is_string($meta['new_version']))) {
-                $lines[] = 'Nouvelle version: v' . $meta['new_version'];
+                $lines[] = __('Nouvelle version: v:n', ['n' => $meta['new_version']]);
             }
 
             if (isset($meta['missing_embeddings']) && (is_int($meta['missing_embeddings']) || is_string($meta['missing_embeddings']))) {
-                $lines[] = 'Embeddings manquants: ' . $meta['missing_embeddings'];
+                $lines[] = __('Embeddings manquants: :n', ['n' => $meta['missing_embeddings']]);
             }
 
             if ($event === 'QUEUE_JOB_FAILED') {
-                if (isset($meta['queue']) && is_string($meta['queue'])) $lines[] = 'File: ' . $meta['queue'];
-                if (isset($meta['job_name']) && is_string($meta['job_name'])) $lines[] = 'Job: ' . $meta['job_name'];
-                if (isset($meta['exception']) && is_string($meta['exception'])) $lines[] = 'Erreur: ' . $meta['exception'];
+                if (isset($meta['queue']) && is_string($meta['queue'])) $lines[] = __('File: :queue', ['queue' => $meta['queue']]);
+                if (isset($meta['job_name']) && is_string($meta['job_name'])) $lines[] = __('Job: :job', ['job' => $meta['job_name']]);
+                if (isset($meta['exception']) && is_string($meta['exception'])) $lines[] = __('Erreur: :message', ['message' => $meta['exception']]);
             }
 
             if ($event === 'QUEUE_LONG_WAIT_DETECTED') {
-                if (isset($meta['queue']) && is_string($meta['queue'])) $lines[] = 'File: ' . $meta['queue'];
-                if (isset($meta['wait_seconds']) && (is_int($meta['wait_seconds']) || is_string($meta['wait_seconds']))) $lines[] = 'Attente: ' . $meta['wait_seconds'] . 's';
+                if (isset($meta['queue']) && is_string($meta['queue'])) $lines[] = __('File: :queue', ['queue' => $meta['queue']]);
+                if (isset($meta['wait_seconds']) && (is_int($meta['wait_seconds']) || is_string($meta['wait_seconds']))) $lines[] = __('Attente: :seconds s', ['seconds' => $meta['wait_seconds']]);
             }
 
             if ($event === 'auth.login.failed') {
-                $lines[] = 'Tentative de connexion refusée';
+                $lines[] = __('Tentative de connexion refusée');
             }
 
             if ($lines === []) {
-                $label = $eventTypeLabels[$event] ?? $fallbackEventLabel($event);
-                $lines[] = "Événement: {$label}";
+                $label = __($eventTypeLabels[$event] ?? $event);
+                $lines[] = __('Événement: :label', ['label' => $label]);
             }
 
             return $lines;
@@ -187,7 +173,7 @@
                             class="h-10 w-full flex items-center gap-2 text-sm border border-[#e5e7eb] rounded-[8px] px-3 bg-white text-left focus:outline-none focus:border-[#1c398e] focus:ring-2 focus:ring-[#1c398e]/20 transition"
                             :class="{ 'border-[#1c398e] ring-2 ring-[#1c398e]/20': eventOpen }">
                         <i class="fa-solid fa-filter text-xs shrink-0" style="color:var(--sikds-muted)"></i>
-                        <span class="flex-1 truncate" x-text="selectedEvents.length ? selectedEvents.length + ' type(s)' : 'Type d\'événement'" :class="selectedEvents.length ? 'text-[#0a0a0a] font-medium' : 'text-[#717182]'"></span>
+                        <span class="flex-1 truncate" x-text="selectedEvents.length ? selectedEvents.length + ' ' + @js(__('type(s)')) : @js(__('Type d\'événement'))" :class="selectedEvents.length ? 'text-[#0a0a0a] font-medium' : 'text-[#717182]'"></span>
                         <i class="fa-solid fa-chevron-down text-[10px] shrink-0 transition-transform" :class="{ 'rotate-180': eventOpen }" style="color:var(--sikds-muted)"></i>
                     </button>
                     @if (count($selectedEventTypes) > 0)
@@ -201,7 +187,7 @@
                                        {{ in_array($et, $selectedEventTypes, true) ? 'checked' : '' }}
                                        x-model="selectedEvents"
                                        class="h-4 w-4 rounded border-black/20 text-[#1c398e] focus:ring-[#1c398e]/30">
-                                <span>{{ $eventTypeLabels[$et] ?? $fallbackEventLabel($et) }}</span>
+                                <span>{{ __($eventTypeLabels[$et] ?? $et) }}</span>
                             </label>
                         @endforeach
                     </div>
@@ -222,7 +208,7 @@
                     <button type="button" @click="statusOpen = !statusOpen"
                             class="h-10 w-full flex items-center gap-2 text-sm border border-[#e5e7eb] rounded-[8px] px-3 bg-white text-left focus:outline-none focus:border-[#1c398e] focus:ring-2 focus:ring-[#1c398e]/20 transition"
                             :class="{ 'border-[#1c398e] ring-2 ring-[#1c398e]/20': statusOpen }">
-                        <span class="flex-1 truncate" x-text="selectedStatuses.length ? selectedStatuses.length + ' statut(s)' : 'Tous les statuts'" :class="selectedStatuses.length ? 'text-[#0a0a0a] font-medium' : 'text-[#717182]'"></span>
+                        <span class="flex-1 truncate" x-text="selectedStatuses.length ? selectedStatuses.length + ' ' + @js(__('statut(s)')) : @js(__('Tous les statuts'))" :class="selectedStatuses.length ? 'text-[#0a0a0a] font-medium' : 'text-[#717182]'"></span>
                         <i class="fa-solid fa-chevron-down text-[10px] shrink-0 transition-transform" :class="{ 'rotate-180': statusOpen }" style="color:var(--sikds-muted)"></i>
                     </button>
                     <div x-show="statusOpen" x-transition.origin.top
@@ -253,7 +239,7 @@
                                     $displayParts = [];
                                     foreach ($value as $v) {
                                         if ($key === 'event_type') {
-                                            $displayParts[] = $eventTypeLabels[$v] ?? $fallbackEventLabel($v);
+                                            $displayParts[] = __($eventTypeLabels[$v] ?? $v);
                                         } elseif ($key === 'result') {
                                             $displayParts[] = $resultLabels[$v] ?? $v;
                                         } else {
@@ -264,7 +250,7 @@
                                 } else {
                                     $displayValue = $value;
                                     if ($key === 'event_type' && is_string($value)) {
-                                        $displayValue = $eventTypeLabels[$value] ?? $fallbackEventLabel($value);
+                                        $displayValue = __($eventTypeLabels[$value] ?? $value);
                                     }
                                     if ($key === 'result' && is_string($value)) {
                                         $displayValue = $resultLabels[$value] ?? $value;
@@ -320,7 +306,7 @@
                                 str_contains($event, 'role') || str_contains($event, 'permission') => ['icon' => 'fa-solid fa-shield', 'color' => '#4f46e5'],
                                 default => ['icon' => 'fa-solid fa-circle-info', 'color' => '#0f172a'],
                             };
-                            $actionLabel = $eventTypeLabels[$event] ?? $fallbackEventLabel($event);
+                            $actionLabel = __($eventTypeLabels[$event] ?? $event);
                             $targetLabel = trim(($log->resource_type ?? 'N/A') . (($log->resource_id !== null) ? ' #' . $log->resource_id : ''));
                             $badgeClass = match($log->result) {
                                 'failed' => 'sikds-status--deleted',
@@ -369,7 +355,7 @@
                                 <p class="text-xs" style="color:var(--sikds-muted)">{{ $log->ip_address ?? __('N/A') }}</p>
                             </td>
                             <td class="px-4 py-3">
-                                <span class="sikds-status {{ $badgeClass }}">{{ $resultLabels[$log->result] ?? ucfirst((string) ($log->result ?? 'success')) }}</span>
+                                <span class="sikds-status {{ $badgeClass }}">{{ $resultLabels[$log->result] ?? __($log->result ?? 'success') }}</span>
                             </td>
                         </tr>
                     @empty
