@@ -76,7 +76,7 @@
                         </button>
                         <div
                             id="sikds-user-menu"
-                            class="hidden absolute right-0 mt-2 w-52 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-xl py-1 z-50"
+                            class="hidden absolute end-0 mt-2 w-52 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-xl py-1 z-50"
                             role="menu"
                             aria-labelledby="sikds-user-menu-toggle"
                         >
@@ -84,7 +84,7 @@
                                 @csrf
                                 <button
                                     type="submit"
-                                    class="w-full text-left px-4 py-2.5 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-100 hover:text-slate-900"
+                                    class="w-full text-start px-4 py-2.5 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-100 hover:text-slate-900"
                                     role="menuitem"
                                 >
                                     <span class="inline-flex items-center gap-2">
@@ -148,7 +148,7 @@
     </script>
 
     @if ($canUseRagAssistant)
-        <div id="sikds-chatbot-widget" class="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50 flex flex-col items-end">
+        <div id="sikds-chatbot-widget" class="fixed bottom-4 end-4 sm:bottom-6 sm:end-6 z-50 flex flex-col items-end">
             <div
                 id="sikds-chatbot-panel"
                 class="hidden w-[min(96vw,390px)] h-[min(68vh,520px)] mb-3 rounded-2xl border border-slate-200 bg-white shadow-2xl overflow-hidden flex flex-col"
@@ -204,7 +204,7 @@
                 type="button"
                 id="sikds-chatbot-toggle"
                 class="h-14 w-14 rounded-full bg-[#1E3A8A] text-white shadow-xl hover:bg-[#163171] inline-flex items-center justify-center"
-                aria-label="Ouvrir l'assistant"
+                aria-label="{{ __('Ouvrir l\'assistant') }}"
             >
                 <i class="fa-regular fa-comments text-white text-lg leading-none" aria-hidden="true"></i>
             </button>
@@ -239,6 +239,7 @@
                     insufficientContext: @json(__('Je n ai pas de contexte suffisant pour repondre avec fiabilite.')),
                     noAnswer: @json(__('Aucune reponse disponible.')),
                     networkError: @json(__('Erreur reseau. Veuillez reessayer.')),
+                    citationMeta: @json(__('Section: :section | Page :page | Score :score%')),
                 };
                 const seedMessage = i18n.seedMessage;
 
@@ -285,8 +286,12 @@
                             const score = Math.round((Number(c.relevance_score || 0)) * 100);
                             const item = document.createElement('div');
                             item.className = 'rounded-md border border-slate-200 px-2 py-1 text-xs';
+                            const meta = i18n.citationMeta
+                                .replace(':section', section)
+                                .replace(':page', page)
+                                .replace(':score', score);
                             item.innerHTML = `<p class="font-medium text-slate-800">${idx + 1}. ${title}</p>
-                                <p class="text-slate-500">Section: ${section} | Page ${page} | Score ${score}%</p>`;
+                                <p class="text-slate-500">${meta}</p>`;
                             list.appendChild(item);
                         });
 
@@ -436,6 +441,10 @@
             'statusInactive'    => __('Inactif'),
             'chatbotOpen'       => __("Ouvrir l'assistant"),
             'citationMeta'      => __('Section : :section | Page :page | Score :score%'),
+            'noRole'            => __('Aucun rôle pour le moment. Créez un rôle pour commencer.'),
+            'noPermission'      => __('Aucune permission pour le moment. Créez une permission pour commencer.'),
+            'noUser'            => __('Aucun utilisateur pour le moment. Créez un utilisateur pour commencer.'),
+            'permissionsSelectedCount' => __(':count sélectionnées'),
         ];
     @endphp
     <script>

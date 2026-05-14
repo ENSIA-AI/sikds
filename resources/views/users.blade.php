@@ -23,6 +23,13 @@
     data-i18n-user-updated="{{ __('Utilisateur mis à jour.') }}"
     data-i18n-user-role-updated="{{ __('Utilisateur et rôle mis à jour.') }}"
     data-i18n-required-fields="{{ __('Le nom, l’email et l’institution sont obligatoires.') }}"
+    data-i18n-permissions-for-role="{{ __('Permissions pour le rôle') }}"
+    data-i18n-permissions-for-role-named="{{ __('Permissions pour :role') }}"
+    data-i18n-since="{{ __('depuis') }}"
+    data-i18n-last-activity="{{ __('dernière activité') }}"
+    data-i18n-deactivate="{{ __('Désactiver') }}"
+    data-i18n-activate="{{ __('Activer') }}"
+    data-i18n-user-actions-aria="{{ __('Actions utilisateur') }}"
 >
     <script type="application/json" id="users-roles-bootstrap">
         @json($rolesForUi)
@@ -77,7 +84,7 @@
     <div class="flex w-full flex-col gap-3 sm:h-[41.33px] sm:flex-row sm:gap-3">
         {{-- Search Input --}}
         <div class="relative w-full sm:flex-1">
-            <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-black/50">
+            <div class="pointer-events-none absolute inset-y-0 start-0 flex items-center ps-3 text-black/50">
                 <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" class="size-5">
                     <path d="M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
                     <path d="M16 16l5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
@@ -89,7 +96,7 @@
                 value="{{ $filters['search'] ?? '' }}"
                 data-users-search
                 placeholder="{{ __('Rechercher par nom, email, institution...') }}"
-                class="h-[41.33px] w-full rounded-[10px] border border-black/10 bg-white pl-10 pr-3 text-sm text-[#0A0A0A] placeholder:text-[#0A0A0A80] outline-none transition focus:border-black/20 focus:ring-2 focus:ring-black/10"
+                class="h-[41.33px] w-full rounded-[10px] border border-black/10 bg-white ps-10 pe-3 text-sm text-[#0A0A0A] placeholder:text-[#0A0A0A80] outline-none transition focus:border-black/20 focus:ring-2 focus:ring-black/10"
                 autocomplete="off"
             />
         </div>
@@ -109,7 +116,7 @@
             <div
                 data-filter-popup
                 hidden
-                class="absolute right-0 z-50 mt-2 w-[min(100vw-2rem,317px)] rounded-[14px] border border-black/10 bg-white p-4 shadow-[0px_25px_50px_-12px_rgba(0,0,0,0.25)]"
+                class="absolute end-0 z-50 mt-2 w-[min(100vw-2rem,317px)] rounded-[14px] border border-black/10 bg-white p-4 shadow-[0px_25px_50px_-12px_rgba(0,0,0,0.25)]"
             >
                 <p class="mb-3 font-inter text-lg font-semibold text-[#0A0A0A]">{{ __('Filtrer par rôle') }}</p>
                 <ul class="flex max-h-[min(60vh,220px)] flex-col gap-1 overflow-y-auto" role="listbox">
@@ -165,12 +172,12 @@
                 <table class="w-full min-w-[720px] border-collapse table-fixed" data-users-table>
                     <thead class="sticky top-0 z-[1] bg-[#F4F4F5]">
                         <tr class="h-12">
-                            <th scope="col" class="w-[22%] px-4 text-left font-inter text-xs font-semibold uppercase tracking-wide text-[#717182]">{{ __('Utilisateurs') }}</th>
-                            <th scope="col" class="w-[24%] px-4 text-left font-inter text-xs font-semibold uppercase tracking-wide text-[#717182]">{{ __('Emails') }}</th>
-                            <th scope="col" class="w-[14%] px-4 text-left font-inter text-xs font-semibold uppercase tracking-wide text-[#717182]">{{ __('Rôle') }}</th>
-                            <th scope="col" class="w-[18%] px-4 text-left font-inter text-xs font-semibold uppercase tracking-wide text-[#717182]">{{ __('Institution') }}</th>
-                            <th scope="col" class="w-[12%] px-4 text-left font-inter text-xs font-semibold uppercase tracking-wide text-[#717182]">{{ __('Status') }}</th>
-                            <th scope="col" class="w-[10%] px-4 text-right font-inter text-xs font-semibold uppercase tracking-wide text-[#717182]">{{ __('Actions') }}</th>
+                            <th scope="col" class="w-[22%] px-4 text-start font-inter text-xs font-semibold uppercase tracking-wide text-[#717182]">{{ __('Utilisateurs') }}</th>
+                            <th scope="col" class="w-[24%] px-4 text-start font-inter text-xs font-semibold uppercase tracking-wide text-[#717182]">{{ __('Emails') }}</th>
+                            <th scope="col" class="w-[14%] px-4 text-start font-inter text-xs font-semibold uppercase tracking-wide text-[#717182]">{{ __('Rôle') }}</th>
+                            <th scope="col" class="w-[18%] px-4 text-start font-inter text-xs font-semibold uppercase tracking-wide text-[#717182]">{{ __('Institution') }}</th>
+                            <th scope="col" class="w-[12%] px-4 text-start font-inter text-xs font-semibold uppercase tracking-wide text-[#717182]">{{ __('Status') }}</th>
+                            <th scope="col" class="w-[10%] px-4 text-end font-inter text-xs font-semibold uppercase tracking-wide text-[#717182]">{{ __('Actions') }}</th>
                         </tr>
                     </thead>
                     <tbody data-users-tbody>
@@ -222,7 +229,7 @@
                                         <p class="font-inter text-xs text-[#717182]">{{ __('dernière activité') }} {{ $statusLabelFr }}</p>
                                     @endif
                                 </td>
-                                <td class="px-4 align-middle text-right">
+                                <td class="px-4 align-middle text-end">
                                     <div class="relative inline-flex items-center justify-end">
                                         <button
                                             type="button"
@@ -250,7 +257,7 @@
                                                     <button
                                                         type="button"
                                                         data-open-edit-user
-                                                        class="flex w-full items-center gap-3 px-3 py-2.5 text-left font-inter text-sm font-medium text-[#0A0A0A] transition hover:bg-[#f3f4f6]"
+                                                        class="flex w-full items-center gap-3 px-3 py-2.5 text-start font-inter text-sm font-medium text-[#0A0A0A] transition hover:bg-[#f3f4f6]"
                                                         role="menuitem"
                                                     >
                                                         <i class="fa-solid fa-pen-to-square text-xs text-[#717182]"></i>
@@ -262,7 +269,7 @@
                                                     <button
                                                         type="button"
                                                         data-user-toggle-active
-                                                        class="flex w-full items-center gap-3 px-3 py-2.5 text-left font-inter text-sm font-medium transition hover:bg-[#f3f4f6] {{ $user->is_active ? 'text-[#ef4444]' : 'text-[#22c55e]' }}"
+                                                        class="flex w-full items-center gap-3 px-3 py-2.5 text-start font-inter text-sm font-medium transition hover:bg-[#f3f4f6] {{ $user->is_active ? 'text-[#ef4444]' : 'text-[#22c55e]' }}"
                                                         role="menuitem"
                                                     >
                                                         @if($user->is_active)

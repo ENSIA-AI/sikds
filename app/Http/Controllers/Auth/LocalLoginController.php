@@ -51,7 +51,7 @@ class LocalLoginController extends Controller
             ]);
 
             throw ValidationException::withMessages([
-                'email' => 'Ces identifiants ne correspondent pas à nos enregistrements.',
+                'email' => __('Ces identifiants ne correspondent pas à nos enregistrements.'),
             ]);
         }
 

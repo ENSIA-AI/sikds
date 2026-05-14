@@ -42,10 +42,10 @@
 
                 {{-- Text search --}}
                 <div class="flex-1 min-w-48 relative">
-                    <img src="/search-blue.svg" alt="" class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 opacity-40">
+                    <img src="/search-blue.svg" alt="" class="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 opacity-40">
                     <input type="text" name="q" value="{{ request('q') }}"
                            placeholder="{{ __('Rechercher par UUID, document, utilisateur...') }}"
-                           class="w-full pl-9 pr-4 py-2 text-sm border border-black/10 rounded-[10px] focus:outline-none focus:ring-2 focus:ring-[color:var(--sikds-primary)]/30">
+                           class="w-full ps-9 pe-4 py-2 text-sm border border-black/10 rounded-[10px] focus:outline-none focus:ring-2 focus:ring-[color:var(--sikds-primary)]/30">
                 </div>
 
                 {{-- Date range --}}
@@ -105,13 +105,13 @@
             <table class="w-full text-sm">
                 <thead>
                     <tr class="border-b" style="border-color:rgba(0,0,0,.1);background:#f9f9fb;">
-                        <th class="text-left px-5 py-3 text-xs font-semibold uppercase tracking-wider" style="color:var(--sikds-muted)">{{ __('UUID Filigrane') }}</th>
-                        <th class="text-left px-5 py-3 text-xs font-semibold uppercase tracking-wider" style="color:var(--sikds-muted)">{{ __('Document') }}</th>
-                        <th class="text-left px-5 py-3 text-xs font-semibold uppercase tracking-wider" style="color:var(--sikds-muted)">{{ __('Utilisateur') }}</th>
-                        <th class="text-left px-5 py-3 text-xs font-semibold uppercase tracking-wider" style="color:var(--sikds-muted)">{{ __('Institution') }}</th>
-                        <th class="text-left px-5 py-3 text-xs font-semibold uppercase tracking-wider" style="color:var(--sikds-muted)">{{ __('Date & Heure') }}</th>
-                        <th class="text-left px-5 py-3 text-xs font-semibold uppercase tracking-wider" style="color:var(--sikds-muted)">{{ __('Adresse IP') }}</th>
-                        <th class="text-left px-5 py-3 text-xs font-semibold uppercase tracking-wider" style="color:var(--sikds-muted)">{{ __('Actions') }}</th>
+                        <th class="text-start px-5 py-3 text-xs font-semibold uppercase tracking-wider" style="color:var(--sikds-muted)">{{ __('UUID Filigrane') }}</th>
+                        <th class="text-start px-5 py-3 text-xs font-semibold uppercase tracking-wider" style="color:var(--sikds-muted)">{{ __('Document') }}</th>
+                        <th class="text-start px-5 py-3 text-xs font-semibold uppercase tracking-wider" style="color:var(--sikds-muted)">{{ __('Utilisateur') }}</th>
+                        <th class="text-start px-5 py-3 text-xs font-semibold uppercase tracking-wider" style="color:var(--sikds-muted)">{{ __('Institution') }}</th>
+                        <th class="text-start px-5 py-3 text-xs font-semibold uppercase tracking-wider" style="color:var(--sikds-muted)">{{ __('Date & Heure') }}</th>
+                        <th class="text-start px-5 py-3 text-xs font-semibold uppercase tracking-wider" style="color:var(--sikds-muted)">{{ __('Adresse IP') }}</th>
+                        <th class="text-start px-5 py-3 text-xs font-semibold uppercase tracking-wider" style="color:var(--sikds-muted)">{{ __('Actions') }}</th>
                     </tr>
                 </thead>
                 <tbody>

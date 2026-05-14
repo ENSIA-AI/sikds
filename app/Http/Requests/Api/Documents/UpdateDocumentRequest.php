@@ -44,23 +44,23 @@ class UpdateDocumentRequest extends FormRequest
         $validator->after(function (Validator $validator): void {
             $audience = (string) $this->input('target_audience', '');
             if ($audience === 'specific_institutions' && empty($this->input('target_institution_ids', []))) {
-                $validator->errors()->add('target_institution_ids', 'Institutions cibles requises.');
+                $validator->errors()->add('target_institution_ids', __('Institutions cibles requises.'));
             }
             if ($audience === 'specific_roles' && empty($this->input('target_role_ids', []))) {
-                $validator->errors()->add('target_role_ids', 'Rôles cibles requis.');
+                $validator->errors()->add('target_role_ids', __('Rôles cibles requis.'));
             }
             if ($audience === 'specific_users' && empty($this->input('target_user_ids', []))) {
-                $validator->errors()->add('target_user_ids', 'Utilisateurs cibles requis.');
+                $validator->errors()->add('target_user_ids', __('Utilisateurs cibles requis.'));
             }
 
             $issue = $this->filled('issue_date') ? strtotime((string) $this->input('issue_date')) : false;
             $effective = $this->filled('effective_date') ? strtotime((string) $this->input('effective_date')) : false;
             $expiration = $this->filled('expiration_date') ? strtotime((string) $this->input('expiration_date')) : false;
             if ($issue !== false && $effective !== false && $effective < $issue) {
-                $validator->errors()->add('effective_date', 'effective_date doit être >= issue_date.');
+                $validator->errors()->add('effective_date', __('effective_date doit être >= issue_date.'));
             }
             if ($issue !== false && $expiration !== false && $expiration <= $issue) {
-                $validator->errors()->add('expiration_date', 'expiration_date doit être > issue_date.');
+                $validator->errors()->add('expiration_date', __('expiration_date doit être > issue_date.'));
             }
 
         });

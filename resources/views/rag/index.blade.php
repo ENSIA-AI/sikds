@@ -51,7 +51,7 @@
             background: #0f172a;
             border-radius: 1px;
             vertical-align: middle;
-            margin-left: 1px;
+            margin-inline-start: 1px;
             animation: rag-blink .6s step-end infinite;
         }
         @keyframes rag-blink {
@@ -79,7 +79,7 @@
             margin: 0 auto;
         }
         .rag-prompt-btn {
-            text-align: left;
+            text-align: start;
             border: 1px solid #e2e8f0;
             background: #ffffff;
             color: #374151;
@@ -213,7 +213,7 @@
             border-radius: 50%;
             color: #1d4ed8;
             background: #dbeafe;
-            margin-left: 3px;
+            margin-inline-start: 3px;
             vertical-align: 2px;
             cursor: default;
             transition: background .12s;
@@ -293,7 +293,7 @@
         .rag-tt-pill i { font-size: 11px; }
         .rag-tt-score {
             display: flex; align-items: center; gap: 6px;
-            margin-left: auto; flex: 1; min-width: 0;
+            margin-inline-start: auto; flex: 1; min-width: 0;
         }
         .rag-tt-score-label { font-size: 10px; color: #64748b; white-space: nowrap; }
         .rag-tt-score-track {
@@ -491,7 +491,7 @@
                 <div class="rag-composer-actions">
                     <div class="rag-left-actions">
                         <button id="rag-new-chat" type="button" class="rag-btn rag-btn--ghost">
-                            <i class="fa-solid fa-plus" style="font-size:.75rem;margin-right:.3rem"></i>{{ __('Nouvelle discussion') }}
+                            <i class="fa-solid fa-plus" style="font-size:.75rem;margin-inline-end:.3rem"></i>{{ __('Nouvelle discussion') }}
                         </button>
                         <span class="rag-hint">{{ __('Entrée pour envoyer · Shift+Entrée pour une ligne') }}</span>
                     </div>

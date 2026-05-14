@@ -52,10 +52,10 @@ class SendNotificationEmailJob implements ShouldQueue
             $document = $notification->document;
 
             if (! $recipient) {
-                throw new \RuntimeException('Destinataire introuvable.');
+                throw new \RuntimeException(__('Destinataire introuvable.'));
             }
             if (! $document) {
-                throw new \RuntimeException('Document introuvable.');
+                throw new \RuntimeException(__('Document introuvable.'));
             }
 
             $type = (string) $notification->type;
@@ -82,7 +82,7 @@ class SendNotificationEmailJob implements ShouldQueue
             };
 
             if (! $mailable) {
-                throw new \RuntimeException('Type de notification non supporté: '.$type);
+                throw new \RuntimeException(__('Type de notification non supporté: :type', ['type' => $type]));
             }
 
             // Honor the recipient's preferred locale if set; otherwise fall back to the

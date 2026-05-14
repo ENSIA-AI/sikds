@@ -39,7 +39,7 @@
     {{-- Search bar intended --}}
     <section>
         <div class="relative">
-            <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-black/50">
+            <div class="pointer-events-none absolute inset-y-0 start-0 flex items-center ps-3 text-black/50">
                 <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" class="size-5">
                     <path d="M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
                     <path d="M16 16l5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
@@ -49,7 +49,7 @@
                 data-permissions-search
                 type="text"
                 placeholder="{{ __('Rechercher par nom, code ou description...') }}"
-                class="h-[41.33px] w-full rounded-[10px] border border-black/10 bg-white pl-10 pr-3 text-sm text-[#0A0A0A] placeholder:text-[#0A0A0A80] outline-none focus:border-black/20 focus:ring-2 focus:ring-black/10"
+                class="h-[41.33px] w-full rounded-[10px] border border-black/10 bg-white ps-10 pe-3 text-sm text-[#0A0A0A] placeholder:text-[#0A0A0A80] outline-none focus:border-black/20 focus:ring-2 focus:ring-black/10"
             />
         </div>
     </section>
@@ -125,7 +125,7 @@
                                 </div>
                             @endif
                             <div class="min-w-0">
-                                <h3 class="text-lg font-semibold leading-[27px] text-black">{{ $catKey }}</h3>
+                                <h3 class="text-lg font-semibold leading-[27px] text-black">{{ __($catKey) }}</h3>
                                 <p class="text-sm leading-5 text-[#717182]">{{ $permCount }} {{ __('permission(s)') }}</p>
                             </div>
                         </div>

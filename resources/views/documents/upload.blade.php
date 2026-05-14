@@ -182,7 +182,7 @@
             <div class="sikds-upload-current-file">
                 <template x-if="files.length > 0">
                     <div class="sikds-upload-current-file-inner">
-                        <span class="sikds-upload-current-file-step" x-text="'Fichier ' + (currentFileIdx + 1) + ' / ' + files.length"></span>
+                        <span class="sikds-upload-current-file-step" x-text="@js(__('Fichier :n', ['n' => 0])).replace(':n', currentFileIdx + 1) + ' / ' + files.length"></span>
                         <span class="sikds-upload-current-file-name" x-text="files[currentFileIdx]?.name"></span>
                     </div>
                 </template>

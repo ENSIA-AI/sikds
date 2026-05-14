@@ -55,7 +55,7 @@
                                 </div>
                                 <div>
                                     <p class="text-sm font-medium sikds-ink">{{ $tag->name }}</p>
-                                    <p class="text-xs sikds-muted-text">{{ $tag->documents_count }} {{ $tag->documents_count !== 1 ? __('documents') : __('document') }}</p>
+                                    <p class="text-xs sikds-muted-text">{{ trans_choice('{1} :count document|[2,*] :count documents', $tag->documents_count, ['count' => $tag->documents_count]) }}</p>
                                 </div>
                             </div>
                             <div class="sikds-tag-actions">
@@ -93,7 +93,7 @@
                             </div>
                             <div>
                                 <p class="text-sm font-medium sikds-ink">{{ $tag->name }}</p>
-                                <p class="text-xs sikds-muted-text">{{ $tag->documents_count }} {{ $tag->documents_count !== 1 ? __('documents') : __('document') }}</p>
+                                <p class="text-xs sikds-muted-text">{{ trans_choice('{1} :count document|[2,*] :count documents', $tag->documents_count, ['count' => $tag->documents_count]) }}</p>
                             </div>
                         </div>
                         <div class="sikds-tag-actions">

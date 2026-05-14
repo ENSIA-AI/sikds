@@ -59,7 +59,7 @@
                                 <p class="text-xs" style="color:var(--sikds-muted);">{{ $doc['reference'] }}</p>
                             @endif
                         </div>
-                        <span class="text-xs shrink-0 ml-3" style="color:var(--sikds-muted);">{{ $doc['time'] }}</span>
+                        <span class="text-xs shrink-0 ms-3" style="color:var(--sikds-muted);">{{ $doc['time'] }}</span>
                     </a>
                 @empty
                     <div class="px-6 py-10 text-center">
@@ -148,7 +148,7 @@
                         <form method="POST" action="{{ route('notifications.read', ['notification' => $notification->id]) }}">
                             @csrf
                             <button type="submit"
-                                    class="w-full flex items-start gap-3 px-6 py-3 text-left hover:bg-slate-50 transition-colors {{ $isRead ? '' : 'bg-blue-50/30' }}">
+                                    class="w-full flex items-start gap-3 px-6 py-3 text-start hover:bg-slate-50 transition-colors {{ $isRead ? '' : 'bg-blue-50/30' }}">
                                 <span class="mt-1.5 inline-block h-2 w-2 rounded-full shrink-0 {{ $isRead ? 'bg-transparent' : 'bg-[#1E3A8A]' }}"
                                       aria-hidden="true"></span>
                                 <div class="flex-1 min-w-0">

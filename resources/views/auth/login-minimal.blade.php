@@ -14,7 +14,7 @@
     <div class="absolute bottom-0 right-0 w-[32rem] h-[32rem] bg-white rounded-full opacity-5 translate-x-1/3 translate-y-1/3"></div>
     <div class="absolute top-1/2 left-1/4 w-64 h-64 bg-white rounded-full opacity-5"></div>
 
-    <div class="absolute top-4 right-6 flex items-center space-x-3">
+    <div class="absolute top-4 end-6 flex items-center gap-3">
         <a href="{{ route('changeLanguage', ['lang' => 'fr']) }}" class="text-white text-xs opacity-70 hover:opacity-100 transition-opacity">FR</a>
         <span class="text-white opacity-30 text-xs">|</span>
         <a href="{{ route('changeLanguage', ['lang' => 'ar']) }}" class="text-white text-xs opacity-70 hover:opacity-100 transition-opacity">AR</a>

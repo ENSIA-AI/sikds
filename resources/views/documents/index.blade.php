@@ -254,10 +254,10 @@
                         <td>
                             @php
                                 $statusMap = [
-                                    'active'   => ['label' => 'Actif',     'class' => 'sikds-status--active',   'icon' => 'fa-regular fa-circle-check'],
-                                    'draft'    => ['label' => 'Brouillon', 'class' => 'sikds-status--draft',    'icon' => 'fa-solid fa-gear'],
-                                    'archived' => ['label' => 'Archivé',   'class' => 'sikds-status--archived', 'icon' => 'fa-solid fa-box-archive'],
-                                    'deleted'  => ['label' => 'Supprimé',  'class' => 'sikds-status--deleted',  'icon' => 'fa-regular fa-circle-xmark'],
+                                    'active'   => ['label' => __('Actif'),     'class' => 'sikds-status--active',   'icon' => 'fa-regular fa-circle-check'],
+                                    'draft'    => ['label' => __('Brouillon'), 'class' => 'sikds-status--draft',    'icon' => 'fa-solid fa-gear'],
+                                    'archived' => ['label' => __('Archivé'),   'class' => 'sikds-status--archived', 'icon' => 'fa-solid fa-box-archive'],
+                                    'deleted'  => ['label' => __('Supprimé'),  'class' => 'sikds-status--deleted',  'icon' => 'fa-regular fa-circle-xmark'],
                                 ];
                                 $s = $statusMap[$doc['status']] ?? $statusMap['draft'];
                             @endphp

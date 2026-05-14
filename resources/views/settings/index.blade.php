@@ -28,19 +28,22 @@
                 <i class="fa-solid fa-globe text-[#1e3a8a]"></i>
                 {{ __('Langue d\'affichage') }}
             </h3>
-            <p class="text-xs text-slate-500 mb-4">{{ __('Langue actuelle de l\'interface.') }}</p>
+            <p class="text-xs text-slate-500 mb-4">{{ __('Choisissez la langue de l\'interface.') }}</p>
             <div class="space-y-2">
-                <div class="rounded-[10px] border-2 border-blue-400 bg-blue-50 px-3 py-2.5 text-sm font-medium text-blue-900 flex items-center gap-2">
-                    <i class="fa-solid fa-check text-blue-600"></i>{{ __('Français') }}
-                </div>
-                <div class="rounded-[10px] border border-black/10 bg-slate-50 px-3 py-2.5 text-sm font-medium text-slate-500 flex items-center gap-2 opacity-60">
-                    <i class="fa-solid fa-globe text-slate-400"></i>{{ __('العربية') }}
-                    <span class="ml-auto text-[11px] text-slate-500">{{ __('À venir') }}</span>
-                </div>
-                <div class="rounded-[10px] border border-black/10 bg-slate-50 px-3 py-2.5 text-sm font-medium text-slate-500 flex items-center gap-2 opacity-60">
-                    <i class="fa-solid fa-globe text-slate-400"></i>{{ __('English') }}
-                    <span class="ml-auto text-[11px] text-slate-500">{{ __('À venir') }}</span>
-                </div>
+                @php $currentLocale = app()->getLocale(); @endphp
+                @foreach (config('languages.lang', []) as $code => $label)
+                    @if ($code === $currentLocale)
+                        <div class="rounded-[10px] border-2 border-blue-400 bg-blue-50 px-3 py-2.5 text-sm font-medium text-blue-900 flex items-center gap-2">
+                            <i class="fa-solid fa-check text-blue-600"></i>{{ $label }}
+                            <span class="ms-auto text-[11px] text-blue-600">{{ __('Actif') }}</span>
+                        </div>
+                    @else
+                        <a href="{{ route('changeLanguage', ['lang' => $code]) }}"
+                           class="rounded-[10px] border border-black/10 bg-white px-3 py-2.5 text-sm font-medium text-slate-700 flex items-center gap-2 hover:bg-slate-50 hover:border-blue-300 transition-colors">
+                            <i class="fa-solid fa-globe text-slate-400"></i>{{ $label }}
+                        </a>
+                    @endif
+                @endforeach
             </div>
         </article>
 

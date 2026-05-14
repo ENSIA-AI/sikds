@@ -71,14 +71,14 @@
                 {{-- Type multi-select --}}
                 <div class="lg:col-span-3 relative" @click.outside="typeOpen = false">
                     <button type="button" @click="typeOpen = !typeOpen"
-                            class="h-10 w-full flex items-center gap-2 text-sm border border-[#e5e7eb] rounded-[8px] px-3 bg-white text-left focus:outline-none focus:border-[#1c398e] focus:ring-2 focus:ring-[#1c398e]/20 transition"
+                            class="h-10 w-full flex items-center gap-2 text-sm border border-[#e5e7eb] rounded-[8px] px-3 bg-white text-start focus:outline-none focus:border-[#1c398e] focus:ring-2 focus:ring-[#1c398e]/20 transition"
                             :class="{ 'border-[#1c398e] ring-2 ring-[#1c398e]/20': typeOpen }">
                         <i class="fa-solid fa-filter text-xs shrink-0" style="color:var(--sikds-muted)"></i>
                         <span class="flex-1 truncate" x-text="selectedTypes.length ? selectedTypes.length + ' ' + @js(__('type(s)')) : @js(__('Tous les types'))" :class="selectedTypes.length ? 'text-[#0a0a0a] font-medium' : 'text-[#717182]'"></span>
                         <i class="fa-solid fa-chevron-down text-[10px] shrink-0 transition-transform" :class="{ 'rotate-180': typeOpen }" style="color:var(--sikds-muted)"></i>
                     </button>
                     @if (count($selectedTypes) > 0)
-                        <span class="absolute -top-1.5 -right-1.5 inline-flex h-5 min-w-[1.25rem] items-center justify-center rounded-full px-1 text-[11px] font-semibold text-white" style="background-color:var(--sikds-primary)">{{ count($selectedTypes) }}</span>
+                        <span class="absolute -top-1.5 -end-1.5 inline-flex h-5 min-w-[1.25rem] items-center justify-center rounded-full px-1 text-[11px] font-semibold text-white" style="background-color:var(--sikds-primary)">{{ count($selectedTypes) }}</span>
                     @endif
                     <div x-show="typeOpen" x-transition.origin.top
                          class="absolute left-0 right-0 top-full z-50 mt-1.5 max-h-64 overflow-y-auto rounded-[12px] border border-black/10 bg-white py-1 shadow-[0_8px_30px_-4px_rgba(0,0,0,0.15)]" x-cloak>
@@ -97,13 +97,13 @@
                 {{-- Status multi-select --}}
                 <div class="lg:col-span-3 relative" @click.outside="statusOpen = false">
                     <button type="button" @click="statusOpen = !statusOpen"
-                            class="h-10 w-full flex items-center gap-2 text-sm border border-[#e5e7eb] rounded-[8px] px-3 bg-white text-left focus:outline-none focus:border-[#1c398e] focus:ring-2 focus:ring-[#1c398e]/20 transition"
+                            class="h-10 w-full flex items-center gap-2 text-sm border border-[#e5e7eb] rounded-[8px] px-3 bg-white text-start focus:outline-none focus:border-[#1c398e] focus:ring-2 focus:ring-[#1c398e]/20 transition"
                             :class="{ 'border-[#1c398e] ring-2 ring-[#1c398e]/20': statusOpen }">
                         <span class="flex-1 truncate" x-text="selectedStatuses.length ? selectedStatuses.length + ' ' + @js(__('statut(s)')) : @js(__('Tous les statuts'))" :class="selectedStatuses.length ? 'text-[#0a0a0a] font-medium' : 'text-[#717182]'"></span>
                         <i class="fa-solid fa-chevron-down text-[10px] shrink-0 transition-transform" :class="{ 'rotate-180': statusOpen }" style="color:var(--sikds-muted)"></i>
                     </button>
                     @if (count($selectedStatuses) > 0)
-                        <span class="absolute -top-1.5 -right-1.5 inline-flex h-5 min-w-[1.25rem] items-center justify-center rounded-full px-1 text-[11px] font-semibold text-white" style="background-color:var(--sikds-primary)">{{ count($selectedStatuses) }}</span>
+                        <span class="absolute -top-1.5 -end-1.5 inline-flex h-5 min-w-[1.25rem] items-center justify-center rounded-full px-1 text-[11px] font-semibold text-white" style="background-color:var(--sikds-primary)">{{ count($selectedStatuses) }}</span>
                     @endif
                     <div x-show="statusOpen" x-transition.origin.top
                          class="absolute left-0 right-0 top-full z-50 mt-1.5 rounded-[12px] border border-black/10 bg-white py-1 shadow-[0_8px_30px_-4px_rgba(0,0,0,0.15)]" x-cloak>
@@ -191,12 +191,12 @@
             <table class="w-full text-sm">
                 <thead>
                     <tr class="border-b" style="border-color:rgba(0,0,0,.1);background:#f9f9fb;">
-                        <th class="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider" style="color:var(--sikds-muted)">{{ __('Date') }}</th>
-                        <th class="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider" style="color:var(--sikds-muted)">{{ __('Type') }}</th>
-                        <th class="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider" style="color:var(--sikds-muted)">{{ __('Destinataire') }}</th>
-                        <th class="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider" style="color:var(--sikds-muted)">{{ __('Document') }}</th>
-                        <th class="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider" style="color:var(--sikds-muted)">{{ __('Statut email') }}</th>
-                        <th class="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider" style="color:var(--sikds-muted)">{{ __('Détail') }}</th>
+                        <th class="text-start px-4 py-3 text-xs font-semibold uppercase tracking-wider" style="color:var(--sikds-muted)">{{ __('Date') }}</th>
+                        <th class="text-start px-4 py-3 text-xs font-semibold uppercase tracking-wider" style="color:var(--sikds-muted)">{{ __('Type') }}</th>
+                        <th class="text-start px-4 py-3 text-xs font-semibold uppercase tracking-wider" style="color:var(--sikds-muted)">{{ __('Destinataire') }}</th>
+                        <th class="text-start px-4 py-3 text-xs font-semibold uppercase tracking-wider" style="color:var(--sikds-muted)">{{ __('Document') }}</th>
+                        <th class="text-start px-4 py-3 text-xs font-semibold uppercase tracking-wider" style="color:var(--sikds-muted)">{{ __('Statut email') }}</th>
+                        <th class="text-start px-4 py-3 text-xs font-semibold uppercase tracking-wider" style="color:var(--sikds-muted)">{{ __('Détail') }}</th>
                     </tr>
                 </thead>
                 <tbody>

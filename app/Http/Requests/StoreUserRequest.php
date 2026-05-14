@@ -57,15 +57,15 @@ final class StoreUserRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'full_name.required' => 'Le nom complet est requis.',
-            'email.required' => 'L\'email est requis.',
-            'email.unique' => 'Cet email est déjà utilisé.',
-            'institution_id.required' => 'L\'institution est requise.',
-            'institution_id.exists' => 'L\'institution sélectionnée n\'existe pas ou est inactive.',
-            'permission_ids.*.exists' => 'Une ou plusieurs permissions sont invalides.',
-            'password.required_if' => 'Le mot de passe est requis pour l\'authentification locale.',
-            'password.min' => 'Le mot de passe doit contenir au moins 12 caractères.',
-            'password.regex' => 'Le mot de passe doit contenir au moins une majuscule, une minuscule, un chiffre et un caractère spécial.',
+            'full_name.required' => __("Le nom complet est requis."),
+            'email.required' => __('L\'email est requis.'),
+            'email.unique' => __('Cet email est déjà utilisé.'),
+            'institution_id.required' => __('L\'institution est requise.'),
+            'institution_id.exists' => __('L\'institution sélectionnée n\'existe pas ou est inactive.'),
+            'permission_ids.*.exists' => __('Une ou plusieurs permissions sont invalides.'),
+            'password.required_if' => __('Le mot de passe est requis pour l\'authentification locale.'),
+            'password.min' => __('Le mot de passe doit contenir au moins 12 caractères.'),
+            'password.regex' => __('Le mot de passe doit contenir au moins une majuscule, une minuscule, un chiffre et un caractère spécial.'),
         ];
     }
 }

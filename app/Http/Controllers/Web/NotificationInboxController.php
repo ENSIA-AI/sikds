@@ -132,6 +132,6 @@ class NotificationInboxController extends Controller
             return response()->json(['ok' => true, 'updated' => $count, 'unread_count' => 0]);
         }
 
-        return back()->with('status', 'Toutes les notifications ont été marquées comme lues.');
+        return back()->with('status', __('Toutes les notifications ont été marquées comme lues.'));
     }
 }

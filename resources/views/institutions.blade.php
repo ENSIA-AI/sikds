@@ -12,7 +12,18 @@
 
 @section('content')
 
-<div data-institutions-api-base="{{ url('/institutions') }}">
+<div
+    data-institutions-api-base="{{ url('/institutions') }}"
+    data-institutions-modal-create-title="{{ __('Nouvelle institution') }}"
+    data-institutions-modal-create-subtitle="{{ __('Renseigner les informations de l\'institution') }}"
+    data-institutions-modal-edit-title="{{ __('Modifier l\'Institution') }}"
+    data-institutions-modal-edit-subtitle="{{ __('Modifier les informations de l\'institution') }}"
+    data-institutions-modal-unexpected-error="{{ __('Une erreur est survenue.') }}"
+    data-institutions-modal-server-unreachable="{{ __('Impossible de contacter le serveur.') }}"
+    data-institutions-modal-delete-confirm="{{ __('Supprimer l\'institution « :name » ?') }}"
+    data-institutions-modal-delete-failed="{{ __('Suppression impossible.') }}"
+    data-institutions-modal-empty-state="{{ __('Aucune institution pour le moment.') }}"
+>
 
     @can('institution.create')
         <div class="flex items-center justify-end mb-4">
@@ -75,23 +86,10 @@
 
     {{-- Create / Edit modal --}}
     @canany(['institution.create', 'institution.edit'])
-        @php
-            $institutionModalI18n = [
-                'createTitle' => __("Nouvelle institution"),
-                'createSubtitle' => __("Renseigner les informations de l'institution"),
-                'editTitle' => __("Modifier l'Institution"),
-                'editSubtitle' => __("Modifier les informations de l'institution"),
-                'unexpectedError' => __("Une erreur est survenue."),
-                'serverUnreachable' => __("Impossible de contacter le serveur."),
-                'deleteConfirm' => __("Supprimer l'institution « :name » ?"),
-                'deleteFailed' => __("Suppression impossible."),
-                'emptyState' => __("Aucune institution pour le moment."),
-            ];
-        @endphp
+        
         <div
             id="institution-modal-root"
             class="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6"
-            data-i18n="{{ json_encode($institutionModalI18n, JSON_UNESCAPED_UNICODE) }}"
             hidden
             role="dialog"
             aria-modal="true"
@@ -106,10 +104,10 @@
             >
                 <div class="shrink-0 border-b border-black/10 bg-[#ECECF04D] px-6 pb-px pt-6">
                     <h2 id="institution-modal-title" data-modal-title class="text-2xl font-semibold leading-8 text-black">
-                        {{ __('Modifier l\'Institution') }}
+                        {{ __('Nouvelle institution') }}
                     </h2>
                     <p data-modal-subtitle class="mt-1 text-sm leading-5 text-[#717182]">
-                        {{ __('Modifier les informations de l\'institution') }}
+                        {{ __('Renseigner les informations de l\'institution') }}
                     </p>
                 </div>
 
@@ -157,7 +155,7 @@
                                 name="logo"
                                 type="file"
                                 accept="image/*"
-                                class="block w-full cursor-pointer rounded-[10px] border border-dashed border-black/15 bg-white px-3 py-2 text-sm text-[#0A0A0A] file:mr-3 file:cursor-pointer file:rounded-lg file:border-0 file:bg-[#ECECF04D] file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-[#0A0A0A] hover:file:bg-[#ECECF04D]/80"
+                                class="block w-full cursor-pointer rounded-[10px] border border-dashed border-black/15 bg-white px-3 py-2 text-sm text-[#0A0A0A] file:me-3 file:cursor-pointer file:rounded-lg file:border-0 file:bg-[#ECECF04D] file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-[#0A0A0A] hover:file:bg-[#ECECF04D]/80"
                             />
                         </div>
                     </div>

@@ -39,13 +39,13 @@ class RagController extends Controller
             report($e);
 
             return response()->json([
-                'message' => 'Le service IA configuré est injoignable ou a expiré. Vérifiez la connexion réseau et l’URL du service.',
+                'message' => __('Le service IA configuré est injoignable ou a expiré. Vérifiez la connexion réseau et l\'URL du service.'),
             ], 503);
         } catch (\Throwable $e) {
             report($e);
 
             return response()->json([
-                'message' => 'RAG query failed.',
+                'message' => __('La requête RAG a échoué.'),
             ], 500);
         }
     }

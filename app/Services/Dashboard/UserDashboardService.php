@@ -59,12 +59,12 @@ class UserDashboardService
             [
                 'icon' => '/document-blue.svg',
                 'value' => number_format($available),
-                'label' => 'Documents disponibles',
+                'label' => __('Documents disponibles'),
             ],
             [
                 'icon' => '/time-dark-blue.svg',
                 'value' => number_format($recent),
-                'label' => 'Nouveaux documents',
+                'label' => __('Nouveaux documents'),
             ],
         ];
     }
@@ -108,7 +108,7 @@ class UserDashboardService
                 $document = $log->document;
 
                 return [
-                    'title' => $document?->title ?? 'Document',
+                    'title' => $document?->title ?? __('Document'),
                     'reference' => $document?->reference_number,
                     'document_id' => $document?->id,
                     'time' => $log->downloaded_at

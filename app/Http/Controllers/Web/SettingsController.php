@@ -34,7 +34,7 @@ class SettingsController extends Controller
         $user = Auth::user();
 
         $section = (string) $request->input('section');
-        abort_unless(in_array($section, ['notifications', 'audit', 'watermark'], true), 422, 'Section invalide.');
+        abort_unless(in_array($section, ['notifications', 'audit', 'watermark'], true), 422, __('Section invalide.'));
 
         $payload = match ($section) {
             'notifications' => $request->validate([
@@ -88,6 +88,6 @@ class SettingsController extends Controller
             'created_at' => now(),
         ]);
 
-        return redirect()->route('settings.index')->with('success', 'Paramètres enregistrés.');
+        return redirect()->route('settings.index')->with('success', __('Paramètres enregistrés.'));
     }
 }

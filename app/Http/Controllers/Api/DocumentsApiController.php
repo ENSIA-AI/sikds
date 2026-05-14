@@ -46,7 +46,7 @@ final class DocumentsApiController extends Controller
         $updated = $this->commandService->update($request, $id, $this->authUser());
 
         return response()->json([
-            'message' => 'Document mis à jour.',
+            'message' => __('Document mis à jour.'),
             'document' => $updated,
         ]);
     }
@@ -56,7 +56,7 @@ final class DocumentsApiController extends Controller
         $document = $this->commandService->publish($request, $id, $this->authUser());
 
         return response()->json([
-            'message' => 'Document publié.',
+            'message' => __('Document publié.'),
             'document' => $document,
         ]);
     }
@@ -66,7 +66,7 @@ final class DocumentsApiController extends Controller
         $document = $this->commandService->archive($request, $id, $this->authUser());
 
         return response()->json([
-            'message' => 'Document archivé.',
+            'message' => __('Document archivé.'),
             'document' => $document,
         ]);
     }
@@ -75,7 +75,7 @@ final class DocumentsApiController extends Controller
     {
         $this->commandService->softDelete($request, $id, $this->authUser());
 
-        return response()->json(['message' => 'Document supprimé (soft-delete).']);
+        return response()->json(['message' => __('Document supprimé (soft-delete).')]);
     }
 
     public function restore(Request $request, int $id): JsonResponse
@@ -83,7 +83,7 @@ final class DocumentsApiController extends Controller
         $document = $this->commandService->restore($request, $id, $this->authUser());
 
         return response()->json([
-            'message' => 'Document restauré.',
+            'message' => __('Document restauré.'),
             'document' => $document,
         ]);
     }
