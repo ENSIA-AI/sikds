@@ -35,7 +35,7 @@
             <button
                 type="button"
                 data-perm-category-toggle
-                class="flex w-full items-center gap-3 px-3 py-2.5 text-left font-inter text-sm font-medium text-[#0A0A0A] transition hover:bg-black/[0.02]"
+                class="flex w-full items-center gap-3 px-3 py-2.5 text-start font-inter text-sm font-medium text-[#0A0A0A] transition hover:bg-black/[0.02]"
                 aria-expanded="false"
             >
                 <span class="min-w-0 flex-1 truncate">{{ $categoryLabels[$catKey] ?? ucfirst((string) $catKey) }}</span>

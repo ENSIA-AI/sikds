@@ -105,7 +105,7 @@
                         </span>
                     @endif
                 </div>
-                <div class="text-right">
+                <div class="text-end">
                     <p class="text-sm text-[#717182]">{{ __('Permissions') }}</p>
                     <p class="text-2xl font-semibold text-[#0A0A0A]">{{ $role->permissions->count() }}</p>
                 </div>
@@ -186,10 +186,10 @@
                 <table class="w-full">
                     <thead>
                         <tr class="border-b border-black/10">
-                            <th class="pb-3 text-left text-sm font-semibold text-[#0A0A0A]">{{ __('Nom') }}</th>
-                            <th class="pb-3 text-left text-sm font-semibold text-[#0A0A0A]">{{ __('Email') }}</th>
-                            <th class="pb-3 text-left text-sm font-semibold text-[#0A0A0A]">{{ __('Institution') }}</th>
-                            <!-- <th class="pb-3 text-right text-sm font-semibold text-[#0A0A0A]">Actions</th> -->
+                            <th class="pb-3 text-start text-sm font-semibold text-[#0A0A0A]">{{ __('Nom') }}</th>
+                            <th class="pb-3 text-start text-sm font-semibold text-[#0A0A0A]">{{ __('Email') }}</th>
+                            <th class="pb-3 text-start text-sm font-semibold text-[#0A0A0A]">{{ __('Institution') }}</th>
+                            <!-- <th class="pb-3 text-end text-sm font-semibold text-[#0A0A0A]">Actions</th> -->
                         </tr>
                     </thead>
                     <tbody>
@@ -198,7 +198,7 @@
                                 <td class="py-3 text-sm text-[#0A0A0A]">{{ $user->full_name }}</td>
                                 <td class="py-3 text-sm text-[#717182]">{{ $user->email }}</td>
                                 <td class="py-3 text-sm text-[#717182]">{{ $user->institution->name ?? __('N/A') }}</td>
-                                <td class="py-3 text-right">
+                                <td class="py-3 text-end">
                                     <!-- @can('user.view.all')
                                         <a
                                             href="{{ route('users.show', $user) }}"

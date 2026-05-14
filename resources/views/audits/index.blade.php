@@ -170,14 +170,14 @@
                         $selectedEventTypes = is_array(request('event_type')) ? request('event_type') : (request('event_type') ? [request('event_type')] : []);
                     @endphp
                     <button type="button" @click="eventOpen = !eventOpen"
-                            class="h-10 w-full flex items-center gap-2 text-sm border border-[#e5e7eb] rounded-[8px] px-3 bg-white text-left focus:outline-none focus:border-[#1c398e] focus:ring-2 focus:ring-[#1c398e]/20 transition"
+                            class="h-10 w-full flex items-center gap-2 text-sm border border-[#e5e7eb] rounded-[8px] px-3 bg-white text-start focus:outline-none focus:border-[#1c398e] focus:ring-2 focus:ring-[#1c398e]/20 transition"
                             :class="{ 'border-[#1c398e] ring-2 ring-[#1c398e]/20': eventOpen }">
                         <i class="fa-solid fa-filter text-xs shrink-0" style="color:var(--sikds-muted)"></i>
                         <span class="flex-1 truncate" x-text="selectedEvents.length ? selectedEvents.length + ' ' + @js(__('type(s)')) : @js(__('Type d\'événement'))" :class="selectedEvents.length ? 'text-[#0a0a0a] font-medium' : 'text-[#717182]'"></span>
                         <i class="fa-solid fa-chevron-down text-[10px] shrink-0 transition-transform" :class="{ 'rotate-180': eventOpen }" style="color:var(--sikds-muted)"></i>
                     </button>
                     @if (count($selectedEventTypes) > 0)
-                        <span class="absolute -top-1.5 -right-1.5 inline-flex h-5 min-w-[1.25rem] items-center justify-center rounded-full px-1 text-[11px] font-semibold text-white" style="background-color:var(--sikds-primary)">{{ count($selectedEventTypes) }}</span>
+                        <span class="absolute -top-1.5 -end-1.5 inline-flex h-5 min-w-[1.25rem] items-center justify-center rounded-full px-1 text-[11px] font-semibold text-white" style="background-color:var(--sikds-primary)">{{ count($selectedEventTypes) }}</span>
                     @endif
                     <div x-show="eventOpen" x-transition.origin.top
                          class="absolute left-0 right-0 top-full z-50 mt-1.5 max-h-64 overflow-y-auto rounded-[12px] border border-black/10 bg-white py-1 shadow-[0_8px_30px_-4px_rgba(0,0,0,0.15)]" x-cloak>
@@ -206,7 +206,7 @@
                         $selectedResults = is_array(request('result')) ? request('result') : (request('result') ? [request('result')] : []);
                     @endphp
                     <button type="button" @click="statusOpen = !statusOpen"
-                            class="h-10 w-full flex items-center gap-2 text-sm border border-[#e5e7eb] rounded-[8px] px-3 bg-white text-left focus:outline-none focus:border-[#1c398e] focus:ring-2 focus:ring-[#1c398e]/20 transition"
+                            class="h-10 w-full flex items-center gap-2 text-sm border border-[#e5e7eb] rounded-[8px] px-3 bg-white text-start focus:outline-none focus:border-[#1c398e] focus:ring-2 focus:ring-[#1c398e]/20 transition"
                             :class="{ 'border-[#1c398e] ring-2 ring-[#1c398e]/20': statusOpen }">
                         <span class="flex-1 truncate" x-text="selectedStatuses.length ? selectedStatuses.length + ' ' + @js(__('statut(s)')) : @js(__('Tous les statuts'))" :class="selectedStatuses.length ? 'text-[#0a0a0a] font-medium' : 'text-[#717182]'"></span>
                         <i class="fa-solid fa-chevron-down text-[10px] shrink-0 transition-transform" :class="{ 'rotate-180': statusOpen }" style="color:var(--sikds-muted)"></i>
@@ -285,12 +285,12 @@
             <table class="w-full text-sm">
                 <thead>
                     <tr class="border-b" style="border-color:rgba(0,0,0,.1);background:#f9f9fb;">
-                        <th class="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider" style="color:var(--sikds-muted)">{{ __('Type') }}</th>
-                        <th class="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider" style="color:var(--sikds-muted)">{{ __('Utilisateur') }}</th>
-                        <th class="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider" style="color:var(--sikds-muted)">{{ __('Action') }}</th>
-                        <th class="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider" style="color:var(--sikds-muted)">{{ __('Cible') }}</th>
-                        <th class="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider" style="color:var(--sikds-muted)">{{ __('Horodatage') }}</th>
-                        <th class="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider" style="color:var(--sikds-muted)">{{ __('Statut') }}</th>
+                        <th class="text-start px-4 py-3 text-xs font-semibold uppercase tracking-wider" style="color:var(--sikds-muted)">{{ __('Type') }}</th>
+                        <th class="text-start px-4 py-3 text-xs font-semibold uppercase tracking-wider" style="color:var(--sikds-muted)">{{ __('Utilisateur') }}</th>
+                        <th class="text-start px-4 py-3 text-xs font-semibold uppercase tracking-wider" style="color:var(--sikds-muted)">{{ __('Action') }}</th>
+                        <th class="text-start px-4 py-3 text-xs font-semibold uppercase tracking-wider" style="color:var(--sikds-muted)">{{ __('Cible') }}</th>
+                        <th class="text-start px-4 py-3 text-xs font-semibold uppercase tracking-wider" style="color:var(--sikds-muted)">{{ __('Horodatage') }}</th>
+                        <th class="text-start px-4 py-3 text-xs font-semibold uppercase tracking-wider" style="color:var(--sikds-muted)">{{ __('Statut') }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -451,14 +451,14 @@
                 </div>
 
                 <div class="rounded-xl px-3 py-2 text-[12px]" style="background:#eef4ff;color:#3859d0;">
-                    <i class="fa-solid fa-circle-info mr-1"></i>
+                    <i class="fa-solid fa-circle-info me-1"></i>
                     {{ __('L\'export inclura tous les événements selon les filtres actifs.') }}
                 </div>
 
                 <div class="flex items-center justify-between pt-2">
                     <button type="button" id="cancel-export-modal" class="px-5 py-2 text-sm border border-black/10 rounded-[10px] hover:bg-gray-50">{{ __('Annuler') }}</button>
                     <button type="submit" class="px-5 py-2 text-sm font-semibold text-white rounded-[10px]" style="background-color:var(--sikds-primary);">
-                        <i class="fa-solid fa-download mr-1"></i> {{ __('Exporter') }}
+                        <i class="fa-solid fa-download me-1"></i> {{ __('Exporter') }}
                     </button>
                 </div>
             </form>

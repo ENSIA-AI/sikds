@@ -16,7 +16,7 @@
     data-role-card
     @if ($roleId !== null) data-role-id="{{ $roleId }}" @endif
     {{ $attributes->class([
-        'group flex w-full flex-col rounded-[10px] border border-transparent bg-[#ECECF04D] p-3 text-left transition',
+        'group flex w-full flex-col rounded-[10px] border border-transparent bg-[#ECECF04D] p-3 text-start transition',
         'min-h-[101px] max-w-full',
         'hover:bg-[#E8EEF9]/80',
         'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2B7FFF]',

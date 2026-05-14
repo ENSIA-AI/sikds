@@ -1,45 +1,50 @@
 /*
  * RTL overrides for Arabic.
  *
- * Strategy: rely on logical CSS properties (margin-inline, padding-inline,
- * inset-inline, text-align: start/end) wherever possible. This file only
- * patches places where the existing layout uses physical left/right values
- * that do not flip automatically.
+ * Strategy: the layout and component CSS use logical properties
+ * (padding-inline, inset-inline-start/end, text-align: start/end) and the
+ * Blade templates use Tailwind logical utilities (ms-*, me-*, ps-*, pe-*,
+ * start-*, end-*), so most of the UI flips automatically under [dir="rtl"].
  *
- * Tailwind v4 supports logical utilities (ms-*, me-*, ps-*, pe-*, start-*, end-*).
- * Prefer those in new templates instead of adding rules here.
+ * This file only patches the few things logical properties cannot express:
+ * transforms, mirrored decorative art, and physical background-position.
+ *
+ * Prefer logical utilities/properties in new code instead of adding rules here.
  */
 
 [dir="rtl"] body {
     font-family: 'Inter', 'Noto Sans Arabic', ui-sans-serif, system-ui, sans-serif;
 }
 
+/*
+ * Mobile sidebar slide-in. The sidebar is pinned with `inset-inline-start: 0`
+ * (Tailwind `start-0`), so under RTL it sits on the right edge — it must
+ * therefore slide out towards the right (+100%) instead of the left.
+ * On desktop (>=1024px) the sidebar is static, so the transform is reset.
+ */
 [dir="rtl"] .sikds-sidebar {
-    left: auto;
-    right: 0;
+    transform: translateX(100%);
 }
 
-[dir="rtl"] .sikds-sidebar-close {
-    left: 0.75rem;
-    right: auto;
+[dir="rtl"] .sikds-sidebar.is-open {
+    transform: translateX(0);
 }
 
-[dir="rtl"] .sikds-main-wrap {
-    margin-left: 0;
-    margin-right: var(--sikds-sidebar-width, 16rem);
+@media (min-width: 1024px) {
+    [dir="rtl"] .sikds-sidebar {
+        transform: none;
+    }
 }
 
+/* Decorative background art is directional — mirror it. */
 [dir="rtl"] .sikds-decor-wrap {
     transform: scaleX(-1);
 }
 
-[dir="rtl"] #sikds-chatbot-widget {
-    right: auto;
-    left: 1rem;
-}
-
-@media (min-width: 640px) {
-    [dir="rtl"] #sikds-chatbot-widget {
-        left: 1.5rem;
-    }
+/*
+ * background-position has no logical keyword, so the native <select> chevron
+ * (drawn as a background image) must be repositioned to the left edge.
+ */
+[dir="rtl"] .sikds-form-select {
+    background-position: left 14px center;
 }

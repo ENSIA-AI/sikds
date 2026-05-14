@@ -155,7 +155,7 @@
                                 name="logo"
                                 type="file"
                                 accept="image/*"
-                                class="block w-full cursor-pointer rounded-[10px] border border-dashed border-black/15 bg-white px-3 py-2 text-sm text-[#0A0A0A] file:mr-3 file:cursor-pointer file:rounded-lg file:border-0 file:bg-[#ECECF04D] file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-[#0A0A0A] hover:file:bg-[#ECECF04D]/80"
+                                class="block w-full cursor-pointer rounded-[10px] border border-dashed border-black/15 bg-white px-3 py-2 text-sm text-[#0A0A0A] file:me-3 file:cursor-pointer file:rounded-lg file:border-0 file:bg-[#ECECF04D] file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-[#0A0A0A] hover:file:bg-[#ECECF04D]/80"
                             />
                         </div>
                     </div>

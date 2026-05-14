@@ -17,7 +17,7 @@
             <i class="fa-regular fa-bell text-white text-[18px] leading-none" aria-hidden="true"></i>
             <span
                 id="sikds-notification-bell-badge"
-                class="hidden absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full bg-red-500 ring-2 ring-white"
+                class="hidden absolute -top-0.5 -end-0.5 h-2 w-2 rounded-full bg-red-500 ring-2 ring-white"
                 aria-hidden="true"
             ></span>
         </span>
@@ -25,7 +25,7 @@
 
     <div
         id="sikds-notification-bell-panel"
-        class="hidden absolute right-0 top-full z-50 mt-2 w-[22rem] max-w-[calc(100vw-2rem)] origin-top-right rounded-2xl border border-slate-200 bg-white shadow-xl overflow-hidden"
+        class="hidden absolute end-0 top-full z-50 mt-2 w-[22rem] max-w-[calc(100vw-2rem)] rounded-2xl border border-slate-200 bg-white shadow-xl overflow-hidden"
         role="menu"
         aria-label="{{ __('Notifications récentes') }}"
     >

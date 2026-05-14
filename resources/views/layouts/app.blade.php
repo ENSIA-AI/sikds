@@ -76,7 +76,7 @@
                         </button>
                         <div
                             id="sikds-user-menu"
-                            class="hidden absolute right-0 mt-2 w-52 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-xl py-1 z-50"
+                            class="hidden absolute end-0 mt-2 w-52 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-xl py-1 z-50"
                             role="menu"
                             aria-labelledby="sikds-user-menu-toggle"
                         >
@@ -84,7 +84,7 @@
                                 @csrf
                                 <button
                                     type="submit"
-                                    class="w-full text-left px-4 py-2.5 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-100 hover:text-slate-900"
+                                    class="w-full text-start px-4 py-2.5 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-100 hover:text-slate-900"
                                     role="menuitem"
                                 >
                                     <span class="inline-flex items-center gap-2">
@@ -148,7 +148,7 @@
     </script>
 
     @if ($canUseRagAssistant)
-        <div id="sikds-chatbot-widget" class="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50 flex flex-col items-end">
+        <div id="sikds-chatbot-widget" class="fixed bottom-4 end-4 sm:bottom-6 sm:end-6 z-50 flex flex-col items-end">
             <div
                 id="sikds-chatbot-panel"
                 class="hidden w-[min(96vw,390px)] h-[min(68vh,520px)] mb-3 rounded-2xl border border-slate-200 bg-white shadow-2xl overflow-hidden flex flex-col"
