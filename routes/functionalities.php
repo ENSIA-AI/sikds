@@ -100,7 +100,11 @@ Route::middleware(['auth'])
         // Permission: rag.query
         Route::middleware('can:rag.query')->group(function () {
             Route::get('/rag', [RagController::class, 'index'])->name('rag.index');
-            Route::post('/rag/query', [RagController::class, 'query'])->name('rag.query');
+            // Per-user rate limit (rag-query limiter) guards the LLM-backed
+            // endpoint against abuse and cost runaway.
+            Route::post('/rag/query', [RagController::class, 'query'])
+                ->middleware('throttle:rag-query')
+                ->name('rag.query');
         });
 
         // ── Indexing monitor ───────────────────────────────────────────────────

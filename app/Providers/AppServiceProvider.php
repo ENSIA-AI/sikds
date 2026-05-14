@@ -84,5 +84,16 @@ class AppServiceProvider extends ServiceProvider
         });
 
         RateLimiter::for('sso', fn (Request $request) => Limit::perMinute(30)->by((string) $request->ip()));
+
+        // Throttles the LLM-backed RAG query endpoint per authenticated user
+        // (falling back to IP) to contain abuse and runaway inference cost.
+        RateLimiter::for('rag-query', function (Request $request): Limit {
+            $perMinute = max(1, (int) config('rag.security.rate_limit', 15));
+            $userId = $request->user()?->id;
+
+            return $userId !== null
+                ? Limit::perMinute($perMinute)->by('rag:user:'.$userId)
+                : Limit::perMinute($perMinute)->by('rag:ip:'.(string) $request->ip());
+        });
     }
 }

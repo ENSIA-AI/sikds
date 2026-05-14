@@ -81,6 +81,43 @@ return [
     'retrieval' => [
         'candidate_pool' => (int) env('RAG_CANDIDATE_POOL', 20),
         'min_confidence' => (float) env('RAG_MIN_CONFIDENCE', 0.10),
+
+        // Out-of-context guardrail: ranked chunks scoring below this floor are
+        // dropped. If nothing survives, the query is refused before the LLM
+        // call. Best paired with the reranker enabled (scores ~0..1). 0 = off.
+        'min_rerank_score' => (float) env('RAG_MIN_RERANK_SCORE', 0.0),
+
+        // Hard cap on the estimated tokens of retrieved context sent to the
+        // LLM. Bounds prompt size, cost, and context-window pressure. 0 = off.
+        'max_context_tokens' => (int) env('RAG_MAX_CONTEXT_TOKENS', 4000),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Security
+    |--------------------------------------------------------------------------
+    |
+    | Guardrails for the RAG query endpoint: prompt-injection screening,
+    | abuse rate-limiting, and audit logging. See App\Services\Rag\PromptGuard.
+    |
+    */
+    'security' => [
+        // Hard-block a query when prompt injection is detected with at least
+        // `injection_threshold` distinct signals. When false, suspicious
+        // queries still run (input is structurally neutralised either way)
+        // but are flagged for audit.
+        'block_injection' => filter_var(env('RAG_BLOCK_INJECTION', true), FILTER_VALIDATE_BOOLEAN),
+        'injection_threshold' => (int) env('RAG_INJECTION_THRESHOLD', 1),
+
+        // Defensive cap on question length before it reaches the pipeline
+        // (the HTTP layer also validates max:500).
+        'max_question_chars' => (int) env('RAG_MAX_QUESTION_CHARS', 2000),
+
+        // Per-user requests/minute for POST /rag/query (throttle:rag-query).
+        'rate_limit' => (int) env('RAG_RATE_LIMIT', 15),
+
+        // Write an audit-log entry for every RAG query (success + refusals).
+        'audit_queries' => filter_var(env('RAG_AUDIT_QUERIES', true), FILTER_VALIDATE_BOOLEAN),
     ],
 
     /*

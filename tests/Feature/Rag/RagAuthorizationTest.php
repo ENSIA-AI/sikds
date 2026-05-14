@@ -7,7 +7,9 @@ use App\Models\Permission;
 use App\Models\Role;
 use App\Services\Rag\Contracts\EmbeddingServiceInterface;
 use App\Services\Rag\Contracts\RerankerServiceInterface;
+use App\Services\Rag\PromptGuard;
 use App\Services\Rag\RagQueryService;
+use App\Services\Rag\TokenEstimator;
 use Illuminate\Support\Facades\DB;
 use Spatie\Permission\PermissionRegistrar;
 
@@ -52,7 +54,9 @@ function ragServiceForTests(): RagQueryService
 {
     return new class(
         mock(EmbeddingServiceInterface::class),
-        mock(RerankerServiceInterface::class)
+        mock(RerankerServiceInterface::class),
+        new PromptGuard(),
+        new TokenEstimator(),
     ) extends RagQueryService {
         /**
          * @return array<int, int>

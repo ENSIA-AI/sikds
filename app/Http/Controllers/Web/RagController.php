@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Web;
 
+use App\Domain\Audit\Services\AuditService;
 use App\Http\Controllers\Controller;
 use App\Services\Rag\RagQueryService;
 use Illuminate\Http\Client\ConnectionException;
@@ -22,7 +23,7 @@ class RagController extends Controller
         return view('rag.index');
     }
 
-    public function query(Request $request, RagQueryService $rag): JsonResponse
+    public function query(Request $request, RagQueryService $rag, AuditService $audit): JsonResponse
     {
         /** @var \App\Domain\Users\Models\User $user */
         $user = Auth::user();
@@ -34,7 +35,14 @@ class RagController extends Controller
         try {
             $result = $rag->query((string) $validated['question'], (int) $user->id);
 
-            return response()->json($result);
+            $this->auditQuery($audit, $request, (string) $validated['question'], $result);
+
+            // Internal-only signals (`reason`, `injection_detected`) stay server-side.
+            return response()->json([
+                'answer' => $result['answer'],
+                'citations' => $result['citations'],
+                'refused' => $result['refused'],
+            ]);
         } catch (ConnectionException $e) {
             report($e);
 
@@ -48,5 +56,35 @@ class RagController extends Controller
                 'message' => __('La requête RAG a échoué.'),
             ], 500);
         }
+    }
+
+    /**
+     * Record an audit-log entry for a RAG query. The raw question is never
+     * stored — only its length and the pipeline's security/refusal verdict.
+     *
+     * @param  array{refused:bool, reason:?string, injection_detected:bool, citations:array<int, mixed>}  $result
+     */
+    private function auditQuery(AuditService $audit, Request $request, string $question, array $result): void
+    {
+        if (! config('rag.security.audit_queries', true)) {
+            return;
+        }
+
+        $injection = (bool) ($result['injection_detected'] ?? false);
+        $refused = (bool) ($result['refused'] ?? false);
+
+        $audit->record(
+            eventType: 'rag.query',
+            result: $injection ? 'blocked' : ($refused ? 'refused' : 'success'),
+            resourceType: 'rag',
+            metadata: [
+                'question_length' => mb_strlen($question),
+                'refused' => $refused,
+                'reason' => $result['reason'] ?? null,
+                'injection_detected' => $injection,
+                'citation_count' => count($result['citations'] ?? []),
+            ],
+            request: $request,
+        );
     }
 }
