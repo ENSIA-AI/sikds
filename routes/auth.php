@@ -72,7 +72,11 @@ Route::middleware('throttle:sso')->get('/callback', function (SsoService $ssoSer
 
         report($e);
 
-        return redirect()->route('login')->with('error', 'SSO login failed. Please try again or contact support.');
+        $message = $e->isUnauthorizedSsoRole()
+            ? 'Unauthorized access. Your SSO account does not have one of the required roles for this system.'
+            : 'SSO login failed. Please try again or contact support.';
+
+        return redirect()->route('login')->with('error', $message);
     } catch (\Throwable $e) {
         AuditLog::query()->create([
             'event_type' => 'auth.login.failed',

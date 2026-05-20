@@ -280,7 +280,10 @@ class SsoService
         );
 
         if (array_intersect($roleCodes, $authorized) === []) {
-            throw new SsoAuthenticationException('Your SSO account is not authorized to access this application.');
+            throw new SsoAuthenticationException(
+                'Your SSO account is not authorized to access this application.',
+                SsoAuthenticationException::UNAUTHORIZED_SSO_ROLE
+            );
         }
     }
 
