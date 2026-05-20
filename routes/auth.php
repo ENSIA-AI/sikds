@@ -61,7 +61,8 @@ Route::middleware('throttle:sso')->get('/callback', function (SsoService $ssoSer
             'resource_id' => null,
             'metadata' => [
                 'auth_type' => 'sso',
-                'reason' => $e->getMessage(),
+                'reason' => $e->auditReason(),
+                'message' => $e->getMessage(),
                 'exception' => class_basename($e),
             ],
             'result' => 'failed',
@@ -70,13 +71,11 @@ Route::middleware('throttle:sso')->get('/callback', function (SsoService $ssoSer
             'created_at' => now(),
         ]);
 
-        report($e);
+        if ($e->shouldReport()) {
+            report($e);
+        }
 
-        $message = $e->isUnauthorizedSsoRole()
-            ? 'Unauthorized access. Your SSO account does not have one of the required roles for this system.'
-            : 'SSO login failed. Please try again or contact support.';
-
-        return redirect()->route('login')->with('error', $message);
+        return redirect()->route('login')->with('error', __($e->publicMessageKey()));
     } catch (\Throwable $e) {
         AuditLog::query()->create([
             'event_type' => 'auth.login.failed',
@@ -97,7 +96,7 @@ Route::middleware('throttle:sso')->get('/callback', function (SsoService $ssoSer
 
         report($e);
 
-        return redirect()->route('login')->with('error', 'Unexpected authentication error. Please try again.');
+        return redirect()->route('login')->with('error', __('Erreur d’authentification inattendue. Veuillez réessayer.'));
     }
 })->name('sso.callback');
 
