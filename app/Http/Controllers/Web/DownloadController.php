@@ -51,7 +51,9 @@ class DownloadController extends Controller
         try {
             $watermarkedPdfPath = $this->watermarkService->generateWatermarkedPdf($document, $downloadLog);
         } catch (\Exception $e) {
-            abort(500, __('Erreur lors de la génération du filigrane : :message', ['message' => $e->getMessage()]));
+            report($e);
+
+            abort(500, __('Erreur lors de la génération du filigrane. Veuillez réessayer.'));
         }
 
         // Write immutable audit entry

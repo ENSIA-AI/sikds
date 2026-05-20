@@ -26,6 +26,8 @@ class ListDocumentsRequest extends FormRequest
             'tag_id' => ['nullable', 'integer', 'exists:tags,id'],
             'per_page' => ['nullable', 'integer', 'min:1', 'max:100'],
             'include_deleted' => ['nullable', 'boolean'],
+            'sort_by' => ['nullable', 'in:issue_date,created_at,title,reference_number,status'],
+            'sort_dir' => ['nullable', 'in:asc,desc'],
         ];
     }
 }

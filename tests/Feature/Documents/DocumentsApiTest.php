@@ -102,7 +102,9 @@ function createDocument(User $uploader, array $overrides = []): Document
 }
 
 test('guests are redirected from documents api routes', function () {
-    $this->getJson('/api/documents')->assertStatus(401);
+    $this->getJson('/api/documents')
+        ->assertStatus(401)
+        ->assertJsonPath('message', 'Authentification requise.');
 });
 
 test('user with document.view.all can preview document via api show', function () {
@@ -173,13 +175,37 @@ test('documents api list returns only assigned documents for non super admin', f
     ]);
 
     $response = $this->getJson('/api/documents');
-    $response->assertOk();
+    $response->assertOk()
+        ->assertJsonStructure([
+            'data',
+            'meta' => ['current_page', 'from', 'last_page', 'per_page', 'to', 'total'],
+            'links' => ['first', 'last', 'prev', 'next'],
+        ]);
 
     $titles = collect($response->json('data'))->pluck('title')->all();
     expect($titles)->toContain($docAll->title);
     expect($titles)->toContain($docInstA->title);
     expect($titles)->toContain($docDirect->title);
     expect($titles)->not->toContain($docInstB->title);
+});
+
+test('documents api list supports explicit sorting and pagination metadata', function () {
+    $user = User::factory()->create();
+    grantPermission($user, 'document.view.all');
+    $this->actingAs($user);
+
+    createDocument($user, ['title' => 'Beta document', 'status' => 'active']);
+    createDocument($user, ['title' => 'Alpha document', 'status' => 'active']);
+
+    $response = $this->getJson('/api/documents?sort_by=title&sort_dir=asc&per_page=1');
+
+    $response->assertOk()
+        ->assertJsonPath('data.0.title', 'Alpha document')
+        ->assertJsonPath('meta.per_page', 1)
+        ->assertJsonPath('meta.total', 2)
+        ->assertJsonStructure([
+            'links' => ['first', 'last', 'prev', 'next'],
+        ]);
 });
 
 test('document upload requires create permission', function () {
@@ -201,7 +227,8 @@ test('document upload requires create permission', function () {
     ];
 
     $this->post('/api/documents', $payload)
-        ->assertForbidden();
+        ->assertForbidden()
+        ->assertJsonPath('message', 'Vous n’avez pas l’autorisation d’effectuer cette action.');
 });
 
 test('document upload enforces pdf only and batch max five', function () {
@@ -221,7 +248,8 @@ test('document upload enforces pdf only and batch max five', function () {
     ];
 
     $this->post('/api/documents', $badPayload)
-        ->assertSessionHasErrors(['files.0']);
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors(['files.0']);
 
     $manyFiles = [];
     $manyMeta = [];
@@ -236,7 +264,8 @@ test('document upload enforces pdf only and batch max five', function () {
     }
 
     $this->post('/api/documents', ['files' => $manyFiles, 'documents_meta' => $manyMeta])
-        ->assertSessionHasErrors(['files']);
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors(['files']);
 });
 
 test('document upload creates draft document and stores file', function () {
@@ -320,7 +349,8 @@ test('document upload requires at least one tag', function () {
     ];
 
     $this->post('/api/documents', $payload)
-        ->assertSessionHasErrors(['documents_meta.0.tag_ids']);
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors(['documents_meta.0.tag_ids']);
 });
 
 test('publish endpoint enforces draft to active transition', function () {
