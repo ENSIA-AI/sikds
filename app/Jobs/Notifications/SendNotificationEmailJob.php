@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Jobs\Notifications;
 
-use App\Domain\Audit\Models\AuditLog;
+use App\Domain\Audit\Services\AuditService;
 use App\Domain\Notifications\Models\Notification;
 use App\Domain\Users\Models\User;
 use App\Mail\DocumentForwardedMail;
@@ -98,48 +98,42 @@ class SendNotificationEmailJob implements ShouldQueue
             $notification->email_sent_at = now();
             $notification->save();
 
-            AuditLog::query()->create([
-                'event_type' => 'notification.sent',
-                'user_id' => $recipient->id,
-                'user_email' => $recipient->email,
-                'resource_type' => 'notification',
-                'resource_id' => $notification->id,
-                'metadata' => [
+            app(AuditService::class)->record(
+                eventType: 'notification.sent',
+                resourceType: 'notification',
+                resourceId: $notification->id,
+                metadata: [
                     'type' => $notification->type,
                     'recipient_user_id' => $notification->recipient_user_id,
                     'recipient_name' => $recipient->full_name,
+                    'recipient_email' => $recipient->email,
                     'document_id' => $notification->document_id,
                     'document_reference' => $document->reference_number ?? null,
+                    'document_title' => $document->title ?? null,
                 ],
-                'result' => 'success',
-                'ip_address' => null,
-                'user_agent' => null,
-                'created_at' => now(),
-            ]);
+            );
         } catch (\Throwable $e) {
             $notification->email_status = 'failed';
             $notification->email_error = $e->getMessage();
             $notification->save();
 
-            AuditLog::query()->create([
-                'event_type' => 'notification.failed',
-                'user_id' => $recipient?->id,
-                'user_email' => $recipient?->email,
-                'resource_type' => 'notification',
-                'resource_id' => $notification->id,
-                'metadata' => [
+            app(AuditService::class)->record(
+                eventType: 'notification.failed',
+                result: 'failed',
+                resourceType: 'notification',
+                resourceId: $notification->id,
+                metadata: [
                     'type' => $notification->type,
                     'recipient_user_id' => $notification->recipient_user_id,
                     'recipient_name' => $recipient?->full_name,
+                    'recipient_email' => $recipient?->email,
                     'document_id' => $notification->document_id,
                     'document_reference' => $document?->reference_number,
-                    'error' => $e->getMessage(),
+                    'document_title' => $document?->title,
+                    'reason' => 'email_delivery_failed',
+                    'message' => $e->getMessage(),
                 ],
-                'result' => 'failed',
-                'ip_address' => null,
-                'user_agent' => null,
-                'created_at' => now(),
-            ]);
+            );
 
             throw $e;
         }

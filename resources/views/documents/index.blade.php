@@ -131,6 +131,12 @@
         $selectedStatus = $filters['status'] ?? [];
         $selectedTags = $filters['tags'] ?? [];
         $selectedAudience = $filters['audience'] ?? [];
+        $hasDocumentFilters = filled($filters['q'] ?? null)
+            || filled($filters['date_from'] ?? null)
+            || filled($filters['date_to'] ?? null)
+            || ! empty($selectedStatus)
+            || ! empty($selectedTags)
+            || ! empty($selectedAudience);
     @endphp
 
     <form method="GET" action="{{ route('documents.index') }}" class="sikds-docs-toolbar">
@@ -329,8 +335,29 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="6" class="text-center py-8 text-sm sikds-muted-text">
-                            {{ __('Aucun document ne correspond aux filtres sélectionnés.') }}
+                        <td colspan="6" class="px-5 py-8">
+                            <x-empty-state
+                                icon="fa-regular fa-file-lines"
+                                :title="$hasDocumentFilters ? __('Aucun document ne correspond aux filtres sélectionnés.') : __('Aucun document à afficher.')"
+                                :description="$hasDocumentFilters ? __('Modifiez ou réinitialisez les filtres pour élargir les résultats.') : __('Téléversez un document PDF pour démarrer le cycle de gestion documentaire.')"
+                                class="shadow-none"
+                            >
+                                <x-slot:action>
+                                    @if ($hasDocumentFilters)
+                                        <a href="{{ route('documents.index') }}" class="inline-flex items-center gap-2 rounded-[10px] border border-black/10 bg-white px-4 py-2 text-sm font-medium text-[#0A0A0A] transition hover:bg-black/[0.03]">
+                                            <i class="fa-solid fa-rotate-left text-xs"></i>
+                                            {{ __('Réinitialiser les filtres') }}
+                                        </a>
+                                    @else
+                                        @can('document.create')
+                                            <a href="{{ route('documents.create') }}" class="inline-flex items-center gap-2 rounded-[10px] bg-[#1E3A8A] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#163171]">
+                                                <i class="fa-solid fa-plus text-xs"></i>
+                                                {{ __('Téléverser un Document') }}
+                                            </a>
+                                        @endcan
+                                    @endif
+                                </x-slot:action>
+                            </x-empty-state>
                         </td>
                     </tr>
                 @endforelse

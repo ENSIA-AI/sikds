@@ -83,6 +83,13 @@
 
     {{-- Permissions grid --}}
     <section>
+        @if (($totalCount ?? 0) === 0)
+            <x-empty-state
+                icon="fa-solid fa-key"
+                :title="__('Aucune permission pour le moment.')"
+                :description="__('Les permissions système apparaîtront ici une fois seedées ou synchronisées.')"
+            />
+        @else
         <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
             @php
                 $categoryIconStyles = [
@@ -168,10 +175,26 @@
 
         <div
             data-permissions-empty
-            class="hidden mt-6 rounded-[14px] border border-black/10 bg-white p-6 text-sm text-[#717182] shadow-[0px_1px_2px_-1px_rgba(0,0,0,0.10),0px_1px_3px_0px_rgba(0,0,0,0.10)]"
+            class="hidden mt-6"
         >
-            {{ __('Aucune permission ne correspond à votre recherche.') }}
+            <x-empty-state
+                icon="fa-solid fa-magnifying-glass"
+                :title="__('Aucune permission ne correspond à votre recherche.')"
+                :description="__('Effacez la recherche ou revenez à toutes les catégories pour afficher le catalogue complet.')"
+            >
+                <x-slot:action>
+                    <button
+                        type="button"
+                        data-permissions-reset
+                        class="inline-flex items-center gap-2 rounded-[10px] border border-black/10 bg-white px-4 py-2 text-sm font-medium text-[#0A0A0A] transition hover:bg-black/[0.03]"
+                    >
+                        <i class="fa-solid fa-rotate-left text-xs"></i>
+                        {{ __('Effacer la recherche') }}
+                    </button>
+                </x-slot:action>
+            </x-empty-state>
         </div>
+        @endif
     </section>
 
 </div>

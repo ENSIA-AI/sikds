@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Web;
 
-use App\Domain\Audit\Models\AuditLog;
+use App\Domain\Audit\Services\AuditService;
 use App\Http\Controllers\Controller;
 use App\Services\Settings\SystemSettingsService;
 use Illuminate\Contracts\View\View;
@@ -16,6 +16,7 @@ class SettingsController extends Controller
 {
     public function __construct(
         private readonly SystemSettingsService $systemSettings,
+        private readonly AuditService $audit,
     ) {}
 
     public function index(Request $request): View
@@ -70,23 +71,22 @@ class SettingsController extends Controller
             $payload['metadata_fields'] = array_values(array_unique(array_map('strval', $payload['metadata_fields'] ?? [])));
         }
 
+        $before = array_intersect_key($this->systemSettings->all()[$section] ?? [], $payload);
+
         $this->systemSettings->updateSection($section, $payload, (int) $user->id);
 
-        AuditLog::query()->create([
-            'event_type' => 'settings.updated',
-            'user_id' => $user->id,
-            'user_email' => $user->email,
-            'resource_type' => 'settings',
-            'resource_id' => null,
-            'metadata' => [
+        $this->audit->record(
+            eventType: 'settings.updated',
+            user: $user,
+            resourceType: 'settings',
+            metadata: [
                 'section' => $section,
                 'changed_keys' => array_keys($payload),
+                'before' => $before,
+                'after' => $payload,
             ],
-            'result' => 'success',
-            'ip_address' => $request->ip(),
-            'user_agent' => $request->userAgent(),
-            'created_at' => now(),
-        ]);
+            request: $request,
+        );
 
         return redirect()->route('settings.index')->with('success', __('Paramètres enregistrés.'));
     }

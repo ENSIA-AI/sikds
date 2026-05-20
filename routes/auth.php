@@ -3,7 +3,7 @@
 use App\Domain\Users\Exceptions\SsoAuthenticationException;
 use App\Domain\Users\Services\SsoService;
 use App\Http\Controllers\Auth\LocalLoginController;
-use App\Domain\Audit\Models\AuditLog;
+use App\Domain\Audit\Services\AuditService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Session;
@@ -32,68 +32,58 @@ Route::get('/auth/redirect', function (SsoService $ssoService) {
     return $ssoService->redirectToProvider(request());
 })->middleware('throttle:sso')->name('sso.redirect');
 
-Route::middleware('throttle:sso')->get('/callback', function (SsoService $ssoService) {
+Route::middleware('throttle:sso')->get('/callback', function (SsoService $ssoService, AuditService $audit) {
     try {
         $user = $ssoService->handleCallback(request());
 
-        AuditLog::query()->create([
-            'event_type' => 'auth.login.success',
-            'user_id' => $user->id,
-            'user_email' => $user->email,
-            'resource_type' => 'user',
-            'resource_id' => $user->id,
-            'metadata' => [
+        $audit->record(
+            eventType: 'auth.login.success',
+            user: $user,
+            resourceType: 'user',
+            resourceId: $user->id,
+            metadata: [
                 'auth_type' => 'sso',
             ],
-            'result' => 'success',
-            'ip_address' => request()->ip(),
-            'user_agent' => request()->userAgent(),
-            'created_at' => now(),
-        ]);
+            request: request(),
+        );
 
         return redirect('/dashboard');
     } catch (SsoAuthenticationException $e) {
-        AuditLog::query()->create([
-            'event_type' => 'auth.login.failed',
-            'user_id' => null,
-            'user_email' => null,
-            'resource_type' => 'user',
-            'resource_id' => null,
-            'metadata' => [
+        $audit->record(
+            eventType: 'auth.login.failed',
+            result: 'failed',
+            resourceType: 'user',
+            metadata: [
                 'auth_type' => 'sso',
-                'reason' => $e->getMessage(),
+                'reason' => $e->auditReason(),
+                'message' => $e->getMessage(),
                 'exception' => class_basename($e),
             ],
-            'result' => 'failed',
-            'ip_address' => request()->ip(),
-            'user_agent' => request()->userAgent(),
-            'created_at' => now(),
-        ]);
+            request: request(),
+        );
 
-        report($e);
+        if ($e->shouldReport()) {
+            report($e);
+        }
 
-        return redirect()->route('login')->with('error', 'SSO login failed. Please try again or contact support.');
+        return redirect()->route('login')->with('error', __($e->publicMessageKey()));
     } catch (\Throwable $e) {
-        AuditLog::query()->create([
-            'event_type' => 'auth.login.failed',
-            'user_id' => null,
-            'user_email' => null,
-            'resource_type' => 'user',
-            'resource_id' => null,
-            'metadata' => [
+        $audit->record(
+            eventType: 'auth.login.failed',
+            result: 'failed',
+            resourceType: 'user',
+            metadata: [
                 'auth_type' => 'sso',
                 'reason' => 'unexpected_error',
+                'message' => $e->getMessage(),
                 'exception' => class_basename($e),
             ],
-            'result' => 'failed',
-            'ip_address' => request()->ip(),
-            'user_agent' => request()->userAgent(),
-            'created_at' => now(),
-        ]);
+            request: request(),
+        );
 
         report($e);
 
-        return redirect()->route('login')->with('error', 'Unexpected authentication error. Please try again.');
+        return redirect()->route('login')->with('error', __('Erreur d’authentification inattendue. Veuillez réessayer.'));
     }
 })->name('sso.callback');
 

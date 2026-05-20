@@ -31,8 +31,11 @@ class DocumentApiQueryService
         $this->applyVisibilityScope($query, $user);
         $this->applyFilters($query, $request);
 
+        $sortBy = (string) $request->query('sort_by', 'issue_date');
+        $sortDir = (string) $request->query('sort_dir', 'desc');
+
         return $query
-            ->orderByDesc('issue_date')
+            ->orderBy($sortBy, $sortDir)
             ->paginate((int) $request->integer('per_page', 15))
             ->withQueryString();
     }

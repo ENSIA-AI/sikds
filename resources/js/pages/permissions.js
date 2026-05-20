@@ -21,6 +21,7 @@ function wirePermissionsPage(root) {
     const buttons = Array.from(root.querySelectorAll('[data-permissions-filter-button]'));
     const cards = Array.from(root.querySelectorAll('[data-permissions-category-card]'));
     const empty = root.querySelector('[data-permissions-empty]');
+    const reset = root.querySelector('[data-permissions-reset]');
 
     let selectedKey = 'all';
 
@@ -60,6 +61,15 @@ function wirePermissionsPage(root) {
     });
 
     search?.addEventListener('input', () => apply());
+    reset?.addEventListener('click', () => {
+        selectedKey = 'all';
+        if (search) {
+            search.value = '';
+            search.focus();
+        }
+        buttons.forEach((b) => setButtonState(b, (b.getAttribute('data-filter-key') || 'all') === selectedKey));
+        apply();
+    });
 
     // Initialize selected button state
     buttons.forEach((b) => setButtonState(b, (b.getAttribute('data-filter-key') || 'all') === selectedKey));

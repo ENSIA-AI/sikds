@@ -11,6 +11,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\Documents\ListDocumentsRequest;
 use App\Http\Requests\Api\Documents\StoreDocumentsRequest;
 use App\Http\Requests\Api\Documents\UpdateDocumentRequest;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -25,7 +26,9 @@ final class DocumentsApiController extends Controller
 
     public function index(ListDocumentsRequest $request): JsonResponse
     {
-        return response()->json($this->queryService->index($request, $this->authUser()));
+        return response()->json($this->paginated(
+            $this->queryService->index($request, $this->authUser())
+        ));
     }
 
     public function show(int $id): JsonResponse
@@ -99,5 +102,33 @@ final class DocumentsApiController extends Controller
         $user = Auth::user();
 
         return $user;
+    }
+
+    /**
+     * @return array{
+     *     data: array<int, mixed>,
+     *     meta: array<string, int>,
+     *     links: array<string, ?string>
+     * }
+     */
+    private function paginated(LengthAwarePaginator $paginator): array
+    {
+        return [
+            'data' => $paginator->items(),
+            'meta' => [
+                'current_page' => $paginator->currentPage(),
+                'from' => $paginator->firstItem() ?? 0,
+                'last_page' => $paginator->lastPage(),
+                'per_page' => $paginator->perPage(),
+                'to' => $paginator->lastItem() ?? 0,
+                'total' => $paginator->total(),
+            ],
+            'links' => [
+                'first' => $paginator->url(1),
+                'last' => $paginator->url($paginator->lastPage()),
+                'prev' => $paginator->previousPageUrl(),
+                'next' => $paginator->nextPageUrl(),
+            ],
+        ];
     }
 }

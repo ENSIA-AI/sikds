@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
-use App\Domain\Audit\Models\AuditLog;
+use App\Domain\Audit\Services\AuditService;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Queue\Events\JobFailed;
@@ -29,44 +29,35 @@ class AppServiceProvider extends ServiceProvider
         Queue::failing(function (JobFailed $event): void {
             $payload = $event->job->payload();
 
-            AuditLog::query()->create([
-                'event_type' => 'QUEUE_JOB_FAILED',
-                'user_id' => null,
-                'user_email' => null,
-                'resource_type' => 'queue',
-                'resource_id' => 0,
-                'metadata' => [
+            app(AuditService::class)->record(
+                eventType: 'queue.job.failed',
+                result: 'failed',
+                resourceType: 'queue',
+                resourceId: 0,
+                metadata: [
                     'connection' => $event->connectionName,
                     'queue' => $event->job->getQueue(),
                     'job_name' => (string) ($payload['displayName'] ?? $event->job->resolveName()),
                     'job_id' => $event->job->getJobId(),
-                    'exception' => $event->exception->getMessage(),
+                    'reason' => 'job_failed',
+                    'message' => $event->exception->getMessage(),
                 ],
-                'result' => 'failed',
-                'ip_address' => null,
-                'user_agent' => null,
-                'created_at' => now(),
-            ]);
+            );
         });
 
         Event::listen(function (LongWaitDetected $event): void {
             foreach ($event->queues as $queue) {
-                AuditLog::query()->create([
-                    'event_type' => 'QUEUE_LONG_WAIT_DETECTED',
-                    'user_id' => null,
-                    'user_email' => null,
-                    'resource_type' => 'queue',
-                    'resource_id' => 0,
-                    'metadata' => [
+                app(AuditService::class)->record(
+                    eventType: 'queue.long_wait.detected',
+                    result: 'warning',
+                    resourceType: 'queue',
+                    resourceId: 0,
+                    metadata: [
                         'connection' => $event->connectionName,
                         'queue' => $queue,
                         'wait_seconds' => $event->waitTime,
                     ],
-                    'result' => 'warning',
-                    'ip_address' => null,
-                    'user_agent' => null,
-                    'created_at' => now(),
-                ]);
+                );
             }
         });
     }

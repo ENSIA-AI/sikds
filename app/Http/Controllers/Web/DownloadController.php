@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Web;
 
-use App\Domain\Audit\Models\AuditLog;
+use App\Domain\Audit\Services\AuditService;
 use App\Domain\Documents\Models\Document;
 use App\Domain\Documents\Models\DownloadLog;
 use App\Domain\Documents\Services\WatermarkService;
@@ -16,6 +16,7 @@ class DownloadController extends Controller
 {
     public function __construct(
         protected WatermarkService $watermarkService,
+        private readonly AuditService $audit,
     ) {}
 
     public function download(Request $request, int $id)
@@ -51,27 +52,26 @@ class DownloadController extends Controller
         try {
             $watermarkedPdfPath = $this->watermarkService->generateWatermarkedPdf($document, $downloadLog);
         } catch (\Exception $e) {
-            abort(500, __('Erreur lors de la génération du filigrane : :message', ['message' => $e->getMessage()]));
+            report($e);
+
+            abort(500, __('Erreur lors de la génération du filigrane. Veuillez réessayer.'));
         }
 
         // Write immutable audit entry
-        AuditLog::create([
-            'event_type'    => 'document.download',
-            'user_id'       => $user->id,
-            'user_email'    => $user->email,
-            'resource_type' => 'download_log',
-            'resource_id'   => $downloadLog->id,
-            'metadata'      => [
+        $this->audit->record(
+            eventType: 'document.download',
+            user: $user,
+            resourceType: 'download_log',
+            resourceId: $downloadLog->id,
+            metadata: [
                 'document_id'      => $document->id,
                 'reference_number' => $document->reference_number,
+                'document_title'   => $document->title,
                 'watermark_uuid'   => $downloadLog->watermark_uuid,
                 'institution_id'   => $user->institution_id,
             ],
-            'result'     => 'success',
-            'ip_address' => $request->ip(),
-            'user_agent' => $request->userAgent(),
-            'created_at' => now(),
-        ]);
+            request: $request,
+        );
 
         $filename = $document->reference_number . '.pdf';
 

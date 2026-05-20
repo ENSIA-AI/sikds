@@ -116,6 +116,7 @@ final class CreateUserAction
 
         $this->audit->record(
             eventType: 'user.created',
+            user: $createdById,
             resourceType: 'user',
             resourceId: $user->id,
             metadata: [
@@ -128,6 +129,17 @@ final class CreateUserAction
                 'role_names'       => $roles->pluck('name')->all(),
                 'permission_ids'   => array_values(array_map('intval', $data['permission_ids'] ?? [])),
                 'is_active'        => (bool) $user->is_active,
+                'created_by'       => $createdById,
+                'before'           => [],
+                'after'            => [
+                    'full_name' => $user->full_name,
+                    'email' => $user->email,
+                    'institution_id' => $user->institution_id,
+                    'auth_type' => $user->auth_type,
+                    'role_ids' => $roleIds,
+                    'permission_ids' => array_values(array_map('intval', $data['permission_ids'] ?? [])),
+                    'is_active' => (bool) $user->is_active,
+                ],
             ],
         );
 

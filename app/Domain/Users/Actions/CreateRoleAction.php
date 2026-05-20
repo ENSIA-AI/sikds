@@ -64,6 +64,7 @@ final class CreateRoleAction
 
         $this->audit->record(
             eventType: 'role.created',
+            user: $createdById,
             resourceType: 'role',
             resourceId: $role->id,
             metadata: [
@@ -73,6 +74,14 @@ final class CreateRoleAction
                 'description'      => $role->description,
                 'permission_ids'   => $permissionIds,
                 'permission_codes' => $permissionCodes,
+                'created_by'       => $createdById,
+                'before'           => [],
+                'after'            => [
+                    'name' => $role->name,
+                    'slug' => $role->slug,
+                    'description' => $role->description,
+                    'permission_ids' => $permissionIds,
+                ],
             ],
         );
 

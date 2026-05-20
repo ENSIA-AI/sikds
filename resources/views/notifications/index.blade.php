@@ -273,8 +273,22 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6" class="px-5 py-14 text-center text-sm" style="color:var(--sikds-muted)">
-                                {{ __('Aucune notification trouvée.') }}
+                            <td colspan="6" class="px-5 py-8">
+                                <x-empty-state
+                                    icon="fa-regular fa-bell-slash"
+                                    :title="$nonEmptyFilters->isNotEmpty() ? __('Aucune notification trouvée.') : __('Aucune notification')"
+                                    :description="$nonEmptyFilters->isNotEmpty() ? __('Modifiez ou réinitialisez les filtres pour afficher davantage de notifications.') : __('Les notifications email apparaîtront ici après les publications, mises à jour et partages de documents.')"
+                                    class="shadow-none"
+                                >
+                                    @if ($nonEmptyFilters->isNotEmpty())
+                                        <x-slot:action>
+                                            <a href="{{ route('notifications.index') }}" class="inline-flex items-center gap-2 rounded-[10px] border border-black/10 bg-white px-4 py-2 text-sm font-medium text-[#0A0A0A] transition hover:bg-black/[0.03]">
+                                                <i class="fa-solid fa-rotate-left text-xs"></i>
+                                                {{ __('Réinitialiser les filtres') }}
+                                            </a>
+                                        </x-slot:action>
+                                    @endif
+                                </x-empty-state>
                             </td>
                         </tr>
                     @endforelse

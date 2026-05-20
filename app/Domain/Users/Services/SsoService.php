@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Users\Services;
 
+use App\Domain\Users\Enums\SsoFailureReason;
 use App\Domain\Users\Exceptions\SsoAuthenticationException;
 use App\Domain\Users\Models\User;
 use App\Models\Role;
@@ -44,7 +45,10 @@ class SsoService
         $code = (string) $request->input('code', '');
 
         if ($state === '' || !hash_equals($state, $incomingState) || $code === '') {
-            throw new SsoAuthenticationException('Invalid SSO callback state or authorization code.');
+            throw SsoAuthenticationException::forReason(
+                SsoFailureReason::InvalidCallback,
+                'Invalid SSO callback state or authorization code.'
+            );
         }
 
         $tokenResponse = $this->exchangeAuthorizationCode($code);
@@ -105,7 +109,10 @@ class SsoService
             }
 
             if (!$user->is_active) {
-                throw new SsoAuthenticationException('Your account is deactivated. Contact an administrator.');
+                throw SsoAuthenticationException::forReason(
+                    SsoFailureReason::DeactivatedAccount,
+                    'Your account is deactivated. Contact an administrator.'
+                );
             }
 
             $this->assignRoleFromSso($user, $normalized['sso_roles']);
@@ -262,7 +269,10 @@ class SsoService
 
         $emailDomain = strtolower((string) Str::after($email, '@'));
         if ($emailDomain === '' || !in_array($emailDomain, $allowedDomains, true)) {
-            throw new SsoAuthenticationException('Your email domain is not authorized for SSO access.');
+            throw SsoAuthenticationException::forReason(
+                SsoFailureReason::UnauthorizedEmailDomain,
+                'Your email domain is not authorized for SSO access.'
+            );
         }
     }
 
@@ -280,7 +290,10 @@ class SsoService
         );
 
         if (array_intersect($roleCodes, $authorized) === []) {
-            throw new SsoAuthenticationException('Your SSO account is not authorized to access this application.');
+            throw SsoAuthenticationException::forReason(
+                SsoFailureReason::UnauthorizedSsoRole,
+                'Your SSO account is not authorized to access this application.'
+            );
         }
     }
 

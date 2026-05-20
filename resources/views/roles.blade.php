@@ -41,12 +41,26 @@
                 :href="route('roles.show', $role)"
             />
         @empty
-            <p
+            <x-empty-state
                 data-empty-state
-                class="col-span-full rounded-[14px] border border-black/10 bg-white p-6 text-sm text-[#717182] shadow-[0px_1px_2px_-1px_rgba(0,0,0,0.10),0px_1px_3px_0px_rgba(0,0,0,0.10)]"
+                class="col-span-full"
+                icon="fa-solid fa-shield-halved"
+                :title="__('Aucun rôle pour le moment.')"
+                :description="__('Créez un rôle pour commencer à organiser les permissions des utilisateurs.')"
             >
-                {{ __('Aucun rôle pour le moment. Créez un rôle pour commencer.') }}
-            </p>
+                @can('role.create')
+                    <x-slot:action>
+                        <button
+                            type="button"
+                            data-open-create-role
+                            class="inline-flex items-center gap-2 rounded-[10px] bg-[#1E3A8A] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#163171]"
+                        >
+                            <i class="fa-solid fa-plus text-xs"></i>
+                            {{ __('Créer un Rôle') }}
+                        </button>
+                    </x-slot:action>
+                @endcan
+            </x-empty-state>
         @endforelse
     </div>
 

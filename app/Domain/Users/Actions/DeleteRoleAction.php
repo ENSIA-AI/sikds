@@ -31,6 +31,7 @@ final class DeleteRoleAction
                     'role_id'   => $role->id,
                     'role_name' => $role->name,
                     'reason'    => 'system_role',
+                    'message'   => 'Les rôles système ne peuvent pas être supprimés.',
                 ],
             );
             throw new \Exception('Les rôles système ne peuvent pas être supprimés.');
@@ -47,6 +48,7 @@ final class DeleteRoleAction
                     'role_id'        => $role->id,
                     'role_name'      => $role->name,
                     'reason'         => 'role_in_use',
+                    'message'        => "Impossible de supprimer ce rôle : il est attribué à {$assignedUsers} utilisateur(s).",
                     'assigned_users' => $assignedUsers,
                 ],
             );
@@ -70,7 +72,11 @@ final class DeleteRoleAction
             eventType: 'role.deleted',
             resourceType: 'role',
             resourceId: $roleId,
-            metadata: $snapshot,
+            metadata: [
+                ...$snapshot,
+                'before' => $snapshot,
+                'after' => [],
+            ],
         );
 
         return (bool) $deleted;
