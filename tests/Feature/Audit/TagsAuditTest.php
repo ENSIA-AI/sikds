@@ -67,6 +67,9 @@ it('writes a tag.created audit log with the actor and tag metadata', function ()
         ->and($log->user_email)->toBe($user->email)
         ->and($log->result)->toBe('success')
         ->and($log->resource_type)->toBe('tag')
+        ->and($log->metadata['event_code'] ?? null)->toBe('tag.created')
+        ->and($log->metadata['actor_context']['id'] ?? null)->toBe($user->id)
+        ->and($log->metadata['target_context']['tag_id'] ?? null)->toBe($tag->id)
         ->and($log->metadata)->toMatchArray([
             'tag_name' => 'Conformité',
             'color'    => '#aabbcc',
@@ -137,6 +140,7 @@ it('refuses to delete a tag that is in use and writes a failed audit log', funct
 
     expect($log->result)->toBe('failed')
         ->and($log->metadata['reason'] ?? null)->toBe('tag_in_use')
+        ->and($log->metadata['failure_reason']['code'] ?? null)->toBe('tag_in_use')
         ->and((int) ($log->metadata['usage_count'] ?? 0))->toBe(1);
 });
 
@@ -167,5 +171,7 @@ it('logs tag.updated with before/after snapshots', function (): void {
 
     expect($log->metadata['before']['name'] ?? null)->toBe('Avant')
         ->and($log->metadata['after']['name'] ?? null)->toBe('Après')
-        ->and($log->metadata['after']['color'] ?? null)->toBe('#334455');
+        ->and($log->metadata['after']['color'] ?? null)->toBe('#334455')
+        ->and($log->metadata['changes']['name']['before'] ?? null)->toBe('Avant')
+        ->and($log->metadata['changes']['name']['after'] ?? null)->toBe('Après');
 });

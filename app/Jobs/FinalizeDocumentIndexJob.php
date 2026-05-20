@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Jobs;
 
-use App\Domain\Audit\Models\AuditLog;
+use App\Domain\Audit\Services\AuditService;
 use App\Domain\Documents\Models\Document;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -48,22 +48,20 @@ class FinalizeDocumentIndexJob implements ShouldQueue
                 $document->indexing_status = 'failed';
                 $document->save();
 
-                AuditLog::create([
-                    'event_type' => 'DOCUMENT_INDEXING_FAILED',
-                    'user_id' => null,
-                    'user_email' => null,
-                    'resource_type' => 'document',
-                    'resource_id' => $document->id,
-                    'metadata' => [
+                app(AuditService::class)->record(
+                    eventType: 'document.indexing.failed',
+                    result: 'failed',
+                    resourceType: 'document',
+                    resourceId: $document->id,
+                    metadata: [
                         'document_id' => $document->id,
                         'reference_number' => $document->reference_number,
+                        'document_title' => $document->title,
                         'missing_embeddings' => $missing,
+                        'reason' => 'missing_embeddings',
+                        'message' => 'Document indexing failed because embeddings are missing.',
                     ],
-                    'result' => 'failed',
-                    'ip_address' => null,
-                    'user_agent' => null,
-                    'created_at' => now(),
-                ]);
+                );
 
                 return;
             }
@@ -71,21 +69,16 @@ class FinalizeDocumentIndexJob implements ShouldQueue
             $document->indexing_status = 'indexed';
             $document->save();
 
-            AuditLog::create([
-                'event_type' => 'DOCUMENT_INDEXING_COMPLETED',
-                'user_id' => null,
-                'user_email' => null,
-                'resource_type' => 'document',
-                'resource_id' => $document->id,
-                'metadata' => [
+            app(AuditService::class)->record(
+                eventType: 'document.indexing.completed',
+                resourceType: 'document',
+                resourceId: $document->id,
+                metadata: [
                     'document_id' => $document->id,
                     'reference_number' => $document->reference_number,
+                    'document_title' => $document->title,
                 ],
-                'result' => 'success',
-                'ip_address' => null,
-                'user_agent' => null,
-                'created_at' => now(),
-            ]);
+            );
         } catch (\Throwable $e) {
             $document->indexing_status = 'failed';
             $document->save();

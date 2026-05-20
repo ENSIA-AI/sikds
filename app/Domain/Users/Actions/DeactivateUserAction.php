@@ -38,6 +38,7 @@ final class DeactivateUserAction
         if ($wasActive) {
             $this->audit->record(
                 eventType: 'user.deactivated',
+                user: $deactivatedById,
                 resourceType: 'user',
                 resourceId: $user->id,
                 metadata: [
@@ -45,6 +46,8 @@ final class DeactivateUserAction
                     'target_user_name' => $user->full_name,
                     'target_email'     => $user->email,
                     'deactivated_by'   => $deactivatedById,
+                    'before'           => ['is_active' => true],
+                    'after'            => ['is_active' => false],
                 ],
             );
         }

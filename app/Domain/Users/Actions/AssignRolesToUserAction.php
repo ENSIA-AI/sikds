@@ -50,14 +50,18 @@ final class AssignRolesToUserAction
             foreach ($added as $roleId) {
                 $this->audit->record(
                     eventType: 'role.assigned',
+                    user: $assignedById,
                     resourceType: 'user',
                     resourceId: $user->id,
                     metadata: [
                         'target_user_id'   => $user->id,
                         'target_user_name' => $user->full_name,
+                        'target_email'     => $user->email,
                         'role_id'          => $roleId,
                         'role_name'        => $names[$roleId] ?? null,
                         'assigned_by'      => $assignedById,
+                        'before'           => ['role_ids' => $previousRoleIds],
+                        'after'            => ['role_ids' => $normalized],
                     ],
                 );
             }
@@ -65,14 +69,18 @@ final class AssignRolesToUserAction
             foreach ($removed as $roleId) {
                 $this->audit->record(
                     eventType: 'role.removed',
+                    user: $assignedById,
                     resourceType: 'user',
                     resourceId: $user->id,
                     metadata: [
                         'target_user_id'   => $user->id,
                         'target_user_name' => $user->full_name,
+                        'target_email'     => $user->email,
                         'role_id'          => $roleId,
                         'role_name'        => $names[$roleId] ?? null,
                         'removed_by'       => $assignedById,
+                        'before'           => ['role_ids' => $previousRoleIds],
+                        'after'            => ['role_ids' => $normalized],
                     ],
                 );
             }

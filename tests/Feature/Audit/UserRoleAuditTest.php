@@ -40,6 +40,9 @@ it('writes a role.created audit log when CreateRoleAction runs', function (): vo
 
     expect($log->resource_type)->toBe('role')
         ->and($log->result)->toBe('success')
+        ->and($log->metadata['event_code'] ?? null)->toBe('role.created')
+        ->and($log->metadata['actor_context']['id'] ?? null)->toBe($actor->id)
+        ->and($log->metadata['target_context']['role_id'] ?? null)->toBe($role->id)
         ->and($log->metadata['role_name'] ?? null)->toBe('Auditeur Test')
         ->and($log->metadata['permission_codes'] ?? [])->toContain('document.view.public');
 });
@@ -63,7 +66,9 @@ it('refuses to delete a role assigned to users and writes a failed audit log', f
         ->firstOrFail();
 
     expect($log->result)->toBe('failed')
-        ->and($log->metadata['reason'] ?? null)->toBe('role_in_use');
+        ->and($log->metadata['reason'] ?? null)->toBe('role_in_use')
+        ->and($log->metadata['failure_reason']['code'] ?? null)->toBe('role_in_use')
+        ->and($log->metadata['failure_reason']['message'] ?? null)->not->toBeEmpty();
 });
 
 it('refuses to delete a system role and writes a failed audit log', function (): void {
@@ -81,7 +86,8 @@ it('refuses to delete a system role and writes a failed audit log', function ():
         ->firstOrFail();
 
     expect($log->result)->toBe('failed')
-        ->and($log->metadata['reason'] ?? null)->toBe('system_role');
+        ->and($log->metadata['reason'] ?? null)->toBe('system_role')
+        ->and($log->metadata['failure_reason']['code'] ?? null)->toBe('system_role');
 });
 
 it('emits role.assigned and role.removed when AssignRolesToUserAction changes the set', function (): void {
@@ -109,6 +115,8 @@ it('emits role.assigned and role.removed when AssignRolesToUserAction changes th
         ->firstOrFail();
 
     expect($assigned->metadata['role_name'] ?? null)->toBe('Nouveau')
+        ->and($assigned->metadata['actor_context']['id'] ?? null)->toBe($actor->id)
+        ->and($assigned->metadata['target_context']['user_id'] ?? null)->toBe($target->id)
         ->and($removed->metadata['role_name'] ?? null)->toBe('Ancien');
 });
 
@@ -163,7 +171,9 @@ it('emits permission.assigned, permission.removed and permissions.changed via Sy
     expect($added->metadata['permission_code'] ?? null)->toBe('document.create')
         ->and($removed->metadata['permission_code'] ?? null)->toBe('audit.view')
         ->and($summary->metadata['added_permission_ids'] ?? [])->toContain($newPerm->id)
-        ->and($summary->metadata['removed_permission_ids'] ?? [])->toContain($existingPerm->id);
+        ->and($summary->metadata['removed_permission_ids'] ?? [])->toContain($existingPerm->id)
+        ->and($summary->metadata['changes']['permission_ids']['before'] ?? null)->toContain($existingPerm->id)
+        ->and($summary->metadata['changes']['permission_ids']['after'] ?? null)->toContain($newPerm->id);
 });
 
 it('AuditService.record fills user metadata from the authenticated user when none is passed', function (): void {
@@ -184,5 +194,8 @@ it('AuditService.record fills user metadata from the authenticated user when non
 
     expect($log->user_id)->toBe($user->id)
         ->and($log->user_email)->toBe($user->email)
-        ->and($log->metadata['source'] ?? null)->toBe('unit');
+        ->and($log->metadata['source'] ?? null)->toBe('unit')
+        ->and($log->metadata['event_code'] ?? null)->toBe('demo.event')
+        ->and($log->metadata['actor_context']['email'] ?? null)->toBe($user->email)
+        ->and($log->metadata['target_context']['user_id'] ?? null)->toBe($user->id);
 });

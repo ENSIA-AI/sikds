@@ -121,6 +121,16 @@ class DocumentApiCommandService
             $oldStatus = $document->status;
             $fileUpdated = isset($validated['file']) && $validated['file'] instanceof UploadedFile;
             $previousVersion = (int) $document->version_number;
+            $before = [
+                'title' => $document->title,
+                'description' => $document->description,
+                'issue_date' => optional($document->issue_date)->toDateString(),
+                'effective_date' => optional($document->effective_date)->toDateString(),
+                'expiration_date' => optional($document->expiration_date)->toDateString(),
+                'target_audience' => $document->target_audience,
+                'status' => $document->status,
+                'version_number' => (int) $document->version_number,
+            ];
 
             if ($fileUpdated) {
                 $this->purgeDocumentChunks($document->id);
@@ -176,11 +186,25 @@ class DocumentApiCommandService
                 $this->syncTags($document, $validated['tag_ids'] ?? [], $user, $request);
             }
 
+            $after = [
+                'title' => $document->title,
+                'description' => $document->description,
+                'issue_date' => optional($document->issue_date)->toDateString(),
+                'effective_date' => optional($document->effective_date)->toDateString(),
+                'expiration_date' => optional($document->expiration_date)->toDateString(),
+                'target_audience' => $document->target_audience,
+                'status' => $document->status,
+                'version_number' => (int) $document->version_number,
+            ];
+
             $this->audit($request, $user, 'document.updated', 'document', $document->id, [
+                'document_id' => $document->id,
                 'reference_number' => $document->reference_number,
                 'status_before' => $oldStatus,
                 'status_after' => $document->status,
                 'new_version' => $fileUpdated ? $document->version_number : null,
+                'before' => $before,
+                'after' => $after,
             ]);
 
             if ($document->status === 'active' && $fileUpdated) {
@@ -507,18 +531,14 @@ class DocumentApiCommandService
      */
     private function audit(Request $request, User $user, string $event, string $resourceType, int $resourceId, array $metadata = []): void
     {
-        AuditLog::query()->create([
-            'event_type' => $event,
-            'user_id' => $user->id,
-            'user_email' => $user->email,
-            'resource_type' => $resourceType,
-            'resource_id' => $resourceId,
-            'metadata' => $metadata,
-            'result' => 'success',
-            'ip_address' => $request->ip(),
-            'user_agent' => $request->userAgent(),
-            'created_at' => now(),
-        ]);
+        $this->auditService->record(
+            eventType: $event,
+            user: $user,
+            resourceType: $resourceType,
+            resourceId: $resourceId,
+            metadata: $metadata,
+            request: $request,
+        );
     }
 
     private function resolvePreviousStatusFromAudit(int $documentId): ?string

@@ -38,6 +38,8 @@ final class ActivateUserAction
                     'target_user_id'   => $fresh->id,
                     'target_user_name' => $fresh->full_name,
                     'target_email'     => $fresh->email,
+                    'before'           => ['is_active' => false],
+                    'after'            => ['is_active' => true],
                 ],
             );
         }

@@ -94,6 +94,12 @@ class TagsController
                 'tag_name' => $tag->name,
                 'category' => $tag->category,
                 'color'    => $tag->color,
+                'before'   => [],
+                'after'    => [
+                    'name' => $tag->name,
+                    'category' => $tag->category,
+                    'color' => $tag->color,
+                ],
             ],
             request: $request,
         );
@@ -153,6 +159,7 @@ class TagsController
                 metadata: [
                     'tag_name'    => $tag->name,
                     'reason'      => 'tag_in_use',
+                    'message'     => __('Impossible de supprimer ce tag : il est utilisé par :count document(s).', ['count' => $usageCount]),
                     'usage_count' => $usageCount,
                 ],
                 request: $request,
@@ -177,7 +184,11 @@ class TagsController
             eventType: 'tag.deleted',
             resourceType: 'tag',
             resourceId: $tagId,
-            metadata: $snapshot,
+            metadata: [
+                ...$snapshot,
+                'before' => $snapshot,
+                'after' => [],
+            ],
             request: $request,
         );
 

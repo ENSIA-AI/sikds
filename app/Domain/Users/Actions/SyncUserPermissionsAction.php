@@ -114,14 +114,18 @@ final class SyncUserPermissionsAction
             foreach ($rolesAdded as $roleId) {
                 $this->audit->record(
                     eventType: 'role.assigned',
+                    user: $assignedById,
                     resourceType: 'user',
                     resourceId: $user->id,
                     metadata: [
                         'target_user_id'   => $user->id,
                         'target_user_name' => $user->full_name,
+                        'target_email'     => $user->email,
                         'role_id'          => $roleId,
                         'role_name'        => $roleNames[$roleId] ?? null,
                         'assigned_by'      => $assignedById,
+                        'before'           => ['role_ids' => $previousRoleIds],
+                        'after'            => ['role_ids' => $normalizedRoleIds],
                     ],
                 );
             }
@@ -129,14 +133,18 @@ final class SyncUserPermissionsAction
             foreach ($rolesRemoved as $roleId) {
                 $this->audit->record(
                     eventType: 'role.removed',
+                    user: $assignedById,
                     resourceType: 'user',
                     resourceId: $user->id,
                     metadata: [
                         'target_user_id'   => $user->id,
                         'target_user_name' => $user->full_name,
+                        'target_email'     => $user->email,
                         'role_id'          => $roleId,
                         'role_name'        => $roleNames[$roleId] ?? null,
                         'removed_by'       => $assignedById,
+                        'before'           => ['role_ids' => $previousRoleIds],
+                        'after'            => ['role_ids' => $normalizedRoleIds],
                     ],
                 );
             }
@@ -152,15 +160,19 @@ final class SyncUserPermissionsAction
                 $perm = $permissionMeta->get($permId);
                 $this->audit->record(
                     eventType: 'permission.assigned',
+                    user: $assignedById,
                     resourceType: 'user',
                     resourceId: $user->id,
                     metadata: [
                         'target_user_id'   => $user->id,
                         'target_user_name' => $user->full_name,
+                        'target_email'     => $user->email,
                         'permission_id'    => $permId,
                         'permission_code'  => $perm?->code,
                         'permission_name'  => $perm?->name,
                         'assigned_by'      => $assignedById,
+                        'before'           => ['permission_ids' => $previousPermissionIds],
+                        'after'            => ['permission_ids' => $normalizedPermissionIds],
                     ],
                 );
             }
@@ -169,29 +181,43 @@ final class SyncUserPermissionsAction
                 $perm = $permissionMeta->get($permId);
                 $this->audit->record(
                     eventType: 'permission.removed',
+                    user: $assignedById,
                     resourceType: 'user',
                     resourceId: $user->id,
                     metadata: [
                         'target_user_id'   => $user->id,
                         'target_user_name' => $user->full_name,
+                        'target_email'     => $user->email,
                         'permission_id'    => $permId,
                         'permission_code'  => $perm?->code,
                         'permission_name'  => $perm?->name,
                         'removed_by'       => $assignedById,
+                        'before'           => ['permission_ids' => $previousPermissionIds],
+                        'after'            => ['permission_ids' => $normalizedPermissionIds],
                     ],
                 );
             }
 
             $this->audit->record(
                 eventType: 'permissions.changed',
+                user: $assignedById,
                 resourceType: 'user',
                 resourceId: $user->id,
                 metadata: [
                     'target_user_id'    => $user->id,
                     'target_user_name'  => $user->full_name,
+                    'target_email'      => $user->email,
                     'added_permission_ids'   => $permsAdded,
                     'removed_permission_ids' => $permsRemoved,
                     'assigned_by'       => $assignedById,
+                    'before'            => [
+                        'role_ids' => $previousRoleIds,
+                        'permission_ids' => $previousPermissionIds,
+                    ],
+                    'after'             => [
+                        'role_ids' => $normalizedRoleIds,
+                        'permission_ids' => $normalizedPermissionIds,
+                    ],
                 ],
             );
         }

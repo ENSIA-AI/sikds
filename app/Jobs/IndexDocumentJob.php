@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Jobs;
 
-use App\Domain\Audit\Models\AuditLog;
+use App\Domain\Audit\Services\AuditService;
 use App\Domain\Documents\Models\Document;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -52,21 +52,16 @@ class IndexDocumentJob implements ShouldQueue
             $document->indexing_status = 'processing';
             $document->save();
 
-            AuditLog::create([
-                'event_type' => 'DOCUMENT_INDEXING_STARTED',
-                'user_id' => null,
-                'user_email' => null,
-                'resource_type' => 'document',
-                'resource_id' => $document->id,
-                'metadata' => [
+            app(AuditService::class)->record(
+                eventType: 'document.indexing.started',
+                resourceType: 'document',
+                resourceId: $document->id,
+                metadata: [
                     'document_id' => $document->id,
                     'reference_number' => $document->reference_number,
+                    'document_title' => $document->title,
                 ],
-                'result' => 'success',
-                'ip_address' => null,
-                'user_agent' => null,
-                'created_at' => now(),
-            ]);
+            );
 
             ExtractPdfTextJob::dispatch($document->id)->onQueue('indexing');
         } catch (\Throwable $e) {

@@ -74,10 +74,12 @@ final class UpdateRoleAction
                 'before' => [
                     'name'        => $beforeName,
                     'description' => $beforeDescription,
+                    'permission_ids' => $previousPermissionIds,
                 ],
                 'after' => [
                     'name'        => $fresh->name,
                     'description' => $fresh->description,
+                    'permission_ids' => $normalizedPermissionIds,
                 ],
                 'permission_ids'       => $normalizedPermissionIds,
                 'added_permission_ids' => $permsAdded,
@@ -102,6 +104,12 @@ final class UpdateRoleAction
                     'removed_permission_ids' => $permsRemoved,
                     'added_permission_codes' => array_values(array_filter(array_map(fn ($id) => $codes[$id] ?? null, $permsAdded))),
                     'removed_permission_codes' => array_values(array_filter(array_map(fn ($id) => $codes[$id] ?? null, $permsRemoved))),
+                    'before' => [
+                        'permission_ids' => $previousPermissionIds,
+                    ],
+                    'after' => [
+                        'permission_ids' => $normalizedPermissionIds,
+                    ],
                 ],
             );
         }
