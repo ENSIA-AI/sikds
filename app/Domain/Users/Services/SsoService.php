@@ -114,7 +114,6 @@ class SsoService
                     'Your account is deactivated. Contact an administrator.'
                 );
             }
-            }
 
             $this->assignRoleFromSso($user, $normalized['sso_roles']);
             Auth::guard('web')->login($user);
