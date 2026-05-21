@@ -9,6 +9,7 @@ use App\Domain\Users\Exceptions\SsoAuthenticationException;
 use App\Domain\Users\Models\User;
 use App\Models\Role;
 use Illuminate\Http\Client\Response;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -18,7 +19,7 @@ use Throwable;
 
 class SsoService
 {
-    public function redirectToProvider(Request $request): \Illuminate\Http\RedirectResponse
+    public function redirectToProvider(Request $request): RedirectResponse
     {
         $state = Str::random(40);
         $request->session()->put('sso_state', $state);
@@ -35,7 +36,7 @@ class SsoService
         }
         $query = http_build_query($queryParams);
 
-        return redirect($this->buildUrl(config('sso.authorize_path')) . '?' . $query);
+        return redirect($this->buildUrl(config('sso.authorize_path')).'?'.$query);
     }
 
     public function handleCallback(Request $request): User
@@ -44,13 +45,12 @@ class SsoService
         $incomingState = (string) $request->input('state', '');
         $code = (string) $request->input('code', '');
 
-        if ($state === '' || !hash_equals($state, $incomingState) || $code === '') {
+        if ($state === '' || ! hash_equals($state, $incomingState) || $code === '') {
             throw SsoAuthenticationException::forReason(
                 SsoFailureReason::InvalidCallback,
                 'Invalid SSO callback state or authorization code.'
             );
         }
-
         $tokenResponse = $this->exchangeAuthorizationCode($code);
         $accessToken = (string) data_get($tokenResponse->json(), 'access_token', '');
 
@@ -61,7 +61,7 @@ class SsoService
         $request->session()->put('sso_access_token', $accessToken);
 
         $profileResponse = $this->fetchUserProfile($accessToken);
-        if (!$profileResponse->successful()) {
+        if (! $profileResponse->successful()) {
             throw new SsoAuthenticationException('Failed to fetch SSO user profile.');
         }
 
@@ -77,9 +77,9 @@ class SsoService
                 })
                 ->first();
 
-            if (!$user) {
+            if (! $user) {
                 $institutionId = DB::table('institutions')->where('code', 'MESRS')->value('id');
-                if (!$institutionId) {
+                if (! $institutionId) {
                     throw new SsoAuthenticationException('No default institution found for auto-provisioning.');
                 }
 
@@ -108,11 +108,12 @@ class SsoService
                 ])->save();
             }
 
-            if (!$user->is_active) {
+            if (! $user->is_active) {
                 throw SsoAuthenticationException::forReason(
                     SsoFailureReason::DeactivatedAccount,
                     'Your account is deactivated. Contact an administrator.'
                 );
+            }
             }
 
             $this->assignRoleFromSso($user, $normalized['sso_roles']);
@@ -167,7 +168,7 @@ class SsoService
             }
         }
 
-        if (!$response->successful()) {
+        if (! $response->successful()) {
             throw new SsoAuthenticationException('SSO token exchange failed.');
         }
 
@@ -194,11 +195,11 @@ class SsoService
 
         $email = trim((string) data_get($profile, 'email', ''));
         if ($email === '' && $nomUtilisateur !== '') {
-            $email = Str::lower($nomUtilisateur) . '@mesrs.dz';
+            $email = Str::lower($nomUtilisateur).'@mesrs.dz';
         }
 
         $fullName = trim((string) (
-            data_get($profile, 'individu.prenom_latin', '') . ' ' . data_get($profile, 'individu.nom_latin', '')
+            data_get($profile, 'individu.prenom_latin', '').' '.data_get($profile, 'individu.nom_latin', '')
         ));
 
         if (trim($fullName) === '') {
@@ -255,24 +256,25 @@ class SsoService
     private function buildUrl(?string $path): string
     {
         $server = rtrim((string) config('sso.server'), '/');
-        $path = '/' . ltrim((string) $path, '/');
+        $path = '/'.ltrim((string) $path, '/');
 
-        return $server . $path;
+        return $server.$path;
     }
 
     private function assertDomainIsAllowed(string $email): void
     {
         $allowedDomains = config('sso.allowed_domains', []);
-        if (!is_array($allowedDomains) || $allowedDomains === []) {
+        if (! is_array($allowedDomains) || $allowedDomains === []) {
             return;
         }
 
         $emailDomain = strtolower((string) Str::after($email, '@'));
-        if ($emailDomain === '' || !in_array($emailDomain, $allowedDomains, true)) {
+        if ($emailDomain === '' || ! in_array($emailDomain, $allowedDomains, true)) {
             throw SsoAuthenticationException::forReason(
                 SsoFailureReason::UnauthorizedEmailDomain,
                 'Your email domain is not authorized for SSO access.'
             );
+        }
         }
     }
 
