@@ -274,7 +274,7 @@ class SsoService
                 'Your email domain is not authorized for SSO access.'
             );
         }
-        
+
     }
 
     /**
