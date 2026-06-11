@@ -19,8 +19,16 @@ return [
 
     // Map SSO role code (uppercased) → system role name. Logins whose SSO profile
     // contains none of these role codes are rejected.
+    //
+    // The MESRS SSO (accounts.mesrs.dz) returns roles under
+    // `individu.affectation[].role.libelle_long_fr` (see SSO_ROLES_PATH), and the
+    // SIKDS application role is labelled "Secure Documentation Information and
+    // Management System [manager|user]" rather than SKIDS_MANAGER/SKIDS_USER.
+    // Keys are matched case-insensitively.
     'authorized_roles' => [
-        'SKIDS_USER' => 'User',
         'SKIDS_MANAGER' => 'Manager',
+        'SKIDS_USER' => 'User',
+        'Secure Documentation Information and Management System [manager]' => 'Manager',
+        'Secure Documentation Information and Management System [user]' => 'User',
     ],
 ];
