@@ -33,5 +33,5 @@ WORKDIR /var/www/html
 
 ENV COMPOSER_ALLOW_SUPERUSER=1
 
-# Avoid "dubious ownership" when using bind mounts in dev containers.
 RUN git config --system --add safe.directory /var/www/html
+

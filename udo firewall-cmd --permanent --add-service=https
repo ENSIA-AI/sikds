@@ -1,0 +1,21 @@
+[0;1;32m●[0m firewalld.service - firewalld - dynamic firewall daemon
+     Loaded: loaded (]8;;file://chaima/usr/lib/systemd/system/firewalld.service/usr/lib/systemd/system/firewalld.service]8;;; [0;1;32menabled[0m; preset: [0;1;32menabled[0m)
+     Active: [0;1;32mactive (running)[0m since Thu 2026-05-21 14:34:25 CET; 1h 26min ago
+       Docs: ]8;;man:firewalld(1)man:firewalld(1)]8;;
+   Main PID: 728 (firewalld)
+      Tasks: 2 (limit: 48370)
+     Memory: 7.3M (peak: 49.4M)
+        CPU: 12.384s
+     CGroup: /system.slice/firewalld.service
+             └─[0;38;5;245m728 /usr/bin/python3 -s /usr/sbin/firewalld --nofork --nopid[0m
+
+mai 21 14:34:27 chaima firewalld[728]: [0;1;38;5;185m[0;1;39m[0;1;38;5;185mWARNING: COMMAND_FAILED: '/usr/sbin/ip6tables -w10 -t filter -F DOCKER-CT' failed: ip6tables: No chain/target/match by that name.[0m
+mai 21 14:34:27 chaima firewalld[728]: [0;1;38;5;185m[0;1;39m[0;1;38;5;185mWARNING: COMMAND_FAILED: '/usr/sbin/ip6tables -w10 -t filter -X DOCKER-CT' failed: ip6tables: No chain/target/match by that name.[0m
+mai 21 14:34:27 chaima firewalld[728]: [0;1;38;5;185m[0;1;39m[0;1;38;5;185mWARNING: COMMAND_FAILED: '/usr/sbin/ip6tables -w10 -t filter -F DOCKER-INTERNAL' failed: ip6tables: No chain/target/match by that name.[0m
+mai 21 14:34:27 chaima firewalld[728]: [0;1;38;5;185m[0;1;39m[0;1;38;5;185mWARNING: COMMAND_FAILED: '/usr/sbin/ip6tables -w10 -t filter -X DOCKER-INTERNAL' failed: ip6tables: No chain/target/match by that name.[0m
+mai 21 14:34:27 chaima firewalld[728]: [0;1;38;5;185m[0;1;39m[0;1;38;5;185mWARNING: COMMAND_FAILED: '/usr/sbin/ip6tables -w10 -t filter -F DOCKER-ISOLATION-STAGE-1' failed: ip6tables: No chain/target/match by that name.[0m
+mai 21 14:34:27 chaima firewalld[728]: [0;1;38;5;185m[0;1;39m[0;1;38;5;185mWARNING: COMMAND_FAILED: '/usr/sbin/ip6tables -w10 -t filter -X DOCKER-ISOLATION-STAGE-1' failed: ip6tables: No chain/target/match by that name.[0m
+mai 21 14:34:27 chaima firewalld[728]: [0;1;38;5;185m[0;1;39m[0;1;38;5;185mWARNING: COMMAND_FAILED: '/usr/sbin/ip6tables -w10 -t filter -F DOCKER-ISOLATION-STAGE-2' failed: ip6tables: No chain/target/match by that name.[0m
+mai 21 14:34:27 chaima firewalld[728]: [0;1;38;5;185m[0;1;39m[0;1;38;5;185mWARNING: COMMAND_FAILED: '/usr/sbin/ip6tables -w10 -t filter -X DOCKER-ISOLATION-STAGE-2' failed: ip6tables: No chain/target/match by that name.[0m
+mai 21 14:34:27 chaima firewalld[728]: [0;1;38;5;185m[0;1;39m[0;1;38;5;185mWARNING: COMMAND_FAILED: '/usr/sbin/ip6tables -w10 -t filter -F DOCKER-ISOLATION' failed: ip6tables: No chain/target/match by that name.[0m
+mai 21 14:34:27 chaima firewalld[728]: [0;1;38;5;185m[0;1;39m[0;1;38;5;185mWARNING: COMMAND_FAILED: '/usr/sbin/ip6tables -w10 -t filter -X DOCKER-ISOLATION' failed: ip6tables: No chain/target/match by that name.[0m
