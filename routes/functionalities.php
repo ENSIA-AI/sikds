@@ -76,6 +76,7 @@ Route::middleware(['auth'])
         // ── Document Download ──────────────────────────────────────────────────
         // Permission: none beyond auth (download gated by document visibility in controller)
         Route::get('/documents/{id}/download', [DownloadController::class, 'download'])
+            ->middleware('throttle:download')
             ->name('documents.download');
 
         // ── Document Forward ───────────────────────────────────────────────────
@@ -100,7 +101,9 @@ Route::middleware(['auth'])
         // Permission: rag.query
         Route::middleware('can:rag.query')->group(function () {
             Route::get('/rag', [RagController::class, 'index'])->name('rag.index');
-            Route::post('/rag/query', [RagController::class, 'query'])->name('rag.query');
+            Route::post('/rag/query', [RagController::class, 'query'])
+                ->middleware('throttle:rag')
+                ->name('rag.query');
         });
 
         // ── Indexing monitor ───────────────────────────────────────────────────
@@ -132,11 +135,13 @@ Route::middleware(['auth'])
             ->name('notifications.read-all');
 
         // ── Settings ───────────────────────────────────────────────────────────
-        // Permission: audit.view (settings are admin-only)
-        Route::middleware('can:audit.view')->group(function () {
-            Route::get('/settings', [SettingsController::class, 'index'])->name('settings.index');
-            Route::post('/settings/update', [SettingsController::class, 'update'])->name('settings.update');
-        });
+        // Permissions: settings.view (read) / settings.manage (write). Kept separate
+        // from audit.view so granting an auditor read access to logs never leaks
+        // write access to system settings. Super Administrateur passes via Gate::before.
+        Route::get('/settings', [SettingsController::class, 'index'])
+            ->middleware('can:settings.view')->name('settings.index');
+        Route::post('/settings/update', [SettingsController::class, 'update'])
+            ->middleware('can:settings.manage')->name('settings.update');
 
         // ── Watermark traceability ─────────────────────────────────────────────
         // Permission: audit.view
@@ -208,9 +213,10 @@ Route::middleware(['auth'])
             // Permission: institution.view
             Route::get('/', [InstitutionController::class, 'index'])->middleware('can:institution.view')->name('index');
 
-            // Permission: institution.manage (create/update/delete checked in controller)
-            Route::post('/', [InstitutionController::class, 'store'])->name('store');
-            Route::match(['put', 'post'], '/{institution}', [InstitutionController::class, 'update'])->name('update');
+            // Permissions: institution.create / institution.edit / institution.delete
+            // (also re-asserted in the controller — see InstitutionController).
+            Route::post('/', [InstitutionController::class, 'store'])->middleware('can:institution.create')->name('store');
+            Route::match(['put', 'post'], '/{institution}', [InstitutionController::class, 'update'])->middleware('can:institution.edit')->name('update');
             Route::delete('/{institution}', [InstitutionController::class, 'destroy'])->middleware('can:institution.delete')->name('destroy');
         });
 

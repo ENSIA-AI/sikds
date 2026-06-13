@@ -31,25 +31,44 @@ class SystemSettingsService
             'language' => [
                 'default' => 'fr',
             ],
+            // Admin-tunable RAG knobs. config/rag.php provides the defaults (single
+            // source of truth); any value saved here overrides it at query time.
+            // Infra/secrets (provider, url, api_key) and the authorization toggle are
+            // deliberately NOT exposed here.
+            'rag' => [
+                'llm_model' => (string) config('rag.llm.model', 'llama-3.3-70b-versatile'),
+                'min_confidence' => (float) config('rag.retrieval.min_confidence', 0.10),
+                'candidate_pool' => (int) config('rag.retrieval.candidate_pool', 20),
+                'reranking_enabled' => (bool) config('rag.reranking.enabled', false),
+                'top_n' => (int) config('rag.reranking.top_n', 6),
+                'hybrid_enabled' => (bool) config('rag.hybrid.enabled', true),
+            ],
         ];
     }
 
     public function all(): array
     {
-        return Cache::rememberForever(self::CACHE_KEY, function (): array {
-            $defaults = $this->defaults();
-            $rows = SystemSetting::query()->get(['key', 'value']);
+        // Cache ONLY the persisted overrides (a small dotted-key => value map), then
+        // merge them onto a freshly-built defaults() on every call. This guarantees
+        // that adding a new default section never crashes against a stale cache that
+        // predates it — the defaults are always current, only the DB layer is cached.
+        $overrides = Cache::rememberForever(self::CACHE_KEY, function (): array {
+            return SystemSetting::query()
+                ->get(['key', 'value'])
+                ->mapWithKeys(static function (SystemSetting $row): array {
+                    $value = $row->value;
 
-            foreach ($rows as $row) {
-                $value = $row->value;
-                if (! is_array($value)) {
-                    continue;
-                }
-                Arr::set($defaults, $row->key, $value['value'] ?? null);
-            }
-
-            return $defaults;
+                    return [$row->key => is_array($value) ? ($value['value'] ?? null) : null];
+                })
+                ->all();
         });
+
+        $merged = $this->defaults();
+        foreach ($overrides as $key => $value) {
+            Arr::set($merged, $key, $value);
+        }
+
+        return $merged;
     }
 
     public function get(string $key, mixed $fallback = null): mixed

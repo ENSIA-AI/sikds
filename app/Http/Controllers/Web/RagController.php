@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Web;
 
+use App\Domain\Audit\Services\AuditService;
 use App\Http\Controllers\Controller;
 use App\Services\Rag\RagQueryService;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
@@ -22,7 +24,7 @@ class RagController extends Controller
         return view('rag.index');
     }
 
-    public function query(Request $request, RagQueryService $rag): JsonResponse
+    public function query(Request $request, RagQueryService $rag, AuditService $audit): JsonResponse
     {
         /** @var \App\Domain\Users\Models\User $user */
         $user = Auth::user();
@@ -31,10 +33,31 @@ class RagController extends Controller
             'question' => ['required', 'string', 'min:3', 'max:500'],
         ]);
 
-        try {
-            $result = $rag->query((string) $validated['question'], (int) $user->id);
+        $question = (string) $validated['question'];
 
-            return response()->json($result);
+        try {
+            $result = $rag->query($question, (int) $user->id);
+
+            $meta = $result['meta'] ?? [];
+            $audit->record(
+                eventType: 'rag.query',
+                result: ($result['refused'] ?? false) ? 'warning' : 'success',
+                user: $user,
+                resourceType: 'rag',
+                metadata: [
+                    'question' => $question,
+                    'refused' => (bool) ($result['refused'] ?? false),
+                    'reason' => $meta['reason'] ?? null,
+                    'retrieved_chunk_ids' => $meta['retrieved_chunk_ids'] ?? [],
+                    'citation_count' => count($result['citations'] ?? []),
+                    'prompt_tokens' => (int) ($meta['prompt_tokens'] ?? 0),
+                    'completion_tokens' => (int) ($meta['completion_tokens'] ?? 0),
+                ],
+                request: $request,
+            );
+
+            // `meta` is audit-only — never expose retrieval internals to the client.
+            return response()->json(Arr::except($result, 'meta'));
         } catch (ConnectionException $e) {
             report($e);
 

@@ -39,7 +39,14 @@ beforeEach(function () {
 
     $this->adminRole->permissions()->attach(collect($permissions)->pluck('id'));
 
+    // Deterministic, non-colliding identity. The list page renders the acting user
+    // too, so a random faker name/username/email here can coincidentally match a
+    // search term (e.g. "John") or be a substring of another row, making the
+    // assertSee/assertDontSee assertions below flaky in full-suite runs.
     $this->authUser = User::factory()->create([
+        'full_name' => 'Acting Administrator',
+        'username' => 'acting.administrator',
+        'email' => 'acting.administrator@sikds.test',
         'institution_id' => $this->institution->id,
         'is_active' => true,
     ]);
@@ -121,11 +128,13 @@ test('it can filter users by role', function () {
     actingAs($this->authUser);
 
     $adminUser = User::factory()->create([
+        'full_name' => 'Roxanne Adminsson',
         'institution_id' => $this->institution->id,
     ]);
     $adminUser->roles()->attach($this->adminRole->id);
 
     $regularUser = User::factory()->create([
+        'full_name' => 'Quentin Regularsson',
         'institution_id' => $this->institution->id,
     ]);
     $regularUser->roles()->attach($this->userRole->id);

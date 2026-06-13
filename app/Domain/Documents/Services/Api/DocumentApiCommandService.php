@@ -434,16 +434,22 @@ class DocumentApiCommandService
             }
         }
 
-        $directUserRows = array_map(
-            static fn (int $userId): array => [
-                'document_id' => $document->id,
-                'user_id' => $userId,
-                'created_at' => now(),
-            ],
-            array_values(array_unique(array_map('intval', $meta['target_user_ids'] ?? [])))
-        );
-        if ($directUserRows !== []) {
-            DB::table('document_user_targets')->insert($directUserRows);
+        // Direct user targets are only an audience mechanism when the audience is
+        // explicitly `specific_users`. Inserting them for any other audience would
+        // over-grant access via Document::scopeVisibleTo(). Forward-based grants are
+        // written separately by ForwardDocumentToUserAction (with `assigned_by` set).
+        if ($audience === 'specific_users') {
+            $directUserRows = array_map(
+                static fn (int $userId): array => [
+                    'document_id' => $document->id,
+                    'user_id' => $userId,
+                    'created_at' => now(),
+                ],
+                array_values(array_unique(array_map('intval', $meta['target_user_ids'] ?? [])))
+            );
+            if ($directUserRows !== []) {
+                DB::table('document_user_targets')->insert($directUserRows);
+            }
         }
     }
 

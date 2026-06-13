@@ -52,6 +52,9 @@ jobs:
       - name: Install PHP dependencies
         run: composer install --no-interaction --prefer-dist --optimize-autoloader
 
+      - name: Composer security audit
+        run: composer audit --no-interaction
+
       - name: Copy environment
         run: cp .env.example .env
 
@@ -60,6 +63,9 @@ jobs:
 
       - name: Install JS dependencies
         run: npm ci
+
+      - name: NPM security audit (high+)
+        run: npm audit --audit-level=high
 
       - name: Run JS tests
         run: npm test -- --runInBand

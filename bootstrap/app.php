@@ -11,6 +11,7 @@ use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
+use Illuminate\Session\TokenMismatchException;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
@@ -22,12 +23,10 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
-        $middleware->validateCsrfTokens(except: [
-            'api/*',
-            'users',
-            'users/*',
-        ]);
-
+        // All routes are session-authenticated and served through the `web`
+        // middleware group (there is no stateless `api:` route file / token guard).
+        // CSRF protection therefore stays on for every route; the frontend sends
+        // the token via the `<meta name="csrf-token">` → `X-CSRF-TOKEN` header.
         $middleware->alias([
             // Spatie middleware (see routes/functionalities.php docblock for `can:` vs `permission:`).
             'role' => \Spatie\Permission\Middleware\RoleMiddleware::class,
@@ -60,6 +59,17 @@ return Application::configure(basePath: dirname(__DIR__))
                 'message' => __('Les données fournies sont invalides.'),
                 'errors' => $e->errors(),
             ], Response::HTTP_UNPROCESSABLE_ENTITY);
+        });
+
+        $exceptions->render(function (TokenMismatchException $e, Request $request) use ($isApiRequest) {
+            if (! $isApiRequest($request)) {
+                return null;
+            }
+
+            // 419 is Laravel's CSRF status (no Symfony Response constant exists for it).
+            return response()->json([
+                'message' => __('Votre session a expiré. Veuillez actualiser la page et réessayer.'),
+            ], 419);
         });
 
         $exceptions->render(function (AuthenticationException $e, Request $request) use ($isApiRequest) {
