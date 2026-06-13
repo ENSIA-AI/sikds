@@ -278,19 +278,14 @@ class SsoService
     }
 
     /**
-     * Reject SSO logins whose profile does not carry one of the SSO role codes
-     * configured in `sso.authorized_roles`.
+     * Reject SSO logins whose profile carries no role label for this application
+     * (i.e. none of the labels contains the configured `sso.app_role_marker`).
      *
-     * @param  array<int, string>  $roleCodes  uppercase role codes from the SSO profile
+     * @param  array<int, string>  $roleCodes  uppercase role labels from the SSO profile
      */
     private function assertHasAuthorizedRole(array $roleCodes): void
     {
-        $authorized = array_map(
-            static fn(string $code): string => Str::upper($code),
-            array_keys((array) config('sso.authorized_roles', []))
-        );
-
-        if (array_intersect($roleCodes, $authorized) === []) {
+        if ($this->resolveSystemRoleFromSso($roleCodes) === null) {
             throw SsoAuthenticationException::forReason(
                 SsoFailureReason::UnauthorizedSsoRole,
                 'Your SSO account is not authorized to access this application.'
@@ -299,11 +294,11 @@ class SsoService
     }
 
     /**
-     * Assign a system role on first login based on the SSO role code. Users who
+     * Assign a system role on first login based on the SSO role label. Users who
      * already have a role (e.g. the system admin seeded directly into the DB)
      * keep their existing role.
      *
-     * @param  array<int, string>  $roleCodes  uppercase role codes from the SSO profile
+     * @param  array<int, string>  $roleCodes  uppercase role labels from the SSO profile
      */
     private function assignRoleFromSso(User $user, array $roleCodes): void
     {
@@ -327,27 +322,64 @@ class SsoService
     }
 
     /**
-     * Map SSO role codes to a system role name. SKIDS_MANAGER outranks SKIDS_USER
-     * when both are present.
+     * Resolve the system role name for this application from the SSO role labels.
      *
-     * @param  array<int, string>  $roleCodes
+     * A label grants access when it contains `sso.app_role_marker`. Among the
+     * matching labels, bracketed qualifiers select the system role in priority
+     * order: admin qualifiers win over manager qualifiers; a label with neither
+     * maps to the user system role. Returns null when no label belongs to this
+     * application.
+     *
+     * @param  array<int, string>  $roleCodes  uppercase role labels from the SSO profile
      */
     private function resolveSystemRoleFromSso(array $roleCodes): ?string
     {
-        $map = (array) config('sso.authorized_roles', []);
+        $marker = Str::upper(trim((string) config('sso.app_role_marker', '')));
+        if ($marker === '') {
+            return null;
+        }
 
-        foreach (['SKIDS_MANAGER', 'SKIDS_USER'] as $priority) {
-            if (in_array($priority, $roleCodes, true) && isset($map[$priority])) {
-                return (string) $map[$priority];
+        $appLabels = array_filter(
+            $roleCodes,
+            static fn (string $label): bool => str_contains($label, $marker)
+        );
+
+        if ($appLabels === []) {
+            return null;
+        }
+
+        if ($this->labelsMatchQualifier($appLabels, (array) config('sso.admin_role_qualifiers', []))) {
+            return (string) config('sso.admin_system_role', 'Super Administrateur');
+        }
+
+        if ($this->labelsMatchQualifier($appLabels, (array) config('sso.manager_role_qualifiers', []))) {
+            return (string) config('sso.manager_system_role', 'Manager');
+        }
+
+        return (string) config('sso.user_system_role', 'User');
+    }
+
+    /**
+     * Whether any of the given (uppercase) labels contains any of the configured
+     * qualifiers.
+     *
+     * @param  array<int, string>  $labels      uppercase role labels
+     * @param  array<int, string>  $qualifiers  qualifiers to match (any case)
+     */
+    private function labelsMatchQualifier(array $labels, array $qualifiers): bool
+    {
+        foreach ($qualifiers as $qualifier) {
+            $needle = Str::upper(trim((string) $qualifier));
+            if ($needle === '') {
+                continue;
+            }
+            foreach ($labels as $label) {
+                if (str_contains($label, $needle)) {
+                    return true;
+                }
             }
         }
 
-        foreach ($map as $ssoCode => $systemName) {
-            if (in_array(Str::upper((string) $ssoCode), $roleCodes, true)) {
-                return (string) $systemName;
-            }
-        }
-
-        return null;
+        return false;
     }
 }
