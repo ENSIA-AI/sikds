@@ -29,6 +29,7 @@ class AppServiceProvider extends ServiceProvider
             URL::forceScheme('https');
         }
 
+      $this->configureRateLimiters();
         Queue::failing(function (JobFailed $event): void {
             $payload = $event->job->payload();
 
@@ -77,6 +78,6 @@ class AppServiceProvider extends ServiceProvider
             ];
         });
 
-        RateLimiter::for('sso', fn (Request $request) => Limit::perMinute(30)->by((string) $request->ip()));
+      RateLimiter::for('sso', fn (Request $request) => Limit::perMinute(30)->by((string) $request->ip()));
     }
 }

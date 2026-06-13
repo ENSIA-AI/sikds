@@ -23,7 +23,7 @@ return [
     // A login is authorized if any of its SSO role labels contains this marker
     // (case-insensitive). This is the application's name as registered in the
     // ministry SSO, NOT the local "SIKDS" spelling.
-    'app_role_marker' => env('SSO_APP_ROLE_MARKER', 'secure documentation information and management system'),
+    'app_role_marker' => env('SSO_APP_ROLE_MARKER', 'Secure Documentation Information and Management System'),
 
     // Within an authorized label, bracketed qualifiers select the system role,
     // evaluated in priority order: admin first, then manager, otherwise user.
