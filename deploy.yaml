@@ -9,7 +9,7 @@ config:
 hosts:
   production:
     remote_user: root
-    hostname: '10.10.10.33'
+    hostname: '192.168.1.100'
     deploy_path: '/var/www/docs'
     composer_options: '--verbose --prefer-dist --no-progress --no-interaction --optimize-autoloader'
     shared_files:

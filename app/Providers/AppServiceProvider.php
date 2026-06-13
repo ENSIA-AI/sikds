@@ -16,7 +16,6 @@ use Illuminate\Support\Str;
 use Laravel\Horizon\Events\LongWaitDetected;
 use Illuminate\Support\Facades\URL;
 
-
 class AppServiceProvider extends ServiceProvider
 {
     public function register(): void
@@ -29,8 +28,6 @@ class AppServiceProvider extends ServiceProvider
       if (app()->environment('production')) {
             URL::forceScheme('https');
         }
-
-	    $this->configureRateLimiters();
 
         Queue::failing(function (JobFailed $event): void {
             $payload = $event->job->payload();

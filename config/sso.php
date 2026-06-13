@@ -14,13 +14,31 @@ return [
         explode(',', (string) env('SSO_ALLOWED_DOMAINS', ''))
     ))),
 
-    // Dot-notation path inside the SSO userinfo response that contains the user's role list.
-    'roles_path' => env('SSO_ROLES_PATH', 'roles'),
+    // Dot-notation path (wildcards allowed) into the SSO userinfo response that
+    // yields this user's role labels. The ministry SSO exposes grants under each
+    // `affectation`, e.g. individu.affectation[].role.libelle_long_fr =
+    // "Secure Documentation Information and Management System [manager]".
+    'roles_path' => env('SSO_ROLES_PATH', 'individu.affectation.*.role.libelle_long_fr'),
 
-    // Map SSO role code (uppercased) → system role name. Logins whose SSO profile
-    // contains none of these role codes are rejected.
-    'authorized_roles' => [
-        'SKIDS_USER' => 'User',
-        'SKIDS_MANAGER' => 'Manager',
-    ],
+    // A login is authorized if any of its SSO role labels contains this marker
+    // (case-insensitive). This is the application's name as registered in the
+    // ministry SSO, NOT the local "SIKDS" spelling.
+    'app_role_marker' => env('SSO_APP_ROLE_MARKER', 'secure documentation information and management system'),
+
+    // Within an authorized label, bracketed qualifiers select the system role,
+    // evaluated in priority order: admin first, then manager, otherwise user.
+    // A label matching the marker with no admin/manager qualifier maps to User.
+    'admin_role_qualifiers' => array_values(array_filter(array_map(
+        static fn (string $q): string => strtolower(trim($q)),
+        explode(',', (string) env('SSO_ADMIN_ROLE_QUALIFIERS', '[admin],[super-admin],[superadmin],[administrateur]'))
+    ))),
+    'manager_role_qualifiers' => array_values(array_filter(array_map(
+        static fn (string $q): string => strtolower(trim($q)),
+        explode(',', (string) env('SSO_MANAGER_ROLE_QUALIFIERS', '[manager],[gestionnaire]'))
+    ))),
+
+    // System role names (must match seeded roles) that the qualifiers resolve to.
+    'admin_system_role' => env('SSO_ADMIN_SYSTEM_ROLE', 'Super Administrateur'),
+    'manager_system_role' => env('SSO_MANAGER_SYSTEM_ROLE', 'Manager'),
+    'user_system_role' => env('SSO_USER_SYSTEM_ROLE', 'User'),
 ];
