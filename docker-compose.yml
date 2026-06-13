@@ -6,6 +6,8 @@ services:
     container_name: sikds-app
     restart: unless-stopped
     working_dir: /var/www/html
+    extra_hosts:
+      - "accounts.mesrs.dz:10.10.10.60"
     volumes:
       - .:/var/www/html
       - ./docker/php/uploads.ini:/usr/local/etc/php/conf.d/uploads.ini:ro
@@ -189,6 +191,8 @@ services:
     container_name: sikds-worker
     restart: unless-stopped
     working_dir: /var/www/html
+    extra_hosts:
+      - "accounts.mesrs.dz:10.10.10.60"
     volumes:
       - .:/var/www/html
     environment:
@@ -219,3 +223,5 @@ volumes:
 networks:
   sikds:
     driver: bridge
+    driver_opts:
+      com.docker.network.driver.mtu: "1350"

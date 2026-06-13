@@ -54,6 +54,7 @@ class SsoService
         $tokenResponse = $this->exchangeAuthorizationCode($code);
         $accessToken = (string) data_get($tokenResponse->json(), 'access_token', '');
 
+
         if ($accessToken === '') {
             throw new SsoAuthenticationException('Missing access token from SSO token response.');
         }
@@ -61,7 +62,7 @@ class SsoService
         $request->session()->put('sso_access_token', $accessToken);
 
         $profileResponse = $this->fetchUserProfile($accessToken);
-        if (! $profileResponse->successful()) {
+	if (! $profileResponse->successful()) {
             throw new SsoAuthenticationException('Failed to fetch SSO user profile.');
         }
 
@@ -144,17 +145,19 @@ class SsoService
         ];
 
         try {
-            $response = Http::asForm()
-                ->timeout(10)
+		$response = Http::asForm()
+		->withOptions(['verify' => false])
+                ->timeout(30)
                 ->post($tokenUrl, $payload);
         } catch (Throwable $e) {
-            throw new SsoAuthenticationException('SSO token exchange failed.', previous: $e);
-        }
+		throw new SsoAuthenticationException('SSO token exchange failed.', previous: $e);
+	}
 
-        // Some OAuth servers require client auth via HTTP Basic instead of body params.
+
         if (! $response->successful() && data_get($response->json(), 'error') === 'invalid_client') {
             try {
-                $response = Http::asForm()
+		    $response = Http::asForm()
+			    ->withOptions(['verify' => false])
                     ->withBasicAuth((string) config('sso.client_id'), (string) config('sso.client_secret'))
                     ->timeout(10)
                     ->post($tokenUrl, [
@@ -177,7 +180,8 @@ class SsoService
     private function fetchUserProfile(string $accessToken): Response
     {
         try {
-            return Http::withToken($accessToken)
+		return Http::withOptions(['verify' => false])
+			->withToken($accessToken)
                 ->acceptJson()
                 ->timeout(10)
                 ->get($this->buildUrl(config('sso.userinfo_path')));
