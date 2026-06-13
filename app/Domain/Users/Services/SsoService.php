@@ -7,7 +7,7 @@ namespace App\Domain\Users\Services;
 use App\Domain\Users\Enums\SsoFailureReason;
 use App\Domain\Users\Exceptions\SsoAuthenticationException;
 use App\Domain\Users\Models\User;
-use App\Models\Role;
+use App\Domain\Users\Models\Role;
 use Illuminate\Http\Client\Response;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;

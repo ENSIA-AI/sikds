@@ -163,7 +163,17 @@ class Document extends Model
                         $sub->selectRaw('1')
                             ->from('document_user_targets')
                             ->whereColumn('document_user_targets.document_id', 'documents.id')
-                            ->where('document_user_targets.user_id', $user->id);
+                            ->where('document_user_targets.user_id', $user->id)
+                            // A direct user target only grants access when it is an
+                            // intentional grant: either the document's audience is
+                            // explicitly `specific_users`, or the row was created by the
+                            // forward feature (which sets `assigned_by`). This prevents a
+                            // stray `target_user_ids` row from over-matching a document
+                            // whose audience is `all`/`specific_institutions`/`specific_roles`.
+                            ->where(function ($audienceGate): void {
+                                $audienceGate->where('documents.target_audience', 'specific_users')
+                                    ->orWhereNotNull('document_user_targets.assigned_by');
+                            });
                     });
             });
     }

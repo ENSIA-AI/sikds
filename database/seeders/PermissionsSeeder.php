@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Database\Seeders;
 
-use App\Models\Permission;
+use App\Domain\Users\Models\Permission;
 use Illuminate\Database\Seeder;
 use Spatie\Permission\PermissionRegistrar;
 
@@ -44,6 +44,8 @@ class PermissionsSeeder extends Seeder
             ['code' => 'search.basic', 'category' => 'rag', 'description' => 'Recherche simple.'],
             ['code' => 'indexing.manage', 'category' => 'indexing', 'description' => 'Accéder au moniteur d’indexation et relancer les indexations en échec.'],
             ['code' => 'audit.view', 'category' => 'audit', 'description' => 'Consulter les journaux d’audit.'],
+            ['code' => 'settings.view', 'category' => 'settings', 'description' => 'Consulter les paramètres système.'],
+            ['code' => 'settings.manage', 'category' => 'settings', 'description' => 'Modifier les paramètres système.'],
         ];
 
         foreach ($rows as $row) {

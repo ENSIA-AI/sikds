@@ -11,7 +11,7 @@ use App\Domain\Documents\Models\DownloadLog;
 use App\Domain\Documents\Services\Api\DocumentApiAuthorizationService;
 use App\Domain\Institutions\Models\Institution;
 use App\Domain\Users\Models\User;
-use App\Models\Role;
+use App\Domain\Users\Models\Role;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;

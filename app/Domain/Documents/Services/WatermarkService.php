@@ -7,6 +7,7 @@ namespace App\Domain\Documents\Services;
 use App\Domain\Documents\Models\Document;
 use App\Domain\Documents\Models\DownloadLog;
 use App\Services\Settings\SystemSettingsService;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use setasign\Fpdi\Fpdi;
 
@@ -183,6 +184,7 @@ class WatermarkService
 
         // Decompress PDF 1.5+ object/xref streams so the free FPDI parser can read them.
         $decompressedFile = tempnam(sys_get_temp_dir(), 'sikds_dec_');
+        $output = [];
         $exitCode = -1;
         exec(
             'qpdf --decode-level=generalized --object-streams=disable '
@@ -196,8 +198,26 @@ class WatermarkService
             @unlink($tempOriginalFile);
             $tempOriginalFile = $decompressedFile;
         } else {
-            // qpdf failed — try the original file as-is (works for PDF ≤ 1.4)
+            // Decompression failed — fall back to the original file (works for PDF ≤ 1.4).
+            // Do NOT fail silently: a missing qpdf binary is an environment
+            // misconfiguration that breaks watermarking for all modern PDFs.
             @unlink($decompressedFile);
+
+            $logContext = [
+                'document_id' => $document->id,
+                'download_log_id' => $downloadLog->id,
+                'exit_code' => $exitCode,
+                'qpdf_output' => implode("\n", $output),
+            ];
+
+            // 127 == command not found: qpdf is not installed in this environment.
+            if ($exitCode === 127) {
+                Log::error('Watermark decompression skipped: qpdf binary not found. '
+                    . 'Install qpdf — watermarking will fail for PDF 1.5+ documents.', $logContext);
+            } else {
+                Log::warning('Watermark decompression failed; using original PDF as-is. '
+                    . 'FPDI may reject PDF 1.5+ object/xref streams.', $logContext);
+            }
         }
 
         $fpdi = new RotatableFpdi();

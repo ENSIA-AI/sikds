@@ -40,6 +40,8 @@ final class InstitutionController extends Controller
 
     public function store(StoreInstitutionRequest $request): JsonResponse
     {
+        $this->authorize('institution.create');
+
         $validated = $request->validated();
         unset($validated['logo']);
 
@@ -74,6 +76,8 @@ final class InstitutionController extends Controller
 
     public function update(UpdateInstitutionRequest $request, Institution $institution): JsonResponse
     {
+        $this->authorize('institution.edit');
+
         $validated = $request->validated();
         unset($validated['logo']);
 

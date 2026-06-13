@@ -3,8 +3,8 @@
 use App\Domain\Documents\Models\Document;
 use App\Domain\Institutions\Models\Institution;
 use App\Domain\Users\Models\User;
-use App\Models\Permission;
-use App\Models\Role;
+use App\Domain\Users\Models\Permission;
+use App\Domain\Users\Models\Role;
 use App\Services\Rag\Contracts\EmbeddingServiceInterface;
 use App\Services\Rag\Contracts\RerankerServiceInterface;
 use App\Services\Rag\RagQueryService;

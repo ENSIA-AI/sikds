@@ -25,11 +25,12 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
-      if (app()->environment('production')) {
+        if (app()->environment('production')) {
             URL::forceScheme('https');
         }
 
-      $this->configureRateLimiters();
+        $this->configureRateLimiters();
+
         Queue::failing(function (JobFailed $event): void {
             $payload = $event->job->payload();
 
@@ -78,6 +79,15 @@ class AppServiceProvider extends ServiceProvider
             ];
         });
 
-      RateLimiter::for('sso', fn (Request $request) => Limit::perMinute(30)->by((string) $request->ip()));
+        RateLimiter::for('sso', fn (Request $request) => Limit::perMinute(30)->by((string) $request->ip()));
+
+        // RAG queries hit the Groq LLM — strict per-user limit to prevent token drain.
+        RateLimiter::for('rag', fn (Request $request) => Limit::perMinute(10)
+            ->by((string) ($request->user()?->id ?: $request->ip())));
+
+        // Watermarked downloads are CPU/disk-bound (qpdf + FPDI) but cheaper than LLM
+        // calls, so they get a separate, more permissive limiter.
+        RateLimiter::for('download', fn (Request $request) => Limit::perMinute(30)
+            ->by((string) ($request->user()?->id ?: $request->ip())));
     }
 }

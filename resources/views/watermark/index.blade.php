@@ -15,7 +15,7 @@
         <x-stat-card
             icon="/time-orange.svg"
             value="{{ number_format($stats['today']) }}"
-            label="{{ __('Aujourd\'hui') }}"
+            :label="__('Aujourd\'hui')"
             trend="{{ $stats['today'] }}"
             iconStyle="filter: brightness(0) saturate(100%) invert(17%) sepia(65%) saturate(2584%) hue-rotate(214deg) brightness(91%) contrast(98%);"
         />

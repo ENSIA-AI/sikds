@@ -4,7 +4,7 @@ use App\Domain\Documents\Models\Document;
 use App\Domain\Documents\Models\DownloadLog;
 use App\Domain\Institutions\Models\Institution;
 use App\Domain\Users\Models\User;
-use App\Models\Permission;
+use App\Domain\Users\Models\Permission;
 use Illuminate\Support\Str;
 use Spatie\Permission\PermissionRegistrar;
 

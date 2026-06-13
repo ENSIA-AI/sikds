@@ -87,16 +87,14 @@ Route::middleware('throttle:sso')->get('/callback', function (SsoService $ssoSer
     }
 })->name('sso.callback');
 
-Route::get('/user', function () {
-    if (!Auth::check()) {
-        return response()->json(['message' => 'Unauthenticated'], 401);
-    }
+Route::middleware('auth')->get('/user', function () {
+    $user = Auth::user();
 
     return response()->json([
-        'id' => Auth::id(),
-        'username' => Auth::user()->username,
-        'email' => Auth::user()->email,
-        'full_name' => Auth::user()->full_name,
+        'id' => $user->id,
+        'username' => $user->username,
+        'email' => $user->email,
+        'full_name' => $user->full_name,
     ]);
 })->name('user');
 
