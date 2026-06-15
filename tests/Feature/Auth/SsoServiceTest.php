@@ -139,98 +139,71 @@ test('normalize profile allows all domains when allowlist is empty', function ()
     expect($result['auth_domain'])->toBe('future-domain.dz');
 });
 
-test('extract roles reads array of role-code strings', function () {
+/**
+ * Shared MESRS role-id → system-role config used across the resolution tests.
+ */
+function configureSsoRoleIds(): void
+{
+    config()->set('sso.role_id_map', [
+        1623 => 'User',
+        1624 => 'Manager',
+        9999 => 'Super Administrateur',
+    ]);
+    config()->set('sso.role_priority', ['Super Administrateur', 'Manager', 'User']);
+}
+
+test('extract role ids reads plain integer ids at a custom path', function () {
     config()->set('sso.roles_path', 'roles');
 
     $service = new SsoService();
-    $method = new ReflectionMethod(SsoService::class, 'extractRoles');
+    $method = new ReflectionMethod(SsoService::class, 'extractRoleIds');
     $method->setAccessible(true);
 
-    $codes = $method->invoke($service, [
-        'roles' => ['skids_user', 'OTHER_ROLE'],
-    ]);
-
-    expect($codes)->toBe(['SKIDS_USER', 'OTHER_ROLE']);
+    expect($method->invoke($service, ['roles' => [1623, '1624', 1623]]))->toBe([1623, 1624]);
 });
 
-test('extract roles reads array of objects with code field', function () {
-    config()->set('sso.roles_path', 'roles');
+test('extract role ids reads ministry affectation role ids via wildcard path', function () {
+    config()->set('sso.roles_path', 'individu.affectation.*.role.id');
 
     $service = new SsoService();
-    $method = new ReflectionMethod(SsoService::class, 'extractRoles');
+    $method = new ReflectionMethod(SsoService::class, 'extractRoleIds');
     $method->setAccessible(true);
 
-    $codes = $method->invoke($service, [
-        'roles' => [
-            ['id' => 1623, 'code' => 'SKIDS_USER', 'name' => 'SKIDS [user]'],
-            ['id' => 1624, 'code' => 'SKIDS_MANAGER', 'name' => 'SKIDS [manager]'],
-        ],
-    ]);
-
-    expect($codes)->toBe(['SKIDS_USER', 'SKIDS_MANAGER']);
-});
-
-test('extract roles returns empty array when path is missing or not iterable', function () {
-    config()->set('sso.roles_path', 'roles');
-
-    $service = new SsoService();
-    $method = new ReflectionMethod(SsoService::class, 'extractRoles');
-    $method->setAccessible(true);
-
-    expect($method->invoke($service, []))->toBe([]);
-    expect($method->invoke($service, ['roles' => 'not-an-array']))->toBe([]);
-});
-
-test('extract roles honors a custom roles_path', function () {
-    config()->set('sso.roles_path', 'application_roles.skids');
-
-    $service = new SsoService();
-    $method = new ReflectionMethod(SsoService::class, 'extractRoles');
-    $method->setAccessible(true);
-
-    $codes = $method->invoke($service, [
-        'application_roles' => [
-            'skids' => ['SKIDS_MANAGER'],
-        ],
-    ]);
-
-    expect($codes)->toBe(['SKIDS_MANAGER']);
-});
-
-test('extract roles reads ministry affectation role labels via wildcard path', function () {
-    config()->set('sso.roles_path', 'individu.affectation.*.role.libelle_long_fr');
-
-    $service = new SsoService();
-    $method = new ReflectionMethod(SsoService::class, 'extractRoles');
-    $method->setAccessible(true);
-
-    $codes = $method->invoke($service, [
+    $ids = $method->invoke($service, [
         'individu' => [
             'affectation' => [
-                ['role' => ['libelle_long_fr' => 'Secure Documentation Information and Management System [manager]']],
-                ['role' => ['libelle_long_fr' => 'Etudiant']],
+                ['role' => ['id' => 1624, 'libelle_long_fr' => 'Secure Documentation Information and Management System [manager]']],
+                ['role' => ['id' => 2, 'libelle_long_fr' => 'Etudiant']],
             ],
         ],
     ]);
 
-    expect($codes)->toBe([
-        'SECURE DOCUMENTATION INFORMATION AND MANAGEMENT SYSTEM [MANAGER]',
-        'ETUDIANT',
-    ]);
+    expect($ids)->toBe([1624, 2]);
 });
 
-test('assert has authorized role rejects a profile with no application role label', function () {
-    config()->set('sso.app_role_marker', 'secure documentation information and management system');
+test('extract role ids returns empty array when path is missing or not iterable', function () {
+    config()->set('sso.roles_path', 'individu.affectation.*.role.id');
+
+    $service = new SsoService();
+    $method = new ReflectionMethod(SsoService::class, 'extractRoleIds');
+    $method->setAccessible(true);
+
+    expect($method->invoke($service, []))->toBe([]);
+    expect($method->invoke($service, ['individu' => ['affectation' => 'nope']]))->toBe([]);
+});
+
+test('assert has authorized role rejects a profile with no mapped role id', function () {
+    configureSsoRoleIds();
 
     $service = new SsoService();
     $method = new ReflectionMethod(SsoService::class, 'assertHasAuthorizedRole');
     $method->setAccessible(true);
 
-    $method->invoke($service, ['ETUDIANT', 'SOME OTHER SYSTEM [MANAGER]']);
+    $method->invoke($service, [2, 5725063]); // Etudiant + groupe ids, none mapped
 })->throws(SsoAuthenticationException::class, 'Your SSO account is not authorized to access this application.');
 
 test('assert has authorized role rejects profile with empty role list', function () {
-    config()->set('sso.app_role_marker', 'secure documentation information and management system');
+    configureSsoRoleIds();
 
     $service = new SsoService();
     $method = new ReflectionMethod(SsoService::class, 'assertHasAuthorizedRole');
@@ -239,85 +212,59 @@ test('assert has authorized role rejects profile with empty role list', function
     $method->invoke($service, []);
 })->throws(SsoAuthenticationException::class);
 
-test('assert has authorized role accepts an application role label', function () {
-    config()->set('sso.app_role_marker', 'secure documentation information and management system');
+test('assert has authorized role accepts a mapped role id', function () {
+    configureSsoRoleIds();
 
     $service = new SsoService();
     $method = new ReflectionMethod(SsoService::class, 'assertHasAuthorizedRole');
     $method->setAccessible(true);
 
-    $method->invoke($service, ['SECURE DOCUMENTATION INFORMATION AND MANAGEMENT SYSTEM [USER]']);
+    $method->invoke($service, [1623, 2]);
 
     expect(true)->toBeTrue();
 });
 
-test('resolve system role maps the admin qualifier to the super admin role', function () {
-    config()->set('sso.app_role_marker', 'secure documentation information and management system');
-    config()->set('sso.admin_role_qualifiers', ['[admin]']);
-    config()->set('sso.manager_role_qualifiers', ['[manager]']);
-    config()->set('sso.admin_system_role', 'Super Administrateur');
+test('resolve system role maps the manager id to the manager role', function () {
+    configureSsoRoleIds();
 
     $service = new SsoService();
     $method = new ReflectionMethod(SsoService::class, 'resolveSystemRoleFromSso');
     $method->setAccessible(true);
 
-    expect($method->invoke($service, ['SECURE DOCUMENTATION INFORMATION AND MANAGEMENT SYSTEM [ADMIN]']))
-        ->toBe('Super Administrateur');
+    expect($method->invoke($service, [1624, 2]))->toBe('Manager');
 });
 
-test('resolve system role prefers admin over manager when both are present', function () {
-    config()->set('sso.app_role_marker', 'secure documentation information and management system');
-    config()->set('sso.admin_role_qualifiers', ['[admin]']);
-    config()->set('sso.manager_role_qualifiers', ['[manager]']);
-    config()->set('sso.admin_system_role', 'Super Administrateur');
+test('resolve system role maps the user id to the user role', function () {
+    configureSsoRoleIds();
 
     $service = new SsoService();
     $method = new ReflectionMethod(SsoService::class, 'resolveSystemRoleFromSso');
     $method->setAccessible(true);
 
-    $roles = [
-        'SECURE DOCUMENTATION INFORMATION AND MANAGEMENT SYSTEM [MANAGER]',
-        'SECURE DOCUMENTATION INFORMATION AND MANAGEMENT SYSTEM [ADMIN]',
-    ];
-
-    expect($method->invoke($service, $roles))->toBe('Super Administrateur');
+    expect($method->invoke($service, [1623]))->toBe('User');
 });
 
-test('resolve system role maps the manager qualifier to the manager role', function () {
-    config()->set('sso.app_role_marker', 'secure documentation information and management system');
-    config()->set('sso.admin_role_qualifiers', ['[admin]']);
-    config()->set('sso.manager_role_qualifiers', ['[manager]']);
-    config()->set('sso.manager_system_role', 'Manager');
+test('resolve system role picks the highest-privilege role when several are present', function () {
+    configureSsoRoleIds();
 
     $service = new SsoService();
     $method = new ReflectionMethod(SsoService::class, 'resolveSystemRoleFromSso');
     $method->setAccessible(true);
 
-    expect($method->invoke($service, ['SECURE DOCUMENTATION INFORMATION AND MANAGEMENT SYSTEM [MANAGER]']))
-        ->toBe('Manager');
+    // User + Manager together => Manager wins.
+    expect($method->invoke($service, [1623, 1624]))->toBe('Manager');
+
+    // User + Manager + Super-admin together => Super Administrateur wins.
+    expect($method->invoke($service, [1623, 1624, 9999]))->toBe('Super Administrateur');
 });
 
-test('resolve system role falls back to the user role for a bare application label', function () {
-    config()->set('sso.app_role_marker', 'secure documentation information and management system');
-    config()->set('sso.admin_role_qualifiers', ['[admin]']);
-    config()->set('sso.manager_role_qualifiers', ['[manager]']);
-    config()->set('sso.user_system_role', 'User');
+test('resolve system role returns null when no id is mapped', function () {
+    configureSsoRoleIds();
 
     $service = new SsoService();
     $method = new ReflectionMethod(SsoService::class, 'resolveSystemRoleFromSso');
     $method->setAccessible(true);
 
-    expect($method->invoke($service, ['SECURE DOCUMENTATION INFORMATION AND MANAGEMENT SYSTEM [USER]']))
-        ->toBe('User');
-});
-
-test('resolve system role returns null when no label belongs to the application', function () {
-    config()->set('sso.app_role_marker', 'secure documentation information and management system');
-
-    $service = new SsoService();
-    $method = new ReflectionMethod(SsoService::class, 'resolveSystemRoleFromSso');
-    $method->setAccessible(true);
-
-    expect($method->invoke($service, ['ETUDIANT', 'SOME OTHER SYSTEM [ADMIN]']))->toBeNull();
+    expect($method->invoke($service, [2, 5725063]))->toBeNull();
 });
 

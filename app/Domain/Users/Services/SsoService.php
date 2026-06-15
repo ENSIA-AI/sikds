@@ -67,7 +67,7 @@ class SsoService
         }
 
         $normalized = $this->normalizeProfile($profileResponse->json());
-        $this->assertHasAuthorizedRole($normalized['sso_roles']);
+        $this->assertHasAuthorizedRole($normalized['sso_role_ids']);
 
         return DB::transaction(function () use ($normalized, $profileResponse): User {
             $user = User::query()
@@ -116,7 +116,7 @@ class SsoService
                 );
             }
 
-            $this->assignRoleFromSso($user, $normalized['sso_roles']);
+            $this->assignRoleFromSso($user, $normalized['sso_role_ids']);
             Auth::guard('web')->login($user);
 
             return $user;
@@ -221,39 +221,35 @@ class SsoService
             'email' => Str::lower($email),
             'full_name' => $fullName,
             'auth_domain' => ($domain = Str::lower(Str::after($email, '@'))) !== '' ? $domain : null,
-            'sso_roles' => $this->extractRoles($profile),
+            'sso_role_ids' => $this->extractRoleIds($profile),
         ];
     }
 
     /**
-     * Pull role codes from the SSO profile, accepting both arrays of strings and
-     * arrays of objects exposing a `code` (or `name`) field.
+     * Pull the ministry SSO role IDs from the profile at the configured path.
+     * Accepts plain integers/numeric strings, and — for resilience to payload
+     * shape — objects exposing an `id` field.
      *
-     * @return array<int, string> uppercase, deduplicated role codes
+     * @return array<int, int> deduplicated role IDs
      */
-    private function extractRoles(array $profile): array
+    private function extractRoleIds(array $profile): array
     {
-        $path = (string) config('sso.roles_path', 'roles');
+        $path = (string) config('sso.roles_path', 'individu.affectation.*.role.id');
         $raw = data_get($profile, $path, []);
         if (! is_array($raw)) {
             return [];
         }
 
-        $codes = [];
+        $ids = [];
         foreach ($raw as $entry) {
-            if (is_string($entry)) {
-                $code = trim($entry);
-            } elseif (is_array($entry)) {
-                $code = trim((string) ($entry['code'] ?? $entry['name'] ?? ''));
-            } else {
-                continue;
-            }
-            if ($code !== '') {
-                $codes[] = Str::upper($code);
+            if (is_int($entry) || (is_string($entry) && is_numeric($entry))) {
+                $ids[] = (int) $entry;
+            } elseif (is_array($entry) && isset($entry['id']) && is_numeric($entry['id'])) {
+                $ids[] = (int) $entry['id'];
             }
         }
 
-        return array_values(array_unique($codes));
+        return array_values(array_unique($ids));
     }
 
     private function buildUrl(?string $path): string
@@ -282,14 +278,14 @@ class SsoService
     }
 
     /**
-     * Reject SSO logins whose profile carries no role label for this application
-     * (i.e. none of the labels contains the configured `sso.app_role_marker`).
+     * Reject SSO logins whose profile carries no role ID mapped to this
+     * application (see `sso.role_id_map`).
      *
-     * @param  array<int, string>  $roleCodes  uppercase role labels from the SSO profile
+     * @param  array<int, int>  $roleIds  ministry SSO role IDs from the profile
      */
-    private function assertHasAuthorizedRole(array $roleCodes): void
+    private function assertHasAuthorizedRole(array $roleIds): void
     {
-        if ($this->resolveSystemRoleFromSso($roleCodes) === null) {
+        if ($this->resolveSystemRoleFromSso($roleIds) === null) {
             throw SsoAuthenticationException::forReason(
                 SsoFailureReason::UnauthorizedSsoRole,
                 'Your SSO account is not authorized to access this application.'
@@ -298,19 +294,19 @@ class SsoService
     }
 
     /**
-     * Assign a system role on first login based on the SSO role label. Users who
+     * Assign a system role on first login based on the SSO role IDs. Users who
      * already have a role (e.g. the system admin seeded directly into the DB)
      * keep their existing role.
      *
-     * @param  array<int, string>  $roleCodes  uppercase role labels from the SSO profile
+     * @param  array<int, int>  $roleIds  ministry SSO role IDs from the profile
      */
-    private function assignRoleFromSso(User $user, array $roleCodes): void
+    private function assignRoleFromSso(User $user, array $roleIds): void
     {
         if ($user->roles()->exists()) {
             return;
         }
 
-        $systemRoleName = $this->resolveSystemRoleFromSso($roleCodes);
+        $systemRoleName = $this->resolveSystemRoleFromSso($roleIds);
         if ($systemRoleName === null) {
             return;
         }
@@ -326,64 +322,37 @@ class SsoService
     }
 
     /**
-     * Resolve the system role name for this application from the SSO role labels.
+     * Resolve a single system role name from the SSO role IDs.
      *
-     * A label grants access when it contains `sso.app_role_marker`. Among the
-     * matching labels, bracketed qualifiers select the system role in priority
-     * order: admin qualifiers win over manager qualifiers; a label with neither
-     * maps to the user system role. Returns null when no label belongs to this
-     * application.
+     * Each ID is mapped through `sso.role_id_map`. When the profile carries more
+     * than one mapped role, the highest-privilege one wins, per the order in
+     * `sso.role_priority`. Returns null when no ID maps to this application.
      *
-     * @param  array<int, string>  $roleCodes  uppercase role labels from the SSO profile
+     * @param  array<int, int>  $roleIds  ministry SSO role IDs from the profile
      */
-    private function resolveSystemRoleFromSso(array $roleCodes): ?string
+    private function resolveSystemRoleFromSso(array $roleIds): ?string
     {
-        $marker = Str::upper(trim((string) config('sso.app_role_marker', '')));
-        if ($marker === '') {
-            return null;
-        }
+        $map = (array) config('sso.role_id_map', []);
 
-        $appLabels = array_filter(
-            $roleCodes,
-            static fn (string $label): bool => str_contains($label, $marker)
-        );
-
-        if ($appLabels === []) {
-            return null;
-        }
-
-        if ($this->labelsMatchQualifier($appLabels, (array) config('sso.admin_role_qualifiers', []))) {
-            return (string) config('sso.admin_system_role', 'Super Administrateur');
-        }
-
-        if ($this->labelsMatchQualifier($appLabels, (array) config('sso.manager_role_qualifiers', []))) {
-            return (string) config('sso.manager_system_role', 'Manager');
-        }
-
-        return (string) config('sso.user_system_role', 'User');
-    }
-
-    /**
-     * Whether any of the given (uppercase) labels contains any of the configured
-     * qualifiers.
-     *
-     * @param  array<int, string>  $labels      uppercase role labels
-     * @param  array<int, string>  $qualifiers  qualifiers to match (any case)
-     */
-    private function labelsMatchQualifier(array $labels, array $qualifiers): bool
-    {
-        foreach ($qualifiers as $qualifier) {
-            $needle = Str::upper(trim((string) $qualifier));
-            if ($needle === '') {
-                continue;
-            }
-            foreach ($labels as $label) {
-                if (str_contains($label, $needle)) {
-                    return true;
-                }
+        $matchedRoles = [];
+        foreach ($roleIds as $id) {
+            $id = (int) $id;
+            if (isset($map[$id])) {
+                $matchedRoles[] = (string) $map[$id];
             }
         }
 
-        return false;
+        if ($matchedRoles === []) {
+            return null;
+        }
+
+        foreach ((array) config('sso.role_priority', []) as $systemRole) {
+            if (in_array($systemRole, $matchedRoles, true)) {
+                return (string) $systemRole;
+            }
+        }
+
+        // No priority list configured (or none matched): pick deterministically.
+        return $matchedRoles[0];
     }
 }
