@@ -17,6 +17,11 @@ abstract class TestCase extends BaseTestCase
     {
         parent::setUp();
 
+        // Views (including error pages) reference @vite; CI jobs without a
+        // front-end build have no public/build/manifest.json, which turns any
+        // rendered page — e.g. a 403 — into a 500.
+        $this->withoutVite();
+
         // Keep feature tests deterministic: many assertions expect French UI copy.
         config()->set('app.locale', 'fr');
         config()->set('app.fallback_locale', 'fr');
