@@ -32,7 +32,7 @@ final class InstitutionController extends Controller
             ->orderBy('name')
             ->get();
 
-        return view('institutions', [
+        return view('institutions.index', [
             'institutions' => $institutions,
             'stats' => $stats,
         ]);

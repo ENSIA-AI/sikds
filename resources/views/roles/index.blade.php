@@ -17,7 +17,7 @@
         <button
             type="button"
             data-open-create-role
-            class="inline-flex h-11 min-w-[10rem] items-center justify-center gap-2 rounded-[10px] bg-[#1E3A8A] px-6 text-sm font-semibold text-white shadow-[0px_4px_6px_-4px_rgba(0,0,0,0.10),0px_10px_15px_-3px_rgba(0,0,0,0.10)] transition hover:bg-[#163171] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1E3A8A]"
+            class="inline-flex h-11 min-w-[10rem] items-center justify-center gap-2 rounded-[10px] bg-[#1c398e] px-6 text-sm font-semibold text-white shadow-[0px_4px_6px_-4px_rgba(0,0,0,0.10),0px_10px_15px_-3px_rgba(0,0,0,0.10)] transition hover:bg-[#163171] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1c398e]"
         >
             <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" class="size-5 shrink-0">
                 <path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
@@ -53,7 +53,7 @@
                         <button
                             type="button"
                             data-open-create-role
-                            class="inline-flex items-center gap-2 rounded-[10px] bg-[#1E3A8A] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#163171]"
+                            class="inline-flex items-center gap-2 rounded-[10px] bg-[#1c398e] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#163171]"
                         >
                             <i class="fa-solid fa-plus text-xs"></i>
                             {{ __('Créer un Rôle') }}
@@ -73,13 +73,13 @@
 @can('role.create')
     <div
         id="create-role-modal-root"
-        class="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6"
+        data-modal-portal class="sikds-modal-backdrop"
         hidden
         role="dialog"
         aria-modal="true"
         aria-labelledby="create-role-title"
     >
-        <div data-modal-overlay class="absolute inset-0 bg-black/30"></div>
+        <div data-modal-overlay class="absolute inset-0"></div>
 
         <div
             data-modal-panel
@@ -123,7 +123,7 @@
                                     required
                                     maxlength="255"
                                     placeholder="{{ __('Ex: Gestionnaire de Documents') }}"
-                                    class="h-[37px] w-full rounded-[10px] border border-black/10 px-3 py-2 text-sm text-[#0A0A0A] placeholder:text-[#717182] outline-none focus:border-[#1E3A8A] focus:ring-2 focus:ring-[#1E3A8A]/20"
+                                    class="h-[37px] w-full rounded-[10px] border border-black/10 px-3 py-2 text-sm text-[#0A0A0A] placeholder:text-[#717182] outline-none focus:border-[#1c398e] focus:ring-2 focus:ring-[#1c398e]/20"
                                 />
                             </div>
                             <div class="flex flex-col gap-2">
@@ -133,7 +133,7 @@
                                     name="description"
                                     rows="3"
                                     placeholder="{{ __('Description du rôle...') }}"
-                                    class="min-h-[96px] w-full resize-y rounded-[10px] border border-black/10 px-3 py-2 text-sm text-[#0A0A0A] placeholder:text-[#717182] outline-none focus:border-[#1E3A8A] focus:ring-2 focus:ring-[#1E3A8A]/20"
+                                    class="min-h-[96px] w-full resize-y rounded-[10px] border border-black/10 px-3 py-2 text-sm text-[#0A0A0A] placeholder:text-[#717182] outline-none focus:border-[#1c398e] focus:ring-2 focus:ring-[#1c398e]/20"
                                 ></textarea>
                             </div>
                         </div>
@@ -159,7 +159,7 @@
                                                 <button
                                                     type="button"
                                                     data-select-all-section="{{ $section['key'] }}"
-                                                    class="text-sm font-medium text-[#1E3A8A] underline-offset-2 hover:underline"
+                                                    class="text-sm font-medium text-[#1c398e] underline-offset-2 hover:underline"
                                                 >{{ __('Tout sélectionner') }}</button>
                                             </div>
                                             <div class="flex flex-col gap-2">
@@ -174,7 +174,7 @@
                                                             value="{{ $perm['id'] }}"
                                                             type="checkbox"
                                                             data-perm-section="{{ $section['key'] }}"
-                                                            class="perm-checkbox mt-0.5 size-4 shrink-0 rounded-full border border-black/20 accent-[#1E3A8A] focus:ring-[#1E3A8A]"
+                                                            class="perm-checkbox mt-0.5 size-4 shrink-0 rounded-full border border-black/20 accent-[#1c398e] focus:ring-[#1c398e]"
                                                         />
                                                         <span class="text-sm leading-5 text-[#0A0A0A]">{{ $perm['label'] }}</span>
                                                     </label>
@@ -192,12 +192,12 @@
                     <button
                         type="button"
                         data-close-modal
-                        class="inline-flex h-11 w-[106px] items-center justify-center rounded-[10px] border border-black/10 bg-white text-sm font-medium text-[#0A0A0A] transition hover:bg-black/[0.03] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1E3A8A]"
+                        class="inline-flex h-11 w-[106px] items-center justify-center rounded-[10px] border border-black/10 bg-white text-sm font-medium text-[#0A0A0A] transition hover:bg-black/[0.03] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1c398e]"
                     >{{ __('Annuler') }}</button>
                     <button
                         type="submit"
                         data-submit-role
-                        class="inline-flex h-11 items-center justify-center rounded-[10px] bg-[#1E3A8A] px-6 text-sm font-semibold text-white transition hover:bg-[#163171] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1E3A8A] disabled:opacity-60"
+                        class="inline-flex h-11 items-center justify-center rounded-[10px] bg-[#1c398e] px-6 text-sm font-semibold text-white transition hover:bg-[#163171] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1c398e] disabled:opacity-60"
                     >{{ __('Créer le Rôle') }}</button>
                 </div>
             </form>

@@ -388,8 +388,8 @@
         </div>
     </div>
 
-    <div id="export-audit-modal" class="fixed inset-0 z-50 hidden items-center justify-center p-4">
-        <div class="absolute inset-0 bg-black/30" id="export-modal-overlay"></div>
+    <div id="export-audit-modal" data-modal-portal class="sikds-modal-backdrop hidden">
+        <div class="absolute inset-0" id="export-modal-overlay"></div>
         <div class="relative w-full max-w-xl rounded-2xl bg-white border border-black/10 shadow-2xl" style="font-family:'Inter', ui-sans-serif, sans-serif;">
             <div class="flex items-start justify-between px-6 py-5 border-b border-black/10">
                 <div>
@@ -466,81 +466,6 @@
     </div>
 
     @push('scripts')
-        <script>
-            function auditFilters() {
-                return {
-                    eventOpen: false,
-                    statusOpen: false,
-                    selectedEvents: JSON.parse(document.getElementById('audit-selected-events')?.textContent || '[]'),
-                    selectedStatuses: JSON.parse(document.getElementById('audit-selected-statuses')?.textContent || '[]'),
-                };
-            }
-            // Expose globally for Alpine.js x-data binding
-            window.auditFilters = auditFilters;
-
-            document.addEventListener('DOMContentLoaded', function () {
-
-                const filterForm = document.getElementById('audit-filter-form');
-                const dateInput = filterForm?.querySelector('input[name="date"]');
-                const userInput = filterForm?.querySelector('input[name="user"]');
-                const applyBtn = filterForm?.querySelector('button[type="submit"]');
-
-                const submitFilters = () => {
-                    if (!filterForm) return;
-                    applyBtn?.classList.add('opacity-70');
-                    applyBtn?.setAttribute('disabled', 'disabled');
-                    filterForm.submit();
-                };
-
-                dateInput?.addEventListener('change', submitFilters);
-
-                // Auto-apply when any event_type or result checkbox toggles inside the multi-selects.
-                let multiSelectDebounceTimer = null;
-                filterForm?.querySelectorAll('input[type="checkbox"][name="event_type[]"], input[type="checkbox"][name="result[]"]').forEach((cb) => {
-                    cb.addEventListener('change', function () {
-                        if (multiSelectDebounceTimer) clearTimeout(multiSelectDebounceTimer);
-                        // Small debounce so a rapid multi-click batches into a single submit.
-                        multiSelectDebounceTimer = setTimeout(submitFilters, 250);
-                    });
-                });
-
-                let userDebounceTimer = null;
-                userInput?.addEventListener('input', function () {
-                    if (userDebounceTimer) clearTimeout(userDebounceTimer);
-                    userDebounceTimer = setTimeout(submitFilters, 450);
-                });
-
-                userInput?.addEventListener('keydown', function (event) {
-                    if (event.key === 'Enter') {
-                        event.preventDefault();
-                        submitFilters();
-                    }
-                });
-
-
-
-                const modal = document.getElementById('export-audit-modal');
-                const openBtn = document.getElementById('open-export-modal');
-                const closeBtn = document.getElementById('close-export-modal');
-                const cancelBtn = document.getElementById('cancel-export-modal');
-                const overlay = document.getElementById('export-modal-overlay');
-
-                if (!modal || !openBtn) return;
-
-                const open = () => {
-                    modal.classList.remove('hidden');
-                    modal.classList.add('flex');
-                };
-                const close = () => {
-                    modal.classList.add('hidden');
-                    modal.classList.remove('flex');
-                };
-
-                openBtn.addEventListener('click', open);
-                closeBtn?.addEventListener('click', close);
-                cancelBtn?.addEventListener('click', close);
-                overlay?.addEventListener('click', close);
-            });
-        </script>
+        @vite(['resources/js/pages/audits.js'])
     @endpush
 @endsection

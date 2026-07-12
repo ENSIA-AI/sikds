@@ -61,7 +61,7 @@ test('it displays users index page', function () {
     $response = $this->get(route('users.index'));
 
     $response->assertOk();
-    $response->assertViewIs('users');
+    $response->assertViewIs('users.index');
     $response->assertViewHas('users');
     $response->assertViewHas('stats');
     $response->assertViewHas('roles');

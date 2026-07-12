@@ -48,7 +48,7 @@ final class RoleController extends Controller
             Permission::query()->orderBy('name')->get()
         );
 
-        return view('roles', [
+        return view('roles.index', [
             'roles' => $roles,
             'search' => $request->search,
             'permissionsGrouped' => $permissionsGrouped,

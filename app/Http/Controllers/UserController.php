@@ -123,7 +123,7 @@ final class UserController extends Controller
             ]
         )->all();
 
-        return view('users', [
+        return view('users.index', [
             'users' => $users,
             'institutions' => $institutions,
             'roles' => $roles,
@@ -144,17 +144,17 @@ final class UserController extends Controller
 
     /**
      * Show the form for creating a new user.
+     *
+     * There is no dedicated create page: user creation happens through the
+     * modal on the index page, so this route redirects there. (The old
+     * `view('users.create')` referenced a Blade view that never existed.)
      */
-    public function create(): View
+    public function create(): RedirectResponse
     {
         $this->authorize('user.manage');
         $this->authorize('user.assign.permissions');
 
-        return view('users.create', [
-            'institutions' => $this->lookups->activeInstitutionsByType(),
-            'roles' => $this->lookups->rolesWithPermissionCount(),
-            'permissions' => $this->lookups->permissionsGroupedByCategory(),
-        ]);
+        return redirect()->route('users.index');
     }
 
     /**

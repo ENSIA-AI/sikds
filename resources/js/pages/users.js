@@ -222,7 +222,7 @@ function buildUserRow(payload) {
     const root = document.querySelector('[data-users-api-base]');
     const canDeactivate = root?.dataset?.usersCanDeactivate === '1';
     const hasEdit = document.querySelector('[data-open-edit-user]') !== null;
-    const menuToggle = `<button type="button" data-user-menu-toggle class="inline-flex size-10 items-center justify-center rounded-[10px] text-[#0A0A0A] transition hover:bg-[#F4F4F5] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1E3A8A]" aria-haspopup="menu" aria-expanded="false" aria-label="${escapeHtml(ui.userActionsAria)}"><svg class="size-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="6" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="18" cy="12" r="1.6"/></svg></button>`;
+    const menuToggle = `<button type="button" data-user-menu-toggle class="inline-flex size-10 items-center justify-center rounded-[10px] text-[#0A0A0A] transition hover:bg-[#F4F4F5] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1c398e]" aria-haspopup="menu" aria-expanded="false" aria-label="${escapeHtml(ui.userActionsAria)}"><svg class="size-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="6" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="18" cy="12" r="1.6"/></svg></button>`;
 
     const editItem = hasEdit
         ? `<button type="button" data-open-edit-user class="flex w-full items-center gap-3 px-3 py-2.5 text-left font-inter text-sm font-medium text-[#0A0A0A] transition hover:bg-[#f3f4f6]" role="menuitem"><i class="fa-solid fa-pen-to-square text-xs text-[#717182]"></i>${escapeHtml(editLabel)}</button>`
