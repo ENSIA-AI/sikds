@@ -190,12 +190,11 @@ class Document extends Model
     }
 
     /**
-     * Escape `%`, `_` and `\` in user input destined for a LIKE clause so it
-     * matches literally. Callers must pair the result with `ESCAPE '\'`
-     * (portable across PostgreSQL and the SQLite test driver).
+     * Escape `%` and `_` in user input destined for a LIKE clause so it
+     * matches literally.
      */
     public static function escapeLike(string $value): string
     {
-        return addcslashes($value, '\\%_');
+        return str_replace(['!', '%', '_'], ['!!', '!%', '!_'], $value);
     }
 }

@@ -10,6 +10,7 @@ use function Pest\Laravel\actingAs;
 uses(RefreshDatabase::class);
 
 beforeEach(function () {
+    $this->withoutVite();
 
     $this->institution = Institution::factory()->create([
         'name' => 'Test Institution',

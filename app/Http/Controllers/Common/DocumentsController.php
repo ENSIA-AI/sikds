@@ -45,8 +45,8 @@ class DocumentsController
             // Escape LIKE wildcards so user input matches literally (see Document::escapeLike).
             $needle = '%'.Document::escapeLike($filters['q']).'%';
             $query->where(function (Builder $sub) use ($needle): void {
-                $sub->whereRaw("title LIKE ? ESCAPE '\\'", [$needle])
-                    ->orWhereRaw("reference_number LIKE ? ESCAPE '\\'", [$needle]);
+                $sub->whereRaw("title LIKE ? ESCAPE '!'", [$needle])
+                    ->orWhereRaw("reference_number LIKE ? ESCAPE '!'", [$needle]);
             });
         }
 
