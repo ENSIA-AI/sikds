@@ -89,5 +89,15 @@ class AppServiceProvider extends ServiceProvider
         // calls, so they get a separate, more permissive limiter.
         RateLimiter::for('download', fn (Request $request) => Limit::perMinute(30)
             ->by((string) ($request->user()?->id ?: $request->ip())));
+
+        // JSON documents API (session-authenticated, but still bounded so a
+        // scripted client can't hammer list/detail endpoints).
+        RateLimiter::for('api-documents', fn (Request $request) => Limit::perMinute(60)
+            ->by((string) ($request->user()?->id ?: $request->ip())));
+
+        // Uploads hash the file (SHA-256) and write to object storage — stricter
+        // than the general documents API limiter.
+        RateLimiter::for('api-documents-upload', fn (Request $request) => Limit::perMinute(10)
+            ->by((string) ($request->user()?->id ?: $request->ip())));
     }
 }

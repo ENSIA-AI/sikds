@@ -42,10 +42,11 @@ class DocumentsController
         $query = $this->visibleDocumentsQuery($user);
 
         if ($filters['q'] !== '') {
-            $q = $filters['q'];
-            $query->where(function (Builder $sub) use ($q): void {
-                $sub->where('title', 'like', "%{$q}%")
-                    ->orWhere('reference_number', 'like', "%{$q}%");
+            // Escape LIKE wildcards so user input matches literally (see Document::escapeLike).
+            $needle = '%'.Document::escapeLike($filters['q']).'%';
+            $query->where(function (Builder $sub) use ($needle): void {
+                $sub->whereRaw("title LIKE ? ESCAPE '\\'", [$needle])
+                    ->orWhereRaw("reference_number LIKE ? ESCAPE '\\'", [$needle]);
             });
         }
 
@@ -82,7 +83,9 @@ class DocumentsController
         }
 
         $documents = $query
-            ->with(['tags', 'targetInstitutions', 'targetRoles', 'targetUsers'])
+            // `uploader` is eager-loaded so isInstitutionScopedActionAllowed() in
+            // mapListDocument() never lazy-loads it per row (N+1).
+            ->with(['tags', 'targetInstitutions', 'targetRoles', 'targetUsers', 'uploader:id,institution_id'])
             ->orderByDesc('issue_date')
             ->paginate(15)
             ->withQueryString()

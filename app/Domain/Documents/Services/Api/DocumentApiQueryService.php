@@ -83,9 +83,11 @@ class DocumentApiQueryService
     private function applyFilters(Builder $query, ListDocumentsRequest $request): void
     {
         if ($q = trim((string) $request->query('q', ''))) {
-            $query->where(function (Builder $sub) use ($q): void {
-                $sub->where('title', 'like', "%{$q}%")
-                    ->orWhere('reference_number', 'like', "%{$q}%");
+            // Escape LIKE wildcards so user input matches literally (see Document::escapeLike).
+            $needle = '%'.Document::escapeLike($q).'%';
+            $query->where(function (Builder $sub) use ($needle): void {
+                $sub->whereRaw("title LIKE ? ESCAPE '\\'", [$needle])
+                    ->orWhereRaw("reference_number LIKE ? ESCAPE '\\'", [$needle]);
             });
         }
 
