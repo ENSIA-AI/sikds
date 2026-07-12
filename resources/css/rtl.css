@@ -12,8 +12,22 @@
  * Prefer logical utilities/properties in new code instead of adding rules here.
  */
 
-[dir="rtl"] body {
-    font-family: 'Inter', 'Noto Sans Arabic', ui-sans-serif, system-ui, sans-serif;
+/* Cairo is a modern, highly legible Arabic typeface — used for the whole UI
+   under RTL (headings and body), including the sikds-* components which
+   otherwise pin Instrument Sans / Inter. */
+[dir="rtl"] body,
+[dir="rtl"] .sikds-app-body,
+[dir="rtl"] .sikds-page-title,
+[dir="rtl"] .sikds-panel-title,
+[dir="rtl"] .sikds-user-role,
+[dir="rtl"] .sikds-user-name,
+[dir="rtl"] .sikds-stat-value,
+[dir="rtl"] .sikds-nav-link,
+[dir="rtl"] button,
+[dir="rtl"] input,
+[dir="rtl"] textarea,
+[dir="rtl"] select {
+    font-family: 'Cairo', 'Noto Sans Arabic', ui-sans-serif, system-ui, sans-serif;
 }
 
 /*

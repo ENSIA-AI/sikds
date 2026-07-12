@@ -158,7 +158,7 @@ final class PermissionController extends Controller
             ];
         }, $categoryOrder);
 
-        return view('permissions', [
+        return view('permissions.index', [
             'title' => 'Permissions — ' . config('app.name'),
             'stats' => [
                 'total_permissions' => (int) $totalPermissions,

@@ -18,7 +18,7 @@
             :title="__('Activité Récente')"
             :subtitle="__('Actions des utilisateurs en temps réel')"
         >
-            <div class="min-h-0 flex-1 divide-y divide-black/10 overflow-y-auto">
+            <div class="min-h-0 flex-1 divide-y divide-black/10 overflow-y-auto sikds-scroll">
                 @forelse ($activities as $activity)
                     <x-activity-item
                         :icon="$activity['icon']"

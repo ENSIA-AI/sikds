@@ -30,7 +30,7 @@
             <button
                 type="button"
                 data-open-create-institution
-                class="inline-flex h-11 min-w-[10rem] items-center justify-center gap-2 rounded-[10px] bg-[#1E3A8A] px-6 text-sm font-semibold text-white shadow-[0px_4px_6px_-4px_rgba(0,0,0,0.10),0px_10px_15px_-3px_rgba(0,0,0,0.10)] transition hover:bg-[#163171] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1E3A8A]"
+                class="inline-flex h-11 min-w-[10rem] items-center justify-center gap-2 rounded-[10px] bg-[#1c398e] px-6 text-sm font-semibold text-white shadow-[0px_4px_6px_-4px_rgba(0,0,0,0.10),0px_10px_15px_-3px_rgba(0,0,0,0.10)] transition hover:bg-[#163171] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1c398e]"
             >
                 <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" class="size-5 shrink-0">
                     <path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
@@ -89,13 +89,13 @@
         
         <div
             id="institution-modal-root"
-            class="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6"
+            data-modal-portal class="sikds-modal-backdrop"
             hidden
             role="dialog"
             aria-modal="true"
             aria-labelledby="institution-modal-title"
         >
-            <div data-modal-overlay class="absolute inset-0 bg-black/40 transition-opacity"></div>
+            <div data-modal-overlay class="absolute inset-0 transition-opacity"></div>
 
             <div
                 data-modal-panel
@@ -142,7 +142,7 @@
                                 id="institution-address"
                                 name="address"
                                 rows="2"
-                                class="min-h-[44px] w-full rounded-[10px] border border-black/10 bg-white px-3 py-2 text-sm text-[#0A0A0A] shadow-sm outline-none transition focus:border-[#1E3A8A] focus:ring-2 focus:ring-[#1E3A8A]/20"
+                                class="min-h-[44px] w-full rounded-[10px] border border-black/10 bg-white px-3 py-2 text-sm text-[#0A0A0A] shadow-sm outline-none transition focus:border-[#1c398e] focus:ring-2 focus:ring-[#1c398e]/20"
                             ></textarea>
                         </div>
 
@@ -164,14 +164,14 @@
                         <button
                             type="button"
                             data-close-modal
-                            class="inline-flex h-[45px] min-w-[106px] items-center justify-center rounded-[10px] border border-black/10 bg-white px-4 text-sm font-medium text-black transition hover:bg-black/[0.03] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1E3A8A]"
+                            class="inline-flex h-[45px] min-w-[106px] items-center justify-center rounded-[10px] border border-black/10 bg-white px-4 text-sm font-medium text-black transition hover:bg-black/[0.03] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1c398e]"
                         >
                             {{ __('Annuler') }}
                         </button>
                         <button
                             type="submit"
                             data-submit-institution
-                            class="inline-flex h-11 min-w-[126px] items-center justify-center gap-2 rounded-[10px] bg-[#1E3A8A] px-6 text-sm font-semibold text-white transition hover:bg-[#163171] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1E3A8A] disabled:cursor-not-allowed disabled:opacity-60"
+                            class="inline-flex h-11 min-w-[126px] items-center justify-center gap-2 rounded-[10px] bg-[#1c398e] px-6 text-sm font-semibold text-white transition hover:bg-[#163171] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1c398e] disabled:cursor-not-allowed disabled:opacity-60"
                         >
                             {{ __('Enregistrer') }}
                         </button>

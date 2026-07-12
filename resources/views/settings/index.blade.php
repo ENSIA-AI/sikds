@@ -25,7 +25,7 @@
     <div class="grid gap-6 lg:grid-cols-2">
         <article class="bg-white rounded-[14px] border border-black/10 p-5" style="box-shadow:var(--sikds-shadow-panel);">
             <h3 class="text-base font-bold mb-4 flex items-center gap-2" style="color:var(--sikds-ink);">
-                <i class="fa-solid fa-globe text-[#1e3a8a]"></i>
+                <i class="fa-solid fa-globe text-[#1c398e]"></i>
                 {{ __('Langue d\'affichage') }}
             </h3>
             <p class="text-xs text-slate-500 mb-4">{{ __('Choisissez la langue de l\'interface.') }}</p>
@@ -34,8 +34,8 @@
                 @foreach (config('languages.lang', []) as $code => $label)
                     @if ($code === $currentLocale)
                         <div class="rounded-[10px] border-2 border-blue-400 bg-blue-50 px-3 py-2.5 text-sm font-medium text-blue-900 flex items-center gap-2">
-                            <i class="fa-solid fa-check text-blue-600"></i>{{ $label }}
-                            <span class="ms-auto text-[11px] text-blue-600">{{ __('Actif') }}</span>
+                            <i class="fa-solid fa-check text-[#1c398e]"></i>{{ $label }}
+                            <span class="ms-auto text-[11px] text-[#1c398e]">{{ __('Actif') }}</span>
                         </div>
                     @else
                         <a href="{{ route('changeLanguage', ['lang' => $code]) }}"
@@ -49,7 +49,7 @@
 
         <article class="bg-white rounded-[14px] border border-black/10 p-5" style="box-shadow:var(--sikds-shadow-panel);">
             <h3 class="text-base font-bold mb-4 flex items-center gap-2" style="color:var(--sikds-ink);">
-                <i class="fa-solid fa-shield-halved text-[#1e3a8a]"></i>
+                <i class="fa-solid fa-shield-halved text-[#1c398e]"></i>
                 {{ __('Audit & Conformité') }}
             </h3>
             <form method="POST" action="{{ route('settings.update') }}" class="space-y-3">
@@ -80,7 +80,7 @@
 
         <article class="bg-white rounded-[14px] border border-black/10 p-5 lg:col-span-2" style="box-shadow:var(--sikds-shadow-panel);">
             <h3 class="text-base font-bold mb-4 flex items-center gap-2" style="color:var(--sikds-ink);">
-                <i class="fa-solid fa-bell text-[#1e3a8a]"></i>
+                <i class="fa-solid fa-bell text-[#1c398e]"></i>
                 {{ __('Notifications Email') }}
             </h3>
             <form method="POST" action="{{ route('settings.update') }}" class="space-y-4">
@@ -125,7 +125,7 @@
 
         <article class="bg-white rounded-[14px] border border-black/10 p-5 lg:col-span-2" style="box-shadow:var(--sikds-shadow-panel);">
             <h3 class="text-base font-bold mb-4 flex items-center gap-2" style="color:var(--sikds-ink);">
-                <i class="fa-solid fa-water text-[#1e3a8a]"></i>
+                <i class="fa-solid fa-water text-[#1c398e]"></i>
                 {{ __('Filigrane (Watermark)') }}
             </h3>
             <form method="POST" action="{{ route('settings.update') }}" class="space-y-3">
@@ -172,7 +172,7 @@
         {{-- ===== RAG / AI ===== --}}
         <article class="bg-white rounded-[14px] border border-black/10 p-5 lg:col-span-2" style="box-shadow:var(--sikds-shadow-panel);">
             <h3 class="text-base font-bold mb-1 flex items-center gap-2" style="color:var(--sikds-ink);">
-                <i class="fa-solid fa-robot text-[#1e3a8a]"></i>
+                <i class="fa-solid fa-robot text-[#1c398e]"></i>
                 {{ __('Assistant IA (RAG)') }}
             </h3>
             <p class="text-xs text-slate-500 mb-4">{{ __('Réglages de récupération et de génération. Les secrets et points d\'accès restent gérés par l\'environnement.') }}</p>
@@ -228,7 +228,7 @@
         {{-- ===== System Health (read-only) ===== --}}
         <article class="bg-white rounded-[14px] border border-black/10 p-5 lg:col-span-2" style="box-shadow:var(--sikds-shadow-panel);">
             <h3 class="text-base font-bold mb-4 flex items-center gap-2" style="color:var(--sikds-ink);">
-                <i class="fa-solid fa-heart-pulse text-[#1e3a8a]"></i>
+                <i class="fa-solid fa-heart-pulse text-[#1c398e]"></i>
                 {{ __('État du système') }}
             </h3>
             @php

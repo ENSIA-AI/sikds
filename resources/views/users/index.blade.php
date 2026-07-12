@@ -7,7 +7,7 @@
 @section('page_subtitle', __('Gérer les accès et les permissions des utilisateurs'))
 
 @push('scripts')
-    @vite(['resources/js/pages/utilisateurs.js'])
+    @vite(['resources/js/pages/users.js'])
 @endpush
 
 @section('content')
@@ -41,7 +41,7 @@
                 <button
                     type="button"
                     data-open-create-user
-                    class="inline-flex h-11 min-w-[10rem] items-center justify-center gap-2 rounded-[10px] bg-[#1E3A8A] px-6 font-inter text-sm font-semibold text-white shadow-[0px_4px_6px_-4px_rgba(0,0,0,0.10),0px_10px_15px_-3px_rgba(0,0,0,0.10)] transition hover:bg-[#163171] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1E3A8A]"
+                    class="inline-flex h-11 min-w-[10rem] items-center justify-center gap-2 rounded-[10px] bg-[#1c398e] px-6 font-inter text-sm font-semibold text-white shadow-[0px_4px_6px_-4px_rgba(0,0,0,0.10),0px_10px_15px_-3px_rgba(0,0,0,0.10)] transition hover:bg-[#163171] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1c398e]"
                 >
                     <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" class="size-5 shrink-0">
                         <path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
@@ -234,7 +234,7 @@
                                         <button
                                             type="button"
                                             data-user-menu-toggle
-                                            class="inline-flex size-10 items-center justify-center rounded-[10px] text-[#0A0A0A] transition hover:bg-[#F4F4F5] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1E3A8A]"
+                                            class="inline-flex size-10 items-center justify-center rounded-[10px] text-[#0A0A0A] transition hover:bg-[#F4F4F5] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1c398e]"
                                             aria-haspopup="menu"
                                             aria-expanded="false"
                                             aria-label="{{ __('Actions utilisateur') }}"
@@ -335,13 +335,13 @@
         @can('user.assign.permissions')
             <div
                 id="create-user-modal"
-                class="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6"
+                data-modal-portal class="sikds-modal-backdrop"
                 hidden
                 role="dialog"
                 aria-modal="true"
                 aria-labelledby="create-user-title"
             >
-                <div data-create-user-overlay class="absolute inset-0 bg-black/50"></div>
+                <div data-create-user-overlay class="absolute inset-0"></div>
                 <div
                     data-create-user-panel
                     tabindex="-1"
@@ -367,7 +367,7 @@
                                         name="full_name"
                                         type="text"
                                         required
-                                        class="h-[37px] w-full rounded-[10px] border border-black/10 bg-white px-3 font-inter text-sm outline-none focus:border-[#1E3A8A] focus:ring-2 focus:ring-[#1E3A8A]/20"
+                                        class="h-[37px] w-full rounded-[10px] border border-black/10 bg-white px-3 font-inter text-sm outline-none focus:border-[#1c398e] focus:ring-2 focus:ring-[#1c398e]/20"
                                     />
                                 </div>
                                 <div class="flex flex-col gap-1.5 sm:col-span-2">
@@ -377,7 +377,7 @@
                                         name="email"
                                         type="email"
                                         required
-                                        class="h-[37px] w-full rounded-[10px] border border-black/10 bg-white px-3 font-inter text-sm outline-none focus:border-[#1E3A8A] focus:ring-2 focus:ring-[#1E3A8A]/20"
+                                        class="h-[37px] w-full rounded-[10px] border border-black/10 bg-white px-3 font-inter text-sm outline-none focus:border-[#1c398e] focus:ring-2 focus:ring-[#1c398e]/20"
                                     />
                                 </div>
                             </div>
@@ -388,7 +388,7 @@
                                     id="create-institution"
                                     name="institution_id"
                                     required
-                                    class="h-[37px] w-full rounded-[10px] border border-black/10 bg-white px-3 font-inter text-sm outline-none focus:border-[#1E3A8A] focus:ring-2 focus:ring-[#1E3A8A]/20"
+                                    class="h-[37px] w-full rounded-[10px] border border-black/10 bg-white px-3 font-inter text-sm outline-none focus:border-[#1c398e] focus:ring-2 focus:ring-[#1c398e]/20"
                                 >
                                     <option value="">{{ __('Sélectionner une institution') }}</option>
                                     @foreach ($institutions as $inst)
@@ -440,7 +440,7 @@
                             </button>
                             <button
                                 type="submit"
-                                class="inline-flex h-11 min-w-[160px] items-center justify-center rounded-[10px] bg-[#1E3A8A] px-6 font-inter text-sm font-semibold text-white transition hover:bg-[#163171] disabled:opacity-60"
+                                class="inline-flex h-11 min-w-[160px] items-center justify-center rounded-[10px] bg-[#1c398e] px-6 font-inter text-sm font-semibold text-white transition hover:bg-[#163171] disabled:opacity-60"
                             >
                                 {{ __('Créer l\'utilisateur') }}
                             </button>
@@ -455,14 +455,14 @@
     @can('user.manage')
         <div
             id="edit-user-modal"
-            class="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6"
+            data-modal-portal class="sikds-modal-backdrop"
             hidden
             role="dialog"
             aria-modal="true"
             aria-labelledby="edit-user-title"
             data-edit-user-can-assign-permissions="{{ auth()->user()?->can('user.assign.permissions') ? 1 : 0 }}"
         >
-            <div data-edit-user-overlay class="absolute inset-0 bg-black/50"></div>
+            <div data-edit-user-overlay class="absolute inset-0"></div>
             <div
                 data-edit-user-panel
                 tabindex="-1"
@@ -490,7 +490,7 @@
                                     name="full_name"
                                     type="text"
                                     required
-                                    class="h-[37px] w-full rounded-[10px] border border-black/10 bg-white px-3 font-inter text-sm outline-none focus:border-[#1E3A8A] focus:ring-2 focus:ring-[#1E3A8A]/20"
+                                    class="h-[37px] w-full rounded-[10px] border border-black/10 bg-white px-3 font-inter text-sm outline-none focus:border-[#1c398e] focus:ring-2 focus:ring-[#1c398e]/20"
                                 />
                             </div>
                             <div class="flex flex-col gap-1.5 sm:col-span-2">
@@ -500,7 +500,7 @@
                                     name="email"
                                     type="email"
                                     required
-                                    class="h-[37px] w-full rounded-[10px] border border-black/10 bg-white px-3 font-inter text-sm outline-none focus:border-[#1E3A8A] focus:ring-2 focus:ring-[#1E3A8A]/20"
+                                    class="h-[37px] w-full rounded-[10px] border border-black/10 bg-white px-3 font-inter text-sm outline-none focus:border-[#1c398e] focus:ring-2 focus:ring-[#1c398e]/20"
                                 />
                                 <p class="font-inter text-xs text-[#717182]">{{ __('L\'admin peut corriger l\'email même pour les comptes provisionnés via SSO.') }}</p>
                             </div>
@@ -510,7 +510,7 @@
                                     id="edit-institution"
                                     name="institution_id"
                                     required
-                                    class="h-[37px] w-full rounded-[10px] border border-black/10 bg-white px-3 font-inter text-sm outline-none focus:border-[#1E3A8A] focus:ring-2 focus:ring-[#1E3A8A]/20"
+                                    class="h-[37px] w-full rounded-[10px] border border-black/10 bg-white px-3 font-inter text-sm outline-none focus:border-[#1c398e] focus:ring-2 focus:ring-[#1c398e]/20"
                                 >
                                     <option value="">{{ __('Sélectionner une institution') }}</option>
                                     @foreach ($institutions as $inst)
@@ -559,7 +559,7 @@
                         </button>
                         <button
                             type="submit"
-                            class="inline-flex h-11 min-w-[140px] items-center justify-center rounded-[10px] bg-[#1E3A8A] px-6 font-inter text-sm font-semibold text-white transition hover:bg-[#163171] disabled:opacity-60"
+                            class="inline-flex h-11 min-w-[140px] items-center justify-center rounded-[10px] bg-[#1c398e] px-6 font-inter text-sm font-semibold text-white transition hover:bg-[#163171] disabled:opacity-60"
                         >
                             {{ __('Enregistrer') }}
                         </button>

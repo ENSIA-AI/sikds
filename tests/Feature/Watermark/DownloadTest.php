@@ -107,7 +107,7 @@ test('users cannot download documents restricted to roles they do not have', fun
 
 test('users cannot download a deleted document they do not own', function () {
     $uploader = User::factory()->create();
-    $document = dlCreateDocument($uploader, ['status' => 'deleted']);
+    $document = dlCreateDocument($uploader, ['status' => 'soft_deleted']);
 
     $otherUser = User::factory()->create();
     $this->actingAs($otherUser);

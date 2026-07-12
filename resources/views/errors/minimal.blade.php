@@ -21,7 +21,7 @@
                     </div>
 
                     <div class="mt-5 flex items-start gap-4">
-                        <div class="grid h-14 w-14 shrink-0 place-items-center rounded-[14px] bg-[color:var(--sikds-primary)] text-white shadow-[0_8px_20px_rgba(28,57,142,0.25)]">
+                        <div class="grid h-14 w-14 shrink-0 place-items-center rounded-[14px] bg-[color:var(--sikds-primary)] text-white shadow-[0_8px_20px_rgba(68,81,122,0.25)]">
                             <i class="@yield('icon', 'fa-solid fa-circle-exclamation') text-xl"></i>
                         </div>
                         <div class="min-w-0">

@@ -1,14 +1,11 @@
 @props(['icon', 'value', 'label', 'trend' => null, 'iconBg' => null, 'iconStyle' => null])
 
+{{-- Icon sits in a brand-100 chip by default; callers may still tint via iconBg. --}}
 <article class="sikds-stat-card">
     <div class="mb-4 flex items-start justify-between">
-        @if($iconBg)
-            <div class="h-10 w-10 rounded-[10px] grid place-items-center flex-shrink-0" style="background:{{ $iconBg }}">
-                <img src="{{ $icon }}" alt="" class="h-5 w-5" @if($iconStyle) style="{{ $iconStyle }}" @endif>
-            </div>
-        @else
-            <img src="{{ $icon }}" alt="" class="h-10 w-10" @if($iconStyle) style="{{ $iconStyle }}" @endif>
-        @endif
+        <div class="sikds-stat-icon-chip" @if($iconBg) style="background:{{ $iconBg }}" @endif>
+            <img src="{{ $icon }}" alt="" class="h-5 w-5" @if($iconStyle) style="{{ $iconStyle }}" @endif>
+        </div>
     </div>
     <p class="sikds-stat-value">{{ $value }}</p>
     <p class="sikds-stat-label">{{ $label }}</p>

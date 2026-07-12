@@ -464,7 +464,7 @@
 
 </div>
 
-<script>
+<script nonce="{{ \Illuminate\Support\Facades\Vite::cspNonce() }}">
     function documentShowPage(config) {
         const i18n = {
             serverRedirect: @json(__('La requête a été redirigée par le serveur. Vérifiez votre session.')),

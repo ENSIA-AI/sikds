@@ -29,13 +29,13 @@
     --color-zinc-900: #171717;
     --color-zinc-950: #0a0a0a;
 
-    --color-primary: #44517A;
+    --color-primary: #1c398e;
 
     --color-accent: var(--color-neutral-800);
     --color-accent-content: var(--color-neutral-800);
     --color-accent-foreground: var(--color-white);
 
-    --color-slate-blue: #44517A;
+    --color-slate-blue: #1c398e;
     --color-primary-navy: #0A192F;
     --color-accent-gold: #FFD700;
 

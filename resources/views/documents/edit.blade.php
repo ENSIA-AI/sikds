@@ -233,7 +233,7 @@
     </div>
 </div>
 
-<script>
+<script nonce="{{ \Illuminate\Support\Facades\Vite::cspNonce() }}">
     function documentEditPage(config) {
         const i18n = {
             serverRedirectFields: @json(__('La requête a été redirigée par le serveur. Vérifiez les champs requis et votre session.')),

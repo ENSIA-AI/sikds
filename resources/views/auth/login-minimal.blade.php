@@ -1,132 +1,108 @@
+@php
+    $appLocale = app()->getLocale();
+    $isRtl = in_array($appLocale, (array) config('languages.rtl', ['ar']), true);
+@endphp
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html lang="{{ str_replace('_', '-', $appLocale) }}" dir="{{ $isRtl ? 'rtl' : 'ltr' }}">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{{ __('SIKDS — Connexion') }}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@600;700&family=Inter:wght@400;500;600;700&family=Cairo:wght@400;500;600;700&display=swap" rel="stylesheet">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="antialiased">
+<body class="antialiased sikds-login-body">
 
-<div class="min-h-screen bg-gradient-to-br from-blue-900 via-blue-800 to-blue-900 flex items-center justify-center relative overflow-hidden">
+<div class="sikds-login-shell">
 
-    <div class="absolute top-0 left-0 w-96 h-96 bg-white rounded-full opacity-5 -translate-x-1/2 -translate-y-1/2"></div>
-    <div class="absolute bottom-0 right-0 w-[32rem] h-[32rem] bg-white rounded-full opacity-5 translate-x-1/3 translate-y-1/3"></div>
-    <div class="absolute top-1/2 left-1/4 w-64 h-64 bg-white rounded-full opacity-5"></div>
-
-    <div class="absolute top-4 end-6 flex items-center gap-3">
-        <a href="{{ route('changeLanguage', ['lang' => 'fr']) }}" class="text-white text-xs opacity-70 hover:opacity-100 transition-opacity">FR</a>
-        <span class="text-white opacity-30 text-xs">|</span>
-        <a href="{{ route('changeLanguage', ['lang' => 'ar']) }}" class="text-white text-xs opacity-70 hover:opacity-100 transition-opacity">AR</a>
-        <span class="text-white opacity-30 text-xs">|</span>
-        <a href="{{ route('changeLanguage', ['lang' => 'en']) }}" class="text-white text-xs opacity-70 hover:opacity-100 transition-opacity">EN</a>
+    {{-- Decorative aurora blobs (purely decorative) --}}
+    <div class="sikds-login-decor" aria-hidden="true">
+        <span class="sikds-login-blob sikds-login-blob--1"></span>
+        <span class="sikds-login-blob sikds-login-blob--2"></span>
+        <span class="sikds-login-blob sikds-login-blob--3"></span>
     </div>
 
-    <div class="relative z-10 bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 p-8">
+    {{-- Language switcher --}}
+    <nav class="sikds-login-lang" aria-label="{{ __('Choix de la langue') }}">
+        @foreach (['fr' => 'FR', 'ar' => 'AR', 'en' => 'EN'] as $lang => $label)
+            <a href="{{ route('changeLanguage', ['lang' => $lang]) }}"
+               class="sikds-login-lang-link {{ $appLocale === $lang ? 'is-active' : '' }}">{{ $label }}</a>
+        @endforeach
+    </nav>
 
-        <div class="flex flex-col items-center mb-6">
-            <div class="w-16 h-16 rounded-full bg-blue-900 flex items-center justify-center mb-4">
-                <span class="text-white font-bold text-sm tracking-wide">MESRS</span>
+    <main class="sikds-login-card" role="main">
+
+        {{-- Brand --}}
+        <div class="sikds-login-brand">
+            <div class="sikds-login-badge">
+                <i class="fa-solid fa-shield-halved" aria-hidden="true"></i>
             </div>
-            <h1 class="text-2xl font-bold text-blue-900">SIKDS</h1>
-            <p class="text-gray-400 text-sm text-center mt-1">
+            <h1 class="sikds-login-title">SIKDS</h1>
+            <p class="sikds-login-subtitle">
                 {{ __('Système Institutionnel de Gestion Documentaire') }}
             </p>
         </div>
 
-        <div class="border-t border-gray-100 mb-6"></div>
-
         @if(session('success'))
             <div class="mb-4">
-                <x-alert-item
-                    type="success"
-                    :message="session('success')"
-                    :timestamp="now()->format('H:i')"
-                />
+                <x-alert-item type="success" :message="session('success')" :timestamp="now()->format('H:i')" />
             </div>
         @endif
 
         @if(session('error'))
             <div class="mb-4">
-                <x-alert-item
-                    type="danger"
-                    :message="session('error')"
-                    :timestamp="now()->format('H:i')"
-                />
+                <x-alert-item type="danger" :message="session('error')" :timestamp="now()->format('H:i')" />
             </div>
         @endif
 
-        <div>
-            <p class="text-xs text-gray-400 uppercase tracking-wider text-center mb-3">
-                {{ __('Authentification institutionnelle') }}
-            </p>
-            <a
-                href="{{ route('sso.redirect') }}"
-                class="w-full bg-blue-900 hover:bg-blue-800 text-white rounded-xl py-3 font-medium flex items-center justify-center gap-2 transition-colors"
-            >
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                </svg>
-                {{ __('Continuer avec le SSO MESRS') }}
-            </a>
-        </div>
+        {{-- SSO — primary CTA --}}
+        <p class="sikds-login-eyebrow">{{ __('Authentification institutionnelle') }}</p>
+        <a href="{{ route('sso.redirect') }}" class="sikds-login-sso">
+            <i class="fa-solid fa-right-to-bracket" aria-hidden="true"></i>
+            {{ __('Continuer avec le SSO MESRS') }}
+        </a>
 
         @if(app()->environment('local'))
-        <div class="mt-6">
-            <div class="relative">
-                <div class="absolute inset-0 flex items-center">
-                    <div class="w-full border-t border-gray-200"></div>
-                </div>
-                <div class="relative flex justify-center text-xs">
-                    <span class="px-3 bg-white text-gray-400 uppercase tracking-wider">
-                        {{ __('Développement local uniquement') }}
-                    </span>
-                </div>
+            <div class="sikds-login-divider">
+                <span>{{ __('Développement local uniquement') }}</span>
             </div>
 
-            <form class="mt-5 space-y-4" method="POST" action="{{ route('login.local.post') }}">
+            <form class="sikds-login-form" method="POST" action="{{ route('login.local.post') }}">
                 @csrf
 
-                <div>
-                    <label for="email" class="block text-sm font-medium text-gray-600 mb-1">{{ __('Email') }}</label>
-                    <input
-                        id="email"
-                        name="email"
-                        type="email"
-                        value="{{ old('email', 'admin@mesrs.dz') }}"
-                        required
-                        class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-                    />
+                <div class="sikds-login-field">
+                    <label for="email">{{ __('Email') }}</label>
+                    <div class="sikds-login-input-wrap">
+                        <i class="fa-regular fa-envelope" aria-hidden="true"></i>
+                        <input id="email" name="email" type="email" autocomplete="username"
+                               value="{{ old('email', 'admin@mesrs.dz') }}" required
+                               placeholder="nom@mesrs.dz" />
+                    </div>
                     @error('email')
-                        <p class="mt-1 text-xs text-red-500">{{ $message }}</p>
+                        <p class="sikds-login-error">{{ $message }}</p>
                     @enderror
                 </div>
 
-                <div>
-                    <label for="password" class="block text-sm font-medium text-gray-600 mb-1">{{ __('Mot de passe') }}</label>
-                    <input
-                        id="password"
-                        name="password"
-                        type="password"
-                        required
-                        class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-                    />
+                <div class="sikds-login-field">
+                    <label for="password">{{ __('Mot de passe') }}</label>
+                    <div class="sikds-login-input-wrap">
+                        <i class="fa-solid fa-lock" aria-hidden="true"></i>
+                        <input id="password" name="password" type="password"
+                               autocomplete="current-password" required placeholder="••••••••" />
+                    </div>
                 </div>
 
-                <button
-                    type="submit"
-                    class="w-full bg-gray-800 hover:bg-gray-700 text-white rounded-xl py-3 text-sm font-medium transition-colors"
-                >
+                <button type="submit" class="sikds-login-local-btn">
                     {{ __('Connexion locale (développement)') }}
                 </button>
             </form>
-        </div>
         @endif
 
-    </div>
+    </main>
 
-    <p class="absolute bottom-4 text-white text-xs opacity-40">
+    <p class="sikds-login-footer">
         {{ __('© 2026 MESRS — Usage strictement institutionnel') }}
     </p>
 

@@ -99,7 +99,7 @@
                 <a href="{{ route('roles.show', $role) }}" class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">
                     {{ __('Annuler') }}
                 </a>
-                <button type="submit" class="rounded-lg bg-[#1E3A8A] px-4 py-2 text-sm font-semibold text-white hover:bg-[#163171]">
+                <button type="submit" class="rounded-lg bg-[#1c398e] px-4 py-2 text-sm font-semibold text-white hover:bg-[#163171]">
                     {{ __('Enregistrer les modifications') }}
                 </button>
             </div>

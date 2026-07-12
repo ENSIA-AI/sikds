@@ -17,7 +17,7 @@ function setBodyModalOpen(open) {
 }
 
 /**
- * Strings for institutions.js (same idea as readUsersI18n in utilisateurs.js):
+ * Strings for institutions.js (same idea as readUsersI18n in users.js):
  * read from data-* on the page root via getAttribute — not dataset.*, because
  * names like data-i18n-create-title do not map reliably to i18nCreateTitle in all browsers.
  */

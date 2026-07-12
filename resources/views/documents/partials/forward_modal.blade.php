@@ -5,6 +5,7 @@
     })"
     @open-forward-modal.window="openModal($event.detail)"
 >
+    <template x-teleport="body">
     <div
         x-show="open"
         x-cloak
@@ -73,7 +74,7 @@
                     </div>
                 </div>
 
-                <div x-show="recipient" x-cloak style="margin-top:0.75rem;padding:0.75rem 1rem;background:var(--sikds-primary-hover-bg);border:1px solid rgba(28,57,142,0.18);border-radius:10px;">
+                <div x-show="recipient" x-cloak style="margin-top:0.75rem;padding:0.75rem 1rem;background:var(--sikds-primary-hover-bg);border:1px solid rgba(68,81,122,0.18);border-radius:10px;">
                     <div style="display:flex;align-items:center;justify-content:space-between;gap:0.5rem;">
                         <div style="min-width:0;">
                             <p style="font-weight:600;color:var(--sikds-primary);margin:0;" x-text="recipient?.label"></p>
@@ -113,9 +114,10 @@
             </div>
         </div>
     </div>
+    </template>
 </div>
 
-<script>
+<script nonce="{{ \Illuminate\Support\Facades\Vite::cspNonce() }}">
     function documentForwardModal(config) {
         const i18n = {
             searchUnavailable: @json(__('Recherche indisponible.')),

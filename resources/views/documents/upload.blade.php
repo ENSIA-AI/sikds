@@ -317,7 +317,7 @@
 
 </div>
 
-<script>
+<script nonce="{{ \Illuminate\Support\Facades\Vite::cspNonce() }}">
 function uploadPage(config) {
     const i18n = {
         pdfOnly: @json(__('Seuls les fichiers PDF sont autorisés.')),

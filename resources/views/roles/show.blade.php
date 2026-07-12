@@ -16,7 +16,7 @@
 <div class="mb-6 flex flex-wrap items-center justify-between gap-4">
     <a
         href="{{ route('roles.index') }}"
-        class="inline-flex h-11 items-center justify-center gap-2 rounded-[10px] border border-black/10 bg-white px-6 text-sm font-medium text-[#0A0A0A] transition hover:bg-black/[0.02] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1E3A8A]"
+        class="inline-flex h-11 items-center justify-center gap-2 rounded-[10px] border border-black/10 bg-white px-6 text-sm font-medium text-[#0A0A0A] transition hover:bg-black/[0.02] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1c398e]"
     >
         <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" class="size-5">
             <path d="M19 12H5M12 19l-7-7 7-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -28,7 +28,7 @@
         @can('role.edit')
             <a
                 href="{{ route('roles.show', ['role' => $role, 'edit' => 1]) }}"
-                class="inline-flex h-11 items-center justify-center gap-2 rounded-[10px] border border-black/10 bg-white px-6 text-sm font-medium text-[#0A0A0A] transition hover:bg-black/[0.02] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1E3A8A]"
+                class="inline-flex h-11 items-center justify-center gap-2 rounded-[10px] border border-black/10 bg-white px-6 text-sm font-medium text-[#0A0A0A] transition hover:bg-black/[0.02] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1c398e]"
             >
                 <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" class="size-5">
                     <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -66,7 +66,7 @@
 {{-- Role Info Card --}}
 <div class="mb-6 rounded-[14px] border border-black/10 bg-white p-6 shadow-[0px_1px_2px_-1px_rgba(0,0,0,0.10),0px_1px_3px_0px_rgba(0,0,0,0.10)]">
     <div class="flex items-start gap-4">
-        <div class="flex size-14 shrink-0 items-center justify-center rounded-xl bg-[#DBEAFE] text-[#1E3A8A]">
+        <div class="flex size-14 shrink-0 items-center justify-center rounded-xl bg-[#DBEAFE] text-[#1c398e]">
             <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" class="size-7">
                 <path
                     d="M12 2.5l7 3.2v6.4c0 5-3 9.2-7 10.4C8 21.3 5 17.1 5 12.1V5.7l7-3.2Z"
@@ -202,7 +202,7 @@
                                     <!-- @can('user.view.all')
                                         <a
                                             href="{{ route('users.show', $user) }}"
-                                            class="text-sm font-medium text-[#1E3A8A] hover:underline"
+                                            class="text-sm font-medium text-[#1c398e] hover:underline"
                                         >
                                             Voir
                                         </a>
@@ -221,7 +221,7 @@
     <div class="mt-6 flex justify-end">
         <button
             type="submit"
-            class="inline-flex h-11 items-center justify-center gap-2 rounded-[10px] bg-[#1E3A8A] px-6 text-sm font-medium text-white hover:bg-[#1E40AF]"
+            class="inline-flex h-11 items-center justify-center gap-2 rounded-[10px] bg-[#1c398e] px-6 text-sm font-medium text-white hover:bg-[#1E40AF]"
         >
             {{ __('Enregistrer les modifications') }}
         </button>
@@ -230,7 +230,7 @@
 @endif 
 
 @can('role.delete')
-    <div id="delete-role-modal" class="sikds-doc-modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="delete-role-title">
+    <div id="delete-role-modal" data-modal-portal class="sikds-doc-modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="delete-role-title">
         <div class="sikds-doc-modal">
             <button type="button" id="close-delete-role-modal" class="sikds-doc-modal-close" aria-label="{{ __('Fermer') }}">
                 <i class="fa-solid fa-xmark"></i>
@@ -265,7 +265,7 @@
 @endcan
 
 @push('scripts')
-<script>
+<script nonce="{{ \Illuminate\Support\Facades\Vite::cspNonce() }}">
 document.addEventListener('DOMContentLoaded', function () {
     const form = document.getElementById('delete-role-form');
     const modal = document.getElementById('delete-role-modal');

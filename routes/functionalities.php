@@ -154,7 +154,7 @@ Route::middleware(['auth'])
         // Read: `DocumentApiQueryService` asserts list/preview permissions internally.
         // Write: each route adds `can:document.*` middleware; commands call
         // `DocumentApiAuthorizationService::assertInstitutionScope()` where applicable.
-        Route::prefix('api/documents')->name('api.documents.')->group(function () {
+        Route::prefix('api/documents')->name('api.documents.')->middleware('throttle:api-documents')->group(function () {
             // Read endpoints – OR-logic (view.all | own_institution | assigned) enforced in service
             Route::get('/', [DocumentsApiController::class, 'index'])->name('index');
             Route::get('/{id}', [DocumentsApiController::class, 'show'])->name('show');
@@ -162,10 +162,10 @@ Route::middleware(['auth'])
 
             // Write endpoints – individual permission guards applied at route level
             Route::post('/', [DocumentsApiController::class, 'store'])
-                ->middleware('can:document.create')
+                ->middleware(['can:document.create', 'throttle:api-documents-upload'])
                 ->name('store');
             Route::post('/create', [DocumentsApiController::class, 'store'])
-                ->middleware('can:document.create')
+                ->middleware(['can:document.create', 'throttle:api-documents-upload'])
                 ->name('create');
             Route::put('/{id}', [DocumentsApiController::class, 'update'])
                 ->middleware('can:document.edit')
@@ -191,21 +191,26 @@ Route::middleware(['auth'])
         });
 
         // ── Roles management ───────────────────────────────────────────────────
+        // Static paths are registered before `/{role}` so `create` is not captured
+        // as a role id (same convention as `/documents/upload` above); `{role}` is
+        // additionally constrained to numeric ids.
         Route::prefix('roles')->name('roles.')->group(function () {
             // Permission: role.view
             Route::get('/', [RoleController::class, 'index'])->middleware('can:role.view')->name('index');
-            Route::get('/{role}', [RoleController::class, 'show'])->middleware('can:role.view')->name('show');
 
             // Permission: role.create
             Route::get('/create', [RoleController::class, 'create'])->middleware('can:role.create')->name('create');
             Route::post('/', [RoleController::class, 'store'])->middleware('can:role.create')->name('store');
 
+            // Permission: role.view
+            Route::get('/{role}', [RoleController::class, 'show'])->middleware('can:role.view')->whereNumber('role')->name('show');
+
             // Permission: role.edit
-            Route::get('/{role}/edit', [RoleController::class, 'edit'])->middleware('can:role.edit')->name('edit');
-            Route::put('/{role}', [RoleController::class, 'update'])->middleware('can:role.edit')->name('update');
+            Route::get('/{role}/edit', [RoleController::class, 'edit'])->middleware('can:role.edit')->whereNumber('role')->name('edit');
+            Route::put('/{role}', [RoleController::class, 'update'])->middleware('can:role.edit')->whereNumber('role')->name('update');
 
             // Permission: role.delete
-            Route::delete('/{role}', [RoleController::class, 'destroy'])->middleware('can:role.delete')->name('destroy');
+            Route::delete('/{role}', [RoleController::class, 'destroy'])->middleware('can:role.delete')->whereNumber('role')->name('destroy');
         });
 
         // ── Institutions ───────────────────────────────────────────────────────
@@ -227,31 +232,42 @@ Route::middleware(['auth'])
         });
 
         // ── User management ────────────────────────────────────────────────────
+        // Static paths are registered before `/{user}` so `create` is not captured
+        // as a user id (same convention as `/documents/upload` above); `{user}` is
+        // additionally constrained to numeric ids.
         Route::prefix('users')->name('users.')->group(function () {
             // Permission: user.view.all
             Route::get('/', [UserController::class, 'index'])->middleware('can:user.view.all')->name('index');
-            Route::get('/{user}', [UserController::class, 'show'])->middleware('can:user.view.all')->name('show');
 
             // Permission: user.manage
             Route::get('/create', [UserController::class, 'create'])->middleware('can:user.manage')->name('create');
             Route::post('/', [UserController::class, 'store'])->middleware('can:user.manage')->name('store');
-            Route::get('/{user}/edit', [UserController::class, 'edit'])->middleware('can:user.manage')->name('edit');
-            Route::put('/{user}', [UserController::class, 'update'])->middleware('can:user.manage')->name('update');
+
+            // Permission: user.view.all
+            Route::get('/{user}', [UserController::class, 'show'])->middleware('can:user.view.all')->whereNumber('user')->name('show');
+
+            // Permission: user.manage
+            Route::get('/{user}/edit', [UserController::class, 'edit'])->middleware('can:user.manage')->whereNumber('user')->name('edit');
+            Route::put('/{user}', [UserController::class, 'update'])->middleware('can:user.manage')->whereNumber('user')->name('update');
 
             // Permission: user.assign.permissions
             Route::get('/{user}/permissions', [UserController::class, 'editPermissions'])
                 ->middleware('can:user.assign.permissions')
+                ->whereNumber('user')
                 ->name('edit-permissions');
             Route::put('/{user}/permissions', [UserController::class, 'updatePermissions'])
                 ->middleware('can:user.assign.permissions')
+                ->whereNumber('user')
                 ->name('update-permissions');
 
             // Permission: user.deactivate
             Route::post('/{user}/deactivate', [UserController::class, 'deactivate'])
                 ->middleware('can:user.deactivate')
+                ->whereNumber('user')
                 ->name('deactivate');
             Route::post('/{user}/activate', [UserController::class, 'activate'])
                 ->middleware('can:user.deactivate')
+                ->whereNumber('user')
                 ->name('activate');
         });
     });

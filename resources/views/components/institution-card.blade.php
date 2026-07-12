@@ -42,7 +42,7 @@
                     type="button"
                     data-open-institution-edit
                     data-edit-payload="{{ $editPayload }}"
-                    class="rounded-lg p-2 text-[#717182] transition hover:bg-black/5 hover:text-[#0A0A0A] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1E3A8A]"
+                    class="rounded-lg p-2 text-[#717182] transition hover:bg-black/5 hover:text-[#0A0A0A] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1c398e]"
                     aria-label="Modifier l'institution"
                 >
                     <svg viewBox="0 0 24 24" fill="none" class="size-5" aria-hidden="true">

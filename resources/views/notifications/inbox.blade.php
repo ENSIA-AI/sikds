@@ -51,12 +51,12 @@
                           action="{{ route('notifications.read', ['notification' => $notification->id]) }}"
                           class="flex items-start gap-3">
                         @csrf
-                        <span class="mt-1 inline-block h-2 w-2 rounded-full shrink-0 {{ $isRead ? 'bg-transparent' : 'bg-[#1E3A8A]' }}"
+                        <span class="mt-1 inline-block h-2 w-2 rounded-full shrink-0 {{ $isRead ? 'bg-transparent' : 'bg-[#1c398e]' }}"
                               aria-hidden="true"></span>
                         <div class="flex-1 min-w-0">
                             <div class="flex items-center gap-2 flex-wrap">
                                 <span class="text-[11px] uppercase tracking-wider font-semibold rounded-full px-2 py-0.5"
-                                      style="background:rgba(30,58,138,.08);color:#1E3A8A;">
+                                      style="background:rgba(30,58,138,.08);color:#1c398e;">
                                     {{ $typeLabel }}
                                 </span>
                                 <span class="text-xs" style="color:var(--sikds-muted)">

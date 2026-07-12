@@ -50,7 +50,8 @@ class DocumentApiCommandService
             }
 
             $this->assertPdfHeader($file);
-            $created[] = DB::transaction(function () use ($file, $meta, $user, $request): array {
+            $created[] = $this->createWithUniqueReference(function () use ($file, $meta, $user, $request): array {
+                $this->lockReferenceGeneration();
                 $reference = $this->generateReferenceNumber();
                 $stored = $this->storePdf($file, $reference, 1);
 
@@ -373,6 +374,47 @@ class DocumentApiCommandService
         }
 
         return ['path' => $path, 'hash' => $hash, 'size' => (int) $file->getSize()];
+    }
+
+    /**
+     * Run the document-creation transaction, retrying when two concurrent
+     * uploads race to the same reference number (unique index on
+     * documents.reference_number). On PostgreSQL the advisory lock taken in
+     * lockReferenceGeneration() makes the race impossible; the retry loop is
+     * the portable fallback for other drivers.
+     *
+     * @param  \Closure(): array<string, mixed>  $create
+     * @return array<string, mixed>
+     */
+    private function createWithUniqueReference(\Closure $create): array
+    {
+        $maxAttempts = 3;
+
+        for ($attempt = 1; ; $attempt++) {
+            try {
+                return DB::transaction($create);
+            } catch (\Illuminate\Database\UniqueConstraintViolationException $e) {
+                $isReferenceCollision = str_contains($e->getMessage(), 'reference_number')
+                    || str_contains($e->getMessage(), 'idx_documents_reference');
+
+                if (! $isReferenceCollision || $attempt >= $maxAttempts) {
+                    throw $e;
+                }
+                // Retry: the next attempt re-reads the max sequence and picks a fresh number.
+            }
+        }
+    }
+
+    /**
+     * Serialize reference-number generation across concurrent requests.
+     * pg_advisory_xact_lock is held until the surrounding transaction ends;
+     * non-PostgreSQL drivers (SQLite tests) fall back to the retry loop above.
+     */
+    private function lockReferenceGeneration(): void
+    {
+        if (DB::getDriverName() === 'pgsql') {
+            DB::statement("SELECT pg_advisory_xact_lock(hashtext('documents.reference_number'))");
+        }
     }
 
     private function generateReferenceNumber(): string

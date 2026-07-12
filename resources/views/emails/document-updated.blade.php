@@ -61,7 +61,7 @@
 
                 <div style="margin-top:16px;">
                     <a href="{{ url('/documents/'.$document->id) }}"
-                       style="display:inline-block;background:#44517A;color:#fff;text-decoration:none;padding:10px 14px;border-radius:12px;font-size:14px;font-weight:700;">
+                       style="display:inline-block;background:#1c398e;color:#fff;text-decoration:none;padding:10px 14px;border-radius:12px;font-size:14px;font-weight:700;">
                         {{ __('Voir la nouvelle version') }}
                     </a>
                 </div>
@@ -69,7 +69,7 @@
 
             <div style="padding:14px 20px;border-top:1px solid rgba(0,0,0,.06);background:#f9fafb;font-size:11px;color:#64748b;line-height:1.55;">
                 {!! __('Cet email a été envoyé automatiquement par <strong>SIKDS</strong> — Système d\'Information de Knowledge & Document Sharing.') !!}<br>
-                {{ __('Pour toute question :') }} <a href="mailto:{{ $supportContact }}" style="color:#44517A;text-decoration:none;">{{ $supportContact }}</a>.
+                {{ __('Pour toute question :') }} <a href="mailto:{{ $supportContact }}" style="color:#1c398e;text-decoration:none;">{{ $supportContact }}</a>.
             </div>
         </div>
     </div>

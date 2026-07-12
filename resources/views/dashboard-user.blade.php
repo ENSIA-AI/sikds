@@ -149,7 +149,7 @@
                             @csrf
                             <button type="submit"
                                     class="w-full flex items-start gap-3 px-6 py-3 text-start hover:bg-slate-50 transition-colors {{ $isRead ? '' : 'bg-blue-50/30' }}">
-                                <span class="mt-1.5 inline-block h-2 w-2 rounded-full shrink-0 {{ $isRead ? 'bg-transparent' : 'bg-[#1E3A8A]' }}"
+                                <span class="mt-1.5 inline-block h-2 w-2 rounded-full shrink-0 {{ $isRead ? 'bg-transparent' : 'bg-[#1c398e]' }}"
                                       aria-hidden="true"></span>
                                 <div class="flex-1 min-w-0">
                                     <p class="text-sm {{ $isRead ? 'text-slate-700' : 'font-semibold text-slate-900' }}">{{ $message }}</p>
@@ -159,7 +159,7 @@
                         </form>
                     @else
                         <div class="flex items-start gap-3 px-6 py-3 {{ $isRead ? '' : 'bg-blue-50/30' }}">
-                            <span class="mt-1.5 inline-block h-2 w-2 rounded-full shrink-0 {{ $isRead ? 'bg-transparent' : 'bg-[#1E3A8A]' }}"
+                            <span class="mt-1.5 inline-block h-2 w-2 rounded-full shrink-0 {{ $isRead ? 'bg-transparent' : 'bg-[#1c398e]' }}"
                                   aria-hidden="true"></span>
                             <div class="flex-1 min-w-0">
                                 <p class="text-sm {{ $isRead ? 'text-slate-700' : 'font-semibold text-slate-900' }}">{{ $message }}</p>
@@ -178,7 +178,7 @@
     </section>
 
     @push('scripts')
-        <script>
+        <script nonce="{{ \Illuminate\Support\Facades\Vite::cspNonce() }}">
             function sikdsRecentChats(config) {
                 const i18n = {
                     justNow: @json(__("à l'instant")),

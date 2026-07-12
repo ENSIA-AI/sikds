@@ -105,7 +105,10 @@ class Document extends Model
         }
 
         $institutionId = $user->institution_id;
-        $roleIds = $user->roles()->pluck('roles.id')->map(fn ($id): int => (int) $id)->all();
+        // Use the (lazily loaded, then cached) `roles` relation instead of a fresh
+        // query so repeated visibleTo()/isAccessibleBy() calls within one request
+        // resolve role ids once instead of re-querying per call.
+        $roleIds = $user->roles->pluck('id')->map(fn ($id): int => (int) $id)->all();
 
         return $query->where(function (Builder $sub) use ($user, $includeUploader, $institutionId, $roleIds): void {
             if ($includeUploader) {
@@ -184,5 +187,14 @@ class Document extends Model
     public function scopeActive($query)
     {
         return $query->where('status', 'active');
+    }
+
+    /**
+     * Escape `%` and `_` in user input destined for a LIKE clause so it
+     * matches literally.
+     */
+    public static function escapeLike(string $value): string
+    {
+        return str_replace(['!', '%', '_'], ['!!', '!%', '!_'], $value);
     }
 }

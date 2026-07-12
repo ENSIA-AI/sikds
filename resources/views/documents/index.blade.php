@@ -1,6 +1,11 @@
 @extends('layouts.app')
 @section('page_title', __('Gestion des Documents'))
 @section('page_subtitle', __('Gérer le cycle de vie des documents institutionnels'))
+
+@push('scripts')
+    @vite(['resources/js/pages/documents.js'])
+@endpush
+
 @section('content')
 
     <div
@@ -38,16 +43,17 @@
         </button>
     </div>
 
-    {{-- Aperçu rapide avant la fiche document --}}
+    {{-- Aperçu rapide avant la fiche document (portalled to <body>) --}}
+    <template x-teleport="body">
     <div
         x-show="previewOpen"
         x-cloak
-        class="sikds-docs-preview-backdrop fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6"
+        class="sikds-docs-preview-backdrop fixed inset-0 z-[1000] flex items-center justify-center p-4 sm:p-6"
         role="dialog"
         aria-modal="true"
         aria-labelledby="sikds-doc-preview-title"
     >
-        <div class="sikds-docs-preview-overlay absolute inset-0 bg-black/40" @click="closePreview()" aria-hidden="true"></div>
+        <div class="sikds-docs-preview-overlay absolute inset-0 bg-slate-900/50" @click="closePreview()" aria-hidden="true"></div>
         <div
             class="sikds-docs-preview-panel relative z-10 flex max-h-[min(90vh,640px)] w-full max-w-lg flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl"
             @click.stop
@@ -117,6 +123,7 @@
             </div>
         </div>
     </div>
+    </template>
 
     @can('document.create')
         <div class="flex justify-end mb-5">
@@ -350,7 +357,7 @@
                                         </a>
                                     @else
                                         @can('document.create')
-                                            <a href="{{ route('documents.create') }}" class="inline-flex items-center gap-2 rounded-[10px] bg-[#1E3A8A] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#163171]">
+                                            <a href="{{ route('documents.create') }}" class="inline-flex items-center gap-2 rounded-[10px] bg-[#1c398e] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#163171]">
                                                 <i class="fa-solid fa-plus text-xs"></i>
                                                 {{ __('Téléverser un Document') }}
                                             </a>
@@ -420,98 +427,6 @@
 
     </div>
 
-    <script>
-        function documentListPage(config) {
-            const i18n = {
-                deleted: @json(__('Document supprimé.')),
-                serverRedirect: @json(__('La requête a été redirigée par le serveur. Vérifiez votre session.')),
-                genericError: @json(__('Une erreur est survenue.')),
-                actionImpossible: @json(__('Action impossible.')),
-            };
-            return {
-                filtersOpen: false,
-                previewOpen: false,
-                previewDoc: null,
-                modal: null,
-                pendingDeleteDoc: null,
-                loading: false,
-                banner: { message: '', type: 'info' },
-                init() {
-                    const message = window.sessionStorage.getItem('documents-success-message');
-                    if (message) {
-                        this.banner = { message, type: 'success' };
-                        window.sessionStorage.removeItem('documents-success-message');
-                    }
-                },
-                handleEscape() {
-                    if (this.modal) {
-                        this.modal = null;
-                        return;
-                    }
-                    if (this.previewOpen) {
-                        this.closePreview();
-                        return;
-                    }
-                    this.filtersOpen = false;
-                },
-                openPreview(doc) {
-                    this.previewDoc = doc;
-                    this.previewOpen = true;
-                    document.documentElement.classList.add('overflow-hidden');
-                },
-                closePreview() {
-                    this.previewOpen = false;
-                    this.previewDoc = null;
-                    document.documentElement.classList.remove('overflow-hidden');
-                },
-                openDeleteModal(doc) {
-                    this.pendingDeleteDoc = doc;
-                    this.modal = 'delete';
-                },
-                async confirmDelete() {
-                    if (!this.pendingDeleteDoc?.delete_url) return;
-                    await this.performAction(this.pendingDeleteDoc.delete_url, 'DELETE', i18n.deleted);
-                },
-                async performAction(url, method, successMessage) {
-                    if (this.loading) return;
-
-                    this.loading = true;
-                    this.banner = { message: '', type: 'info' };
-
-                    try {
-                        const response = await fetch(url, {
-                            method,
-                            headers: {
-                                'Accept': 'application/json',
-                                'X-Requested-With': 'XMLHttpRequest',
-                                'X-CSRF-TOKEN': config.csrfToken,
-                            },
-                            credentials: 'same-origin',
-                        });
-
-                        if (response.redirected) {
-                            throw new Error(i18n.serverRedirect);
-                        }
-
-                        const payload = await response.json().catch(() => ({}));
-
-                        if (!response.ok) {
-                            throw new Error(payload.message || i18n.genericError);
-                        }
-
-                        this.modal = null;
-                        this.pendingDeleteDoc = null;
-                        this.banner = { message: successMessage, type: 'success' };
-                        window.location.reload();
-                    } catch (error) {
-                        this.banner = { message: error.message || i18n.actionImpossible, type: 'danger' };
-                    } finally {
-                        this.loading = false;
-                    }
-                },
-            };
-        }
-    </script>
 
     @include('documents.partials.download_modal')
 
