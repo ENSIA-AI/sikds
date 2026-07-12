@@ -28,8 +28,8 @@
     }
 
     .sikds-tag-row:hover {
-        border-color: rgba(28, 57, 142, 0.2);
-        box-shadow:   0 2px 8px rgba(28, 57, 142, 0.06);
+        border-color: rgba(68, 81, 122, 0.2);
+        box-shadow:   0 2px 8px rgba(68, 81, 122, 0.06);
     }
 
     /* ── Badge icon ─────────────────────────────────────────── */
@@ -112,17 +112,29 @@
         box-shadow:       0 14px 20px rgba(0,0,0,0.13), 0 4px 8px rgba(0,0,0,0.1);
     }
 
-    /* ── Modal backdrop ─────────────────────────────────────── */
+    /* ── Shared modal backdrop ──────────────────────────────────
+       Single source of truth for EVERY modal scrim across the app
+       (Create a Tag, Create a user, roles, institutions, documents…).
+       No backdrop blur — a plain dim overlay, identical everywhere.
+       z-index sits above the sidebar (z-40/50) and header (z-30).
+       Modals are portalled to <body> (x-teleport / data-modal-portal)
+       so this always covers the full viewport, chrome included. */
     .sikds-modal-backdrop {
         position:        fixed;
         inset:           0;
-        background:      rgba(0, 0, 0, 0.45);
-        backdrop-filter: blur(3px);
+        background:      rgba(15, 23, 42, 0.5);
         display:         flex;
         align-items:     center;
         justify-content: center;
-        z-index:         50;
+        z-index:         1000;
         padding:         16px;
+    }
+
+    /* Respect the hide mechanisms used across the app (JS toggles the `hidden`
+       attribute or a `.hidden` class) even though the base rule sets display:flex. */
+    .sikds-modal-backdrop[hidden],
+    .sikds-modal-backdrop.hidden {
+        display: none !important;
     }
 
     /* ── Modal card ─────────────────────────────────────────── */
@@ -262,7 +274,7 @@
 
     .sikds-form-input:focus {
         border-color: var(--sikds-primary);
-        box-shadow:   0 0 0 3px rgba(28, 57, 142, 0.08);
+        box-shadow:   0 0 0 3px rgba(90, 108, 168, 0.18);
     }
 
     .sikds-form-input.is-error {
@@ -551,7 +563,7 @@
 
     .sikds-cp-hex-wrap:focus-within {
         border-color: var(--sikds-primary);
-        box-shadow:   0 0 0 3px rgba(28, 57, 142, 0.08);
+        box-shadow:   0 0 0 3px rgba(90, 108, 168, 0.18);
     }
 
     .sikds-cp-hex-wrap.is-error {
@@ -592,7 +604,7 @@
 
     .sikds-select-wrap:focus-within {
         border-color: var(--sikds-primary);
-        box-shadow:   0 0 0 3px rgba(28, 57, 142, 0.08);
+        box-shadow:   0 0 0 3px rgba(90, 108, 168, 0.18);
     }
 
     .sikds-select-wrap.is-error {

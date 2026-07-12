@@ -23,6 +23,6 @@
         @if ($inputmode !== null) inputmode="{{ $inputmode }}" @endif
         @if ($pattern !== null) pattern="{{ $pattern }}" @endif
         @if ($required) required @endif
-        class="h-11 w-full rounded-[10px] border border-black/10 bg-white px-3 text-sm text-[#0A0A0A] shadow-sm outline-none transition placeholder:text-[#717182]/70 focus:border-[#1E3A8A] focus:ring-2 focus:ring-[#1E3A8A]/20"
+        class="h-11 w-full rounded-[10px] border border-black/10 bg-white px-3 text-sm text-[#0A0A0A] shadow-sm outline-none transition placeholder:text-[#717182]/70 focus:border-[#1c398e] focus:ring-2 focus:ring-[#1c398e]/20"
     />
 </div>

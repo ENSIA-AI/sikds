@@ -6,7 +6,7 @@
 <details class="relative" data-language-switcher>
     <summary
         id="sikds-language-toggle"
-        class="sikds-language-toggle inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-medium text-slate-700 transition-colors hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-[#1E3A8A]/35"
+        class="sikds-language-toggle inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-medium text-slate-700 transition-colors hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-[#1c398e]/35"
         aria-controls="sikds-language-menu"
         aria-label="{{ __('Changer la langue') }}"
         style="list-style:none;cursor:pointer;"
@@ -27,7 +27,7 @@
             <a
                 href="{{ route('changeLanguage', ['lang' => $code]) }}"
                 role="menuitem"
-                class="flex items-center justify-between px-4 py-2 text-sm font-medium transition-colors hover:bg-slate-100 {{ $code === $currentLocale ? 'text-[#1E3A8A]' : 'text-slate-700' }}"
+                class="flex items-center justify-between px-4 py-2 text-sm font-medium transition-colors hover:bg-slate-100 {{ $code === $currentLocale ? 'text-[#1c398e]' : 'text-slate-700' }}"
             >
                 <span>{{ $label }}</span>
                 @if ($code === $currentLocale)

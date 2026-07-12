@@ -1,51 +1,162 @@
 :root {
-    --sikds-primary:        #1c398e;
+    /* ── Brand scale (rich royal blue). #1c398e is the primary action color. ── */
+    --sikds-brand-900:      #0d1c4d;   /* darkest — gradients, deep accents */
+    --sikds-brand-800:      #122566;   /* deep navy */
+    --sikds-brand-700:      #16296b;   /* headings, active nav text */
+    --sikds-brand-600:      #1c398e;   /* PRIMARY — buttons, active nav, brand */
+    --sikds-brand-500:      #2947a8;   /* hover (a touch brighter) */
+    --sikds-brand-400:      #4a63c4;   /* secondary accents */
+    --sikds-brand-300:      #9aa9db;   /* muted accents, borders-on-brand */
+    --sikds-brand-100:      #e9edfb;   /* tinted fills: active nav, icon chips, selected rows */
+    --sikds-accent:         #3b5bdb;   /* single saturated blue — sparklines/highlights only */
+
+    --sikds-primary:        var(--sikds-brand-600);
     --sikds-sidebar-width:  249px;
     --sikds-header-height:  102px;
-    --sikds-bg:             #f6f6f6;
+
+    /* ── Surfaces ── */
+    --sikds-bg:             #f6f7fb;
     --sikds-surface:        #ffffff;
     --sikds-ink:            #0a0a0a;
-    --sikds-muted:          #717182;
-    --sikds-border:         rgba(0, 0, 0, 0.1);
-    --sikds-border-solid:   rgba(0, 0, 0, 0.1);
+    --sikds-muted:          #6b7280;
+    --sikds-border:         #e7eaf3;
+    --sikds-border-solid:   #e7eaf3;
 
-    --sikds-shadow-card:    0 4px 19px rgba(0, 0, 0, 0.15);
-    --sikds-shadow-panel:   0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.1);
-    --sikds-shadow-nav:     0 4px 6px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.1);
-    --sikds-shadow-fab:     0 4px 14px rgba(28, 57, 142, 0.45);
-    --sikds-shadow-header:  0 4px 18px rgba(0, 0, 0, 0.05);
+    /* ── One soft shadow family (cards quiet, no heavy/dark shadows) ── */
+    --sikds-shadow-card:    0 1px 2px rgba(28, 57, 142, 0.05), 0 8px 24px rgba(28, 57, 142, 0.07);
+    --sikds-shadow-panel:   0 1px 2px rgba(28, 57, 142, 0.05), 0 8px 24px rgba(28, 57, 142, 0.07);
+    --sikds-shadow-nav:     0 1px 2px rgba(28, 57, 142, 0.06);
+    --sikds-shadow-fab:     0 10px 24px rgba(28, 57, 142, 0.40);
+    --sikds-shadow-header:  none;
 
+    /* ── Radii: 16px cards, 10px controls, 999px pills ── */
     --sikds-radius-sm:      10px;
-    --sikds-radius-md:      14px;
+    --sikds-radius-md:      16px;
+    --sikds-radius-pill:    999px;
 
+    /* ── 8px rhythm ── */
     --sikds-space-nav-item: 16px;
-    --sikds-space-card:     20px;
+    --sikds-space-card:     24px;
     --sikds-space-panel-h:  16px;
     --sikds-icon-size:      20px;
 
+    /* ── Motion: restrained, one duration ── */
+    --sikds-motion:         140ms ease;
+
+    /* ── Status families (gold/red/green reserved for status, not chrome) ── */
     --sikds-danger-bg:      #fef2f2;
     --sikds-danger-border:  #ffc9c9;
     --sikds-danger-ink:     #b91c1c;
     --sikds-warn-bg:        #fffbeb;
     --sikds-warn-border:    #fee685;
-    --sikds-info-bg:        #eff6ff;
-    --sikds-info-border:    #bedbff;
+    --sikds-info-bg:        var(--sikds-brand-100);
+    --sikds-info-border:    var(--sikds-brand-300);
     --sikds-success-bg:     #f0fdf4;
     --sikds-success-border: #bbf7d0;
     --sikds-success-ink:    #15803d;
 
     --sikds-trend-color:    #00a63e;
     --sikds-fab-dot-color:  #e7000b;
-    --sikds-icon-bg:        #ececf0;
-    --sikds-footer-text:    #030213;
+    --sikds-icon-bg:        var(--sikds-brand-100);
+    --sikds-footer-text:    var(--sikds-brand-700);
 
-    --sikds-hero-dark:        #00144e;
-    --sikds-primary-dark:     #15307a;
-    --sikds-primary-hover-bg: rgba(28, 57, 142, 0.05);
-    --sikds-sidebar-bg:       var(--sikds-primary);
+    --sikds-hero-dark:        var(--sikds-brand-700);
+    --sikds-primary-dark:     var(--sikds-brand-700);
+    --sikds-primary-hover-bg: rgba(28, 57, 142, 0.07);
+    /* Light sidebar: white surface, tinted active item (see layout.css) */
+    --sikds-sidebar-bg:       var(--sikds-surface);
 
     --welcome-vec1-top:    #6f93ff;
     --welcome-vec2-bottom: #04174e;
     --welcome-ellipse:     #155dfc;
 }
 
+/* Visible keyboard focus everywhere, in brand-500 (a11y). */
+:where(a, button, [role="button"], input, select, textarea, summary):focus-visible {
+    outline: 2px solid var(--sikds-brand-500);
+    outline-offset: 2px;
+    border-radius: var(--sikds-radius-sm, 10px);
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+ * Platform-wide smoothness. All decorative motion lives under
+ * (prefers-reduced-motion: no-preference) so it vanishes for users who opt out.
+ * Only transform/opacity are animated (never width/height/top/left) to avoid
+ * layout thrash / CLS.
+ * ───────────────────────────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: no-preference) {
+
+    html {
+        scroll-behavior: smooth;
+    }
+
+    /* Each page's main content eases in on load — makes full-page navigation
+       (server-rendered) feel like a soft transition instead of a hard swap.
+       IMPORTANT: opacity only — NEVER transform here. A lingering transform
+       (even translateY(0) left by animation-fill-mode) would turn this element
+       into the containing block for position:fixed modals nested in the page
+       content, clipping/mis-placing them. */
+    .sikds-main-inner {
+        animation: sikds-page-in 0.32s ease-out both;
+    }
+
+    @keyframes sikds-page-in {
+        from { opacity: 0; }
+        to   { opacity: 1; }
+    }
+
+    /* Consistent micro-transitions on every interactive surface, so hover /
+       focus / press all feel unified (140ms token) rather than snapping. */
+    a,
+    button,
+    summary,
+    [role="button"],
+    .sikds-nav-link,
+    .sikds-stat-card,
+    .sikds-docs-table tbody tr,
+    .sikds-panel,
+    .sikds-bottom-card {
+        transition:
+            color var(--sikds-motion),
+            background-color var(--sikds-motion),
+            border-color var(--sikds-motion),
+            box-shadow var(--sikds-motion),
+            transform var(--sikds-motion);
+    }
+
+    /* Tactile press feedback on buttons/actionable cards (scale-feedback). */
+    button:not(:disabled):active,
+    [role="button"]:active,
+    .sikds-btn-upload:active,
+    .sikds-nav-link:active {
+        transform: scale(0.97);
+    }
+
+    /* Cards lift gently on hover to signal interactivity. */
+    .sikds-stat-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 10px rgba(28, 57, 142, 0.06), 0 14px 34px rgba(28, 57, 142, 0.10);
+    }
+
+    /* Dialogs fade their scrim + panel in when shown (overlay uses [hidden]). */
+    [role="dialog"]:not([hidden]) {
+        animation: sikds-dialog-in 0.18s ease-out both;
+    }
+
+    @keyframes sikds-dialog-in {
+        from { opacity: 0; }
+        to   { opacity: 1; }
+    }
+}
+
+/* Restrained motion only — and none at all when the user asks for none. */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    ::before,
+    ::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}

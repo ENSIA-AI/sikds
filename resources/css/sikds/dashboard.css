@@ -1,22 +1,41 @@
 @layer components {
 
+    /* Signature element: white card, 16px radius, soft shadow, icon chip,
+       big tabular number, muted caption. */
     .sikds-stat-card {
-        height:     161px;
-        @apply rounded-[10px] bg-white;
-        padding:    var(--sikds-space-card);
-        box-shadow: var(--sikds-shadow-card);
+        min-height:    161px;
+        background:    var(--sikds-surface);
+        border:        1px solid var(--sikds-border);
+        border-radius: var(--sikds-radius-md);
+        padding:       var(--sikds-space-card);
+        box-shadow:    var(--sikds-shadow-card);
+        transition:    box-shadow var(--sikds-motion), transform var(--sikds-motion);
+    }
+
+    .sikds-stat-icon-chip {
+        display:          grid;
+        place-items:      center;
+        height:           40px;
+        width:            40px;
+        flex-shrink:      0;
+        border-radius:    var(--sikds-radius-sm);
+        background-color: var(--sikds-brand-100);
     }
 
     .sikds-stat-value {
-        font-size:   30px;
-        font-weight: 700;
-        line-height: 2.25rem;
-        color:       var(--sikds-ink);
+        font-size:            32px;
+        font-weight:          700;
+        line-height:          2.5rem;
+        color:                var(--sikds-brand-700);
+        font-variant-numeric: tabular-nums;
+        letter-spacing:       -0.01em;
     }
 
     .sikds-stat-label {
         @apply text-sm;
-        color: var(--sikds-muted);
+        margin-top:  2px;
+        font-weight: 500;
+        color:       var(--sikds-muted);
     }
 
     .sikds-trend {
@@ -25,11 +44,12 @@
     }
 
     .sikds-panel {
-        height:       429px;
-        background:   var(--sikds-surface);
-        @apply overflow-hidden rounded-[14px] border;
-        border-color: var(--sikds-border-solid);
-        box-shadow:   var(--sikds-shadow-panel);
+        height:        429px;
+        background:    var(--sikds-surface);
+        @apply overflow-hidden border;
+        border-radius: var(--sikds-radius-md);
+        border-color:  var(--sikds-border-solid);
+        box-shadow:    var(--sikds-shadow-panel);
     }
 
     .sikds-panel-title {
@@ -133,13 +153,14 @@
     }
 
     .sikds-bottom-card {
-        height:       auto;
-        min-height:   188px;
-        background:   var(--sikds-surface);
-        @apply rounded-[14px] border;
-        border-color: var(--sikds-border-solid);
-        padding:      24px;
-        box-shadow:   var(--sikds-shadow-panel);
+        height:        auto;
+        min-height:    188px;
+        background:    var(--sikds-surface);
+        @apply border;
+        border-radius: var(--sikds-radius-md);
+        border-color:  var(--sikds-border-solid);
+        padding:       24px;
+        box-shadow:    var(--sikds-shadow-panel);
     }
 
     .sikds-bottom-card h3 {

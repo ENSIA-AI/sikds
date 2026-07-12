@@ -57,7 +57,7 @@
                                     value="{{ $perm->id }}"
                                     data-perm-checkbox
                                     data-perm-id="{{ $perm->id }}"
-                                    class="mt-0.5 size-4 shrink-0 rounded border-black/20 text-[#1E3A8A] focus:ring-[#1E3A8A]"
+                                    class="mt-0.5 size-4 shrink-0 rounded border-black/20 text-[#1c398e] focus:ring-[#1c398e]"
                                 />
                                 <span class="font-inter text-sm leading-5 text-[#193CB8]">{{ $perm->name }}</span>
                             </label>

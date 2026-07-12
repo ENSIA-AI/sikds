@@ -111,4 +111,478 @@
         color:            var(--sikds-ink);
     }
 
+    /* ── Floating RAG chatbot (indigo assistant theme) ──────────────
+     * Scoped indigo accent for the assistant only; the rest of the app keeps
+     * the royal-blue brand. Tokens are local so they never leak elsewhere.
+     * ------------------------------------------------------------------ */
+    #sikds-chatbot-widget {
+        --ai-600: #1c398e;   /* platform brand blue */
+        --ai-700: #16296b;
+        --ai-500: #2947a8;
+        --ai-50:  #eef1fb;
+        --ai-100: #dbe2f6;
+        --ai-grad: linear-gradient(135deg, #2947a8, #16296b);
+        --ai-shadow: 0 6px 18px rgba(28, 57, 142, 0.32);
+    }
+
+    /* Launcher: friendly avatar (colour mascot on white), soft indigo shadow. */
+    /* The robot's round face *is* the button — no wrapper chip, just the face
+       with a soft drop-shadow for depth. */
+    .sikds-chatbot-fab {
+        background:  transparent;
+        border:      0;
+        box-shadow:  none;
+        overflow:    visible;
+        transition:  transform var(--sikds-motion), filter var(--sikds-motion), opacity var(--sikds-motion);
+    }
+
+    .sikds-chatbot-fab :where(svg) {
+        width:  100%;
+        height: 100%;
+        filter: drop-shadow(0 6px 14px rgba(22, 41, 107, 0.35));
+    }
+
+    .sikds-chatbot-fab:hover {
+        transform: translateY(-2px) scale(1.05);
+    }
+    .sikds-chatbot-fab:hover :where(svg) {
+        filter: drop-shadow(0 10px 20px rgba(22, 41, 107, 0.45));
+    }
+
+    .sikds-chatbot-fab:active {
+        transform: scale(0.96);
+    }
+
+    /* The launcher hides while the panel is open; the header ✕ is the single
+       close control. */
+    #sikds-chatbot-widget.is-open .sikds-chatbot-fab {
+        opacity:        0;
+        transform:      scale(0.6);
+        pointer-events: none;
+    }
+
+    /* Frosted translucent surface that blurs the page behind. */
+    .sikds-chatbot-panel {
+        background:              rgba(255, 255, 255, 0.72);
+        backdrop-filter:         blur(22px) saturate(180%);
+        -webkit-backdrop-filter: blur(22px) saturate(180%);
+        border:         1px solid rgba(255, 255, 255, 0.55);
+        border-radius:  20px;
+        box-shadow:     0 24px 60px rgba(22, 41, 107, 0.30), 0 4px 12px rgba(22, 41, 107, 0.14);
+        transform-origin: bottom right;
+        animation:      sikds-chatbot-in 0.2s ease-out both;
+    }
+
+    /* Solid fallback where backdrop-filter is unsupported (readability). */
+    @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+        .sikds-chatbot-panel { background: #f7f9fe; }
+    }
+
+    [dir="rtl"] .sikds-chatbot-panel { transform-origin: bottom left; }
+
+    @keyframes sikds-chatbot-in {
+        from { opacity: 0; transform: translateY(10px) scale(0.94); }
+        to   { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    /* Header: translucent brand gradient over the glass. */
+    .sikds-chatbot-header {
+        background:              linear-gradient(135deg, rgba(41, 71, 168, 0.92), rgba(22, 41, 107, 0.94));
+        backdrop-filter:         blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+    }
+
+    .sikds-chatbot-avatar {
+        display:       grid;
+        place-items:   center;
+        height:        40px;
+        width:         40px;
+        border-radius: var(--sikds-radius-pill);
+        background:    #ffffff;
+        box-shadow:    0 2px 8px rgba(22, 41, 107, 0.30);
+    }
+
+    /* Circular ghost icon buttons in the header (new-chat / close). */
+    .sikds-chatbot-hbtn {
+        display:         inline-flex;
+        align-items:     center;
+        justify-content: center;
+        height:          32px;
+        width:           32px;
+        border-radius:   var(--sikds-radius-pill);
+        color:           rgba(255, 255, 255, 0.85);
+        background:      rgba(255, 255, 255, 0.12);
+        font-size:       13px;
+        transition:      background-color var(--sikds-motion), color var(--sikds-motion), transform var(--sikds-motion);
+    }
+    .sikds-chatbot-hbtn:hover {
+        background: rgba(255, 255, 255, 0.24);
+        color:      #fff;
+    }
+    .sikds-chatbot-hbtn:active { transform: scale(0.92); }
+
+    /* ── Welcome state ── */
+    .sikds-chat-welcome {
+        display:         flex;
+        flex-direction:  column;
+        align-items:     center;
+        text-align:      center;
+        padding:         22px 12px 8px;
+        animation:       sikds-chatbot-in 0.24s ease-out both;
+    }
+
+    /* One-time pop when the panel opens, then a gentle idle bob. */
+    .sikds-chat-welcome-mascot {
+        margin-bottom:    14px;
+        transform-origin: 50% 80%;
+        animation:        sikds-mascot-pop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both,
+                          sikds-mascot-bob 3.6s ease-in-out 0.6s infinite;
+    }
+
+    @keyframes sikds-mascot-pop {
+        0%   { opacity: 0; transform: scale(0.5) rotate(-8deg); }
+        60%  { opacity: 1; transform: scale(1.08) rotate(3deg); }
+        100% { opacity: 1; transform: scale(1) rotate(0deg); }
+    }
+
+    @keyframes sikds-mascot-bob {
+        0%, 100% { transform: translateY(0) rotate(0deg); }
+        50%      { transform: translateY(-5px) rotate(-1.5deg); }
+    }
+
+    .sikds-chat-welcome-title {
+        font-size:   20px;
+        font-weight: 700;
+        color:       #16296b;
+    }
+
+    .sikds-chat-welcome-sub {
+        margin:      8px 0 20px;
+        font-size:   14px;
+        line-height: 1.55;
+        color:       #6B7280;
+        max-width:   32ch;
+    }
+
+    .sikds-chat-suggestions {
+        display:               grid;
+        grid-template-columns: 1fr 1fr;
+        gap:                   10px 12px;
+        width:                 100%;
+    }
+
+    /* Pill chips: fill the whole grid column so the 2×2 lines up perfectly;
+       frosted-glass surface, centred icon + label. */
+    .sikds-chat-suggestion {
+        display:         flex;
+        width:           100%;
+        align-items:     center;
+        justify-content: center;
+        gap:             8px;
+        min-width:       0;
+        padding:         12px 14px;
+        border:          1px solid var(--ai-100);
+        border-radius:   var(--sikds-radius-pill);
+        background:      #ffffff;
+        box-shadow:      0 2px 8px rgba(28, 57, 142, 0.10);
+        color:           var(--ai-700);
+        font-size:       13.5px;
+        font-weight:     600;
+        line-height:     1.2;
+        cursor:          pointer;
+        transition:      background-color var(--sikds-motion), border-color var(--sikds-motion), transform var(--sikds-motion), box-shadow var(--sikds-motion);
+    }
+
+    .sikds-chat-suggestion span {
+        overflow:      hidden;
+        text-overflow: ellipsis;
+        white-space:   nowrap;
+    }
+
+    .sikds-chat-suggestion i {
+        color:       var(--ai-600);
+        font-size:   13px;
+        flex-shrink: 0;
+    }
+
+    .sikds-chat-suggestion:hover {
+        background:    var(--ai-50);
+        border-color:  var(--ai-600);
+        transform:     translateY(-1px);
+        box-shadow:    0 6px 16px rgba(28, 57, 142, 0.18);
+    }
+
+    .sikds-chat-suggestion:active {
+        transform: translateY(0) scale(0.98);
+    }
+
+    /* Small 3-dot "typing" bubble floating above the welcome mascot (reference). */
+    .sikds-chat-welcome-bubble {
+        display:       inline-flex;
+        align-items:   center;
+        gap:           4px;
+        padding:       7px 12px;
+        margin-bottom: -6px;
+        border-radius: var(--sikds-radius-pill);
+        background:    var(--sikds-surface);
+        border:        1px solid var(--sikds-border);
+        box-shadow:    0 4px 12px rgba(28, 57, 142, 0.10);
+        position:      relative;
+        z-index:       1;
+    }
+    .sikds-chat-welcome-bubble span {
+        width:         5px;
+        height:        5px;
+        border-radius: 999px;
+        background:    var(--ai-500);
+        animation:     sikds-typing 1.2s ease-in-out infinite;
+    }
+    .sikds-chat-welcome-bubble span:nth-child(2) { animation-delay: 0.18s; }
+    .sikds-chat-welcome-bubble span:nth-child(3) { animation-delay: 0.36s; }
+
+    /* Prettier citation block. */
+    .sikds-cites {
+        margin-top:    10px;
+        border:        1px solid var(--sikds-border);
+        border-radius: 14px;
+        background:    var(--ai-50);
+        overflow:      hidden;
+    }
+    .sikds-cites-summary {
+        display:        flex;
+        align-items:    center;
+        gap:            8px;
+        padding:        9px 12px;
+        font-size:      12.5px;
+        font-weight:    600;
+        color:          var(--ai-700);
+        cursor:         pointer;
+        list-style:     none;
+        user-select:    none;
+    }
+    .sikds-cites-summary::-webkit-details-marker { display: none; }
+    .sikds-cites-summary .sikds-cites-chevron {
+        transition: transform var(--sikds-motion);
+        font-size:  11px;
+        color:      var(--ai-500);
+    }
+    .sikds-cites[open] .sikds-cites-summary .sikds-cites-chevron { transform: rotate(90deg); }
+    .sikds-cites-count {
+        margin-inline-start: auto;
+        min-width:      20px;
+        height:         20px;
+        padding-inline: 6px;
+        display:        inline-flex;
+        align-items:    center;
+        justify-content: center;
+        border-radius:  999px;
+        background:     var(--ai-100);
+        color:          var(--ai-700);
+        font-size:      11px;
+        font-weight:    700;
+    }
+    .sikds-cites-list {
+        display:        flex;
+        flex-direction: column;
+        gap:            6px;
+        padding:        4px 8px 8px;
+    }
+    .sikds-cite {
+        display:       flex;
+        gap:           10px;
+        align-items:   flex-start;
+        padding:       9px 10px;
+        border-radius: 10px;
+        background:    var(--sikds-surface);
+        border:        1px solid var(--sikds-border);
+    }
+    .sikds-cite-icon {
+        display:       grid;
+        place-items:   center;
+        width:         28px;
+        height:        28px;
+        flex-shrink:   0;
+        border-radius: 8px;
+        background:    var(--ai-50);
+        color:         var(--ai-600);
+        font-size:     13px;
+    }
+    .sikds-cite-title {
+        font-size:   12.5px;
+        font-weight: 600;
+        color:       #1f2937;
+        line-height: 1.35;
+    }
+    .sikds-cite-meta {
+        display:   flex;
+        flex-wrap: wrap;
+        gap:       5px;
+        margin-top: 5px;
+    }
+    .sikds-cite-pill {
+        display:        inline-flex;
+        align-items:    center;
+        gap:            4px;
+        padding:        2px 8px;
+        border-radius:  999px;
+        background:     var(--ai-50);
+        color:          var(--ai-600);
+        font-size:      10.5px;
+        font-weight:    600;
+    }
+
+    /* ── Thinking indicator ── */
+    .sikds-chat-thinking {
+        display:       inline-flex;
+        align-items:   center;
+        gap:           8px;
+        padding:       11px 16px;
+        border-radius: 16px;
+        border-end-start-radius: 4px;
+        background:    var(--sikds-surface);
+        border:        1px solid var(--sikds-border);
+        box-shadow:    0 1px 2px rgba(22, 41, 107, 0.06);
+    }
+
+    .sikds-chat-thinking-mascot {
+        display:          inline-flex;
+        animation:        sikds-mascot-bob 2.4s ease-in-out infinite;
+        transform-origin: 50% 80%;
+    }
+
+    .sikds-chat-thinking-dots {
+        display:     inline-flex;
+        align-items: center;
+        gap:         4px;
+    }
+
+    .sikds-chat-thinking-dots span {
+        width:         6px;
+        height:        6px;
+        border-radius: 999px;
+        background:    var(--ai-600);
+        animation:     sikds-typing 1.2s ease-in-out infinite;
+    }
+    .sikds-chat-thinking-dots span:nth-child(2) { animation-delay: 0.18s; }
+    .sikds-chat-thinking-dots span:nth-child(3) { animation-delay: 0.36s; }
+
+    @keyframes sikds-typing {
+        0%, 60%, 100% { opacity: 0.3; transform: translateY(0); }
+        30%           { opacity: 1;   transform: translateY(-3px); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .sikds-chatbot-panel,
+        .sikds-chat-welcome,
+        .sikds-chat-welcome-mascot,
+        .sikds-chat-thinking-mascot,
+        .sikds-chat-thinking-dots span { animation: none; }
+    }
+
+    /* Transparent so the frosted panel/page shows through the conversation. */
+    .sikds-chatbot-messages {
+        background: transparent;
+    }
+
+    /* Refined, brand-tinted scrollbar (reusable — also used on dashboard panels).
+       Thin, rounded, transparent track — reads as designed, not the OS default. */
+    .sikds-scroll,
+    .sikds-chatbot-messages {
+        scrollbar-width: thin;
+        scrollbar-color: rgba(28, 57, 142, 0.26) transparent;
+    }
+    .sikds-scroll::-webkit-scrollbar,
+    .sikds-chatbot-messages::-webkit-scrollbar {
+        width:  6px;
+        height: 6px;
+    }
+    .sikds-scroll::-webkit-scrollbar-track,
+    .sikds-chatbot-messages::-webkit-scrollbar-track {
+        background: transparent;
+        margin:     4px 0;
+    }
+    .sikds-scroll::-webkit-scrollbar-thumb,
+    .sikds-chatbot-messages::-webkit-scrollbar-thumb {
+        background:     rgba(28, 57, 142, 0.22);
+        border-radius:  999px;
+    }
+    .sikds-scroll::-webkit-scrollbar-thumb:hover,
+    .sikds-chatbot-messages::-webkit-scrollbar-thumb:hover {
+        background: rgba(28, 57, 142, 0.40);
+    }
+    /* Never show the arrow buttons (the ▲▼ that made it look like an OS bar). */
+    .sikds-scroll::-webkit-scrollbar-button,
+    .sikds-chatbot-messages::-webkit-scrollbar-button { display: none; height: 0; width: 0; }
+
+    .sikds-chat-bubble {
+        border-radius: 16px;
+        line-height:   1.5;
+        box-shadow:    0 2px 6px rgba(22, 41, 107, 0.08);
+    }
+
+    .sikds-chat-bubble--user {
+        background:            var(--ai-grad);
+        color:                 #fff;
+        border-end-end-radius: 4px;
+    }
+
+    /* Frosted bot bubble. */
+    .sikds-chat-bubble--bot {
+        background:              rgba(255, 255, 255, 0.82);
+        backdrop-filter:         blur(6px);
+        -webkit-backdrop-filter: blur(6px);
+        color:                   #1f2937;
+        border:                  1px solid rgba(255, 255, 255, 0.65);
+        border-end-start-radius: 4px;
+    }
+
+    /* Frosted composer bar. */
+    .sikds-chatbot-composer {
+        background:              rgba(255, 255, 255, 0.55);
+        backdrop-filter:         blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border-top:              1px solid rgba(255, 255, 255, 0.5);
+    }
+
+    /* Pill input — no native scroll arrows. */
+    .sikds-chatbot-input {
+        border:          1px solid var(--sikds-border);
+        border-radius:   22px;
+        background:       rgba(255, 255, 255, 0.7);
+        color:           var(--sikds-ink);
+        overflow-y:      auto;
+        scrollbar-width: none;
+        transition:      border-color var(--sikds-motion), box-shadow var(--sikds-motion);
+    }
+    .sikds-chatbot-input::-webkit-scrollbar { width: 0; height: 0; display: none; }
+
+    .sikds-chatbot-input:focus {
+        border-color: var(--ai-600);
+        box-shadow:   0 0 0 3px rgba(28, 57, 142, 0.16);
+        background:   rgba(255, 255, 255, 0.95);
+    }
+
+    /* Indigo gradient send button with soft colored shadow. */
+    .sikds-chatbot-send {
+        background:    var(--ai-grad);
+        border-radius: var(--sikds-radius-pill);
+        transition:    transform var(--sikds-motion), box-shadow var(--sikds-motion);
+        box-shadow:    var(--ai-shadow);
+    }
+
+    .sikds-chatbot-send:hover:not(:disabled) {
+        transform: scale(1.06);
+        box-shadow: 0 6px 18px rgba(28, 57, 142, 0.45);
+    }
+
+    .sikds-chatbot-send:active:not(:disabled) {
+        transform: scale(0.95);
+    }
+
+    /* Stay comfortable down to 360px-wide viewports. */
+    @media (max-width: 380px) {
+        .sikds-chat-suggestions { grid-template-columns: 1fr; }
+        .sikds-chat-welcome     { padding: 18px 8px 6px; }
+    }
+
 }

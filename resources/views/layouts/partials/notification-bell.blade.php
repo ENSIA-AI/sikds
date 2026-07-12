@@ -14,7 +14,7 @@
         aria-label="{{ __('Notifications') }}"
     >
         <span class="relative inline-flex">
-            <i class="fa-regular fa-bell text-white text-[18px] leading-none" aria-hidden="true"></i>
+            <i class="fa-regular fa-bell text-[18px] leading-none" aria-hidden="true"></i>
             <span
                 id="sikds-notification-bell-badge"
                 class="hidden absolute -top-0.5 -end-0.5 h-2 w-2 rounded-full bg-red-500 ring-2 ring-white"
@@ -25,37 +25,43 @@
 
     <div
         id="sikds-notification-bell-panel"
-        class="hidden absolute end-0 top-full z-50 mt-2 w-[22rem] max-w-[calc(100vw-2rem)] rounded-2xl border border-slate-200 bg-white shadow-xl overflow-hidden"
+        class="hidden absolute end-0 top-full z-50 mt-2 w-[23rem] max-w-[calc(100vw-1.5rem)] rounded-2xl border border-slate-200 bg-white shadow-2xl overflow-hidden"
         role="menu"
         aria-label="{{ __('Notifications récentes') }}"
     >
-        <div class="flex items-center justify-between px-4 py-3 border-b border-slate-100">
-            <p class="text-sm font-semibold text-slate-900">{{ __('Notifications') }}</p>
+        <div class="flex items-center justify-between px-4 py-3.5" style="background:linear-gradient(135deg,#2947a8,#16296b);">
+            <p class="text-sm font-semibold text-white flex items-center gap-2">
+                <i class="fa-regular fa-bell text-white/90" aria-hidden="true"></i>
+                {{ __('Notifications') }}
+            </p>
             <button
                 type="button"
                 id="sikds-notification-bell-mark-all"
-                class="hidden text-xs font-medium text-[#1E3A8A] hover:underline disabled:opacity-50"
+                class="hidden text-xs font-medium text-white/85 hover:text-white transition-colors disabled:opacity-50"
             >
                 {{ __('Tout marquer comme lu') }}
             </button>
         </div>
 
-        <div id="sikds-notification-bell-list" class="max-h-80 overflow-y-auto">
-            <div class="px-4 py-10 text-center" id="sikds-notification-bell-empty">
-                <i class="fa-regular fa-bell-slash text-2xl text-slate-300"></i>
-                <p class="mt-2 text-sm text-slate-500">{{ __('Aucune notification') }}</p>
+        <div id="sikds-notification-bell-list" class="max-h-80 overflow-y-auto sikds-scroll">
+            <div class="px-4 py-12 text-center" id="sikds-notification-bell-empty">
+                <span class="mx-auto mb-3 grid h-12 w-12 place-items-center rounded-full bg-[#eef1fb] text-[#1c398e]">
+                    <i class="fa-regular fa-bell-slash text-lg" aria-hidden="true"></i>
+                </span>
+                <p class="text-sm font-medium text-slate-600">{{ __('Aucune notification') }}</p>
             </div>
         </div>
 
-        <div class="border-t border-slate-100 bg-slate-50 px-4 py-3 text-center">
-            <a href="{{ $inboxUrl }}" class="text-sm font-medium text-[#1E3A8A] hover:underline">
+        <div class="border-t border-slate-100 bg-slate-50/70 px-4 py-3 text-center">
+            <a href="{{ $inboxUrl }}" class="inline-flex items-center gap-1.5 text-sm font-semibold text-[#1c398e] hover:gap-2.5 transition-all">
                 {{ __('Voir toutes les notifications') }}
+                <i class="fa-solid fa-arrow-right text-xs" aria-hidden="true"></i>
             </a>
         </div>
     </div>
 </div>
 
-<script>
+<script nonce="{{ \Illuminate\Support\Facades\Vite::cspNonce() }}">
             function sikdsNotificationBellInit() {
                 const wrap = document.getElementById('sikds-notification-bell-wrap');
                 const toggle = document.getElementById('sikds-notification-bell-toggle');
@@ -120,7 +126,7 @@
                         const message = escapeHtml(item.message || '');
                         const time = escapeHtml(item.created_at_human || '');
                         const isRead = !!item.read;
-                        const dotClass = isRead ? 'bg-transparent' : 'bg-[#1E3A8A]';
+                        const dotClass = isRead ? 'bg-transparent' : 'bg-[#1c398e]';
                         const textClass = isRead ? 'text-slate-600 font-normal' : 'text-slate-900 font-semibold';
                         const rowBg = isRead ? '' : 'bg-blue-50/50';
                         return '<a href="' + url + '" data-id="' + Number(item.id) + '" data-mark-url="' + escapeHtml(item.mark_read_url || '') + '"' +

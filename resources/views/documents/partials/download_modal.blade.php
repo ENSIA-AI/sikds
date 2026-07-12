@@ -2,10 +2,11 @@
     x-data="downloadWarningModal()"
     @open-download-modal.window="open = true; downloadUrl = $event.detail.downloadUrl || ''; errorMessage = ''; downloading = false"
 >
+    <template x-teleport="body">
     <div
         x-show="open"
         x-cloak
-        class="fixed inset-0 z-[60] overflow-y-auto"
+        class="fixed inset-0 z-[1000] overflow-y-auto"
         aria-labelledby="modal-title"
         role="dialog"
         aria-modal="true"
@@ -20,7 +21,7 @@
                 x-transition:leave-start="opacity-100"
                 x-transition:leave-end="opacity-0"
                 class="fixed inset-0 transition-opacity"
-                style="background-color: rgba(10, 10, 10, 0.35);"
+                style="background-color: rgba(15, 23, 42, 0.5);"
                 aria-hidden="true"
                 @click="open = false"
             ></div>
@@ -85,9 +86,10 @@
             </div>
         </div>
     </div>
+    </template>
 </div>
 
-<script>
+<script nonce="{{ \Illuminate\Support\Facades\Vite::cspNonce() }}">
     function downloadWarningModal() {
         const i18n = {
             defaultFilename: @json(__('document.pdf')),
