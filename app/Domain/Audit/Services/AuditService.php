@@ -8,10 +8,16 @@ use App\Domain\Audit\Models\AuditLog;
 use App\Domain\Users\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 class AuditService
 {
+    /**
+     * Sentinel `previous_hash` for the first chained row (no predecessor).
+     */
+    public const GENESIS_HASH = '0000000000000000000000000000000000000000000000000000000000000000';
+
     /**
      * Persist a single audit-log entry.
      *
@@ -44,7 +50,7 @@ class AuditService
             request: $request,
         );
 
-        return AuditLog::query()->create([
+        $attributes = [
             'event_type'    => $eventType,
             'user_id'       => $resolvedUser?->id,
             'user_email'    => $resolvedUser?->email ?? $this->actorEmailFromMetadata($metadata),
@@ -55,7 +61,104 @@ class AuditService
             'ip_address'    => $request?->ip(),
             'user_agent'    => $request?->userAgent(),
             'created_at'    => now(),
-        ]);
+        ];
+
+        // Tamper-evident chaining: each row stores the previous row's hash and
+        // its own hash over the canonical core payload. The transaction (plus a
+        // Postgres advisory lock) serializes writers so two concurrent events
+        // cannot both link to the same predecessor. See the verification counterpart:
+        // `php artisan audit:verify-chain`.
+        return DB::transaction(function () use ($attributes): AuditLog {
+            $this->lockChain();
+
+            $previousHash = AuditLog::query()
+                ->orderByDesc('id')
+                ->value('row_hash') ?? self::GENESIS_HASH;
+
+            $attributes['previous_hash'] = $previousHash;
+            $attributes['row_hash'] = self::hashRow($previousHash, $attributes);
+
+            return AuditLog::query()->create($attributes);
+        });
+    }
+
+    /**
+     * Serialize chain writes. pg_advisory_xact_lock is released automatically
+     * when the surrounding transaction commits or rolls back. Other drivers
+     * (the SQLite test database) serialize writers at the connection level.
+     *
+     * Note: this serializes *all* audit writes behind one lock. Audit volume is
+     * one row per user action, so contention is negligible at this scale.
+     */
+    private function lockChain(): void
+    {
+        if (DB::getDriverName() === 'pgsql') {
+            DB::statement("SELECT pg_advisory_xact_lock(hashtext('audit_logs.chain'))");
+        }
+    }
+
+    /**
+     * Compute the chained hash for an audit row.
+     *
+     * The hash covers the semantic core of the event — event_type, actor,
+     * resource, metadata and result — plus the previous row's hash (which is
+     * what makes deletion or re-ordering detectable).
+     *
+     * Deliberately EXCLUDED from the hash:
+     *   - id / created_at / ip_address / user_agent: Postgres round-trips these
+     *     through BIGSERIAL, TIMESTAMPTZ and INET, which normalize their textual
+     *     representation (precision, timezone, IPv6 shortening). Including them
+     *     would make an honest verify pass report false chain breaks. Their
+     *     integrity is still protected by the DB immutability triggers.
+     *
+     * @param  array<string, mixed>  $attributes
+     */
+    public static function hashRow(string $previousHash, array $attributes): string
+    {
+        return hash('sha256', $previousHash.'|'.self::canonicalPayload($attributes));
+    }
+
+    /**
+     * Build a canonical, byte-stable JSON representation of the hashed fields.
+     * Metadata keys are sorted recursively because JSONB does not preserve key
+     * order, so the payload re-encoded at verify time must match byte-for-byte.
+     *
+     * @param  array<string, mixed>  $attributes
+     */
+    public static function canonicalPayload(array $attributes): string
+    {
+        $metadata = $attributes['metadata'] ?? null;
+        if (is_array($metadata)) {
+            $metadata = self::ksortRecursive($metadata);
+        }
+
+        $canonical = [
+            'event_type'    => (string) ($attributes['event_type'] ?? ''),
+            'user_id'       => isset($attributes['user_id']) ? (int) $attributes['user_id'] : null,
+            'user_email'    => $attributes['user_email'] ?? null,
+            'resource_type' => $attributes['resource_type'] ?? null,
+            'resource_id'   => isset($attributes['resource_id']) ? (int) $attributes['resource_id'] : null,
+            'metadata'      => $metadata,
+            'result'        => $attributes['result'] ?? null,
+        ];
+
+        return (string) json_encode($canonical, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    }
+
+    /**
+     * @param  array<array-key, mixed>  $array
+     * @return array<array-key, mixed>
+     */
+    private static function ksortRecursive(array $array): array
+    {
+        foreach ($array as $key => $value) {
+            if (is_array($value)) {
+                $array[$key] = self::ksortRecursive($value);
+            }
+        }
+        ksort($array);
+
+        return $array;
     }
 
     /**

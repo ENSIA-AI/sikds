@@ -75,3 +75,58 @@ jobs:
 
       - name: Run tests
         run: composer test
+
+  # PostgreSQL job: exercises the Postgres-only paths the SQLite suite cannot —
+  # audit_logs immutability triggers, pgvector migrations, BM25 SQL.
+  pgsql:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: pgvector/pgvector:pg18
+        env:
+          POSTGRES_DB: sikds_testing
+          POSTGRES_USER: sikds
+          POSTGRES_PASSWORD: secret
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U sikds"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: dom, curl, libxml, mbstring, openssl, pcre, pdo, pdo_pgsql, zip, pcntl
+          coverage: none
+          tools: composer:v2
+
+      - name: Install system dependencies
+        run: sudo apt-get install -y qpdf
+
+      - name: Cache Composer packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.composer/cache/files
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-composer-
+
+      - name: Install PHP dependencies
+        run: composer install --no-interaction --prefer-dist --optimize-autoloader
+
+      - name: Copy environment
+        run: cp .env.example .env
+
+      - name: Generate application key
+        run: php artisan key:generate --ansi
+
+      - name: Run tests on PostgreSQL
+        run: php artisan config:clear --ansi && ./vendor/bin/pest --configuration phpunit.pgsql.xml
